@@ -20,12 +20,15 @@ import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes.index'
 import { Route as AuthenticatedClientesIdRouteImport } from './routes/_authenticated/clientes.$id'
 import { Route as AuthenticatedClientesNovoRouteImport } from './routes/_authenticated/clientes.novo'
+import { Route as AuthenticatedOrdensIndexRouteImport } from './routes/_authenticated/ordens.index'
+import { Route as AuthenticatedOrdensIdRouteImport } from './routes/_authenticated/ordens.$id'
 import { Route as AuthenticatedOrdensNovoRouteImport } from './routes/_authenticated/ordens.novo'
 import { Route as AuthenticatedVeiculosIndexRouteImport } from './routes/_authenticated/veiculos.index'
 import { Route as AuthenticatedVeiculosIdRouteImport } from './routes/_authenticated/veiculos.$id'
 import { Route as AuthenticatedVeiculosNovoRouteImport } from './routes/_authenticated/veiculos.novo'
 import { Route as AuthenticatedClientesIdEditarRouteImport } from './routes/_authenticated/clientes.$id_.editar'
 import { Route as AuthenticatedOrdensIdEditarRouteImport } from './routes/_authenticated/ordens.$id_.editar'
+import { Route as AuthenticatedOrdensIdImprimirRouteImport } from './routes/_authenticated/ordens.$id_.imprimir'
 import { Route as AuthenticatedVeiculosIdEditarRouteImport } from './routes/_authenticated/veiculos.$id_.editar'
 
 const IndexRoute = IndexRouteImport.update({
@@ -85,6 +88,17 @@ const AuthenticatedClientesNovoRoute =
     path: '/clientes/novo',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedOrdensIndexRoute =
+  AuthenticatedOrdensIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedOrdensRoute,
+  } as any)
+const AuthenticatedOrdensIdRoute = AuthenticatedOrdensIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedOrdensRoute,
+} as any)
 const AuthenticatedOrdensNovoRoute = AuthenticatedOrdensNovoRouteImport.update({
   id: '/novo',
   path: '/novo',
@@ -119,6 +133,12 @@ const AuthenticatedOrdensIdEditarRoute =
     path: '/$id/editar',
     getParentRoute: () => AuthenticatedOrdensRoute,
   } as any)
+const AuthenticatedOrdensIdImprimirRoute =
+  AuthenticatedOrdensIdImprimirRouteImport.update({
+    id: '/$id_/imprimir',
+    path: '/$id/imprimir',
+    getParentRoute: () => AuthenticatedOrdensRoute,
+  } as any)
 const AuthenticatedVeiculosIdEditarRoute =
   AuthenticatedVeiculosIdEditarRouteImport.update({
     id: '/veiculos/$id_/editar',
@@ -136,13 +156,16 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
+  '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/novo': typeof AuthenticatedOrdensNovoRoute
   '/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
   '/clientes/': typeof AuthenticatedClientesIndexRoute
+  '/ordens/': typeof AuthenticatedOrdensIndexRoute
   '/veiculos/': typeof AuthenticatedVeiculosIndexRoute
   '/clientes/$id/editar': typeof AuthenticatedClientesIdEditarRoute
   '/ordens/$id/editar': typeof AuthenticatedOrdensIdEditarRoute
+  '/ordens/$id/imprimir': typeof AuthenticatedOrdensIdImprimirRoute
   '/veiculos/$id/editar': typeof AuthenticatedVeiculosIdEditarRoute
 }
 export interface FileRoutesByTo {
@@ -151,17 +174,19 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/ordens': typeof AuthenticatedOrdensRouteWithChildren
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
+  '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/novo': typeof AuthenticatedOrdensNovoRoute
   '/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
   '/clientes': typeof AuthenticatedClientesIndexRoute
+  '/ordens': typeof AuthenticatedOrdensIndexRoute
   '/veiculos': typeof AuthenticatedVeiculosIndexRoute
   '/clientes/$id/editar': typeof AuthenticatedClientesIdEditarRoute
   '/ordens/$id/editar': typeof AuthenticatedOrdensIdEditarRoute
+  '/ordens/$id/imprimir': typeof AuthenticatedOrdensIdImprimirRoute
   '/veiculos/$id/editar': typeof AuthenticatedVeiculosIdEditarRoute
 }
 export interface FileRoutesById {
@@ -176,13 +201,16 @@ export interface FileRoutesById {
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/_authenticated/clientes/novo': typeof AuthenticatedClientesNovoRoute
+  '/_authenticated/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/_authenticated/ordens/novo': typeof AuthenticatedOrdensNovoRoute
   '/_authenticated/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/_authenticated/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
   '/_authenticated/clientes/': typeof AuthenticatedClientesIndexRoute
+  '/_authenticated/ordens/': typeof AuthenticatedOrdensIndexRoute
   '/_authenticated/veiculos/': typeof AuthenticatedVeiculosIndexRoute
   '/_authenticated/clientes/$id_/editar': typeof AuthenticatedClientesIdEditarRoute
   '/_authenticated/ordens/$id_/editar': typeof AuthenticatedOrdensIdEditarRoute
+  '/_authenticated/ordens/$id_/imprimir': typeof AuthenticatedOrdensIdImprimirRoute
   '/_authenticated/veiculos/$id_/editar': typeof AuthenticatedVeiculosIdEditarRoute
 }
 export interface FileRouteTypes {
@@ -197,13 +225,16 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/clientes/$id'
     | '/clientes/novo'
+    | '/ordens/$id'
     | '/ordens/novo'
     | '/veiculos/$id'
     | '/veiculos/novo'
     | '/clientes/'
+    | '/ordens/'
     | '/veiculos/'
     | '/clientes/$id/editar'
     | '/ordens/$id/editar'
+    | '/ordens/$id/imprimir'
     | '/veiculos/$id/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -212,17 +243,19 @@ export interface FileRouteTypes {
     | '/login'
     | '/configuracoes'
     | '/dashboard'
-    | '/ordens'
     | '/usuarios'
     | '/clientes/$id'
     | '/clientes/novo'
+    | '/ordens/$id'
     | '/ordens/novo'
     | '/veiculos/$id'
     | '/veiculos/novo'
     | '/clientes'
+    | '/ordens'
     | '/veiculos'
     | '/clientes/$id/editar'
     | '/ordens/$id/editar'
+    | '/ordens/$id/imprimir'
     | '/veiculos/$id/editar'
   id:
     | '__root__'
@@ -236,13 +269,16 @@ export interface FileRouteTypes {
     | '/_authenticated/usuarios'
     | '/_authenticated/clientes/$id'
     | '/_authenticated/clientes/novo'
+    | '/_authenticated/ordens/$id'
     | '/_authenticated/ordens/novo'
     | '/_authenticated/veiculos/$id'
     | '/_authenticated/veiculos/novo'
     | '/_authenticated/clientes/'
+    | '/_authenticated/ordens/'
     | '/_authenticated/veiculos/'
     | '/_authenticated/clientes/$id_/editar'
     | '/_authenticated/ordens/$id_/editar'
+    | '/_authenticated/ordens/$id_/imprimir'
     | '/_authenticated/veiculos/$id_/editar'
   fileRoutesById: FileRoutesById
 }
@@ -332,6 +368,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientesNovoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/ordens/': {
+      id: '/_authenticated/ordens/'
+      path: '/'
+      fullPath: '/ordens/'
+      preLoaderRoute: typeof AuthenticatedOrdensIndexRouteImport
+      parentRoute: typeof AuthenticatedOrdensRoute
+    }
+    '/_authenticated/ordens/$id': {
+      id: '/_authenticated/ordens/$id'
+      path: '/$id'
+      fullPath: '/ordens/$id'
+      preLoaderRoute: typeof AuthenticatedOrdensIdRouteImport
+      parentRoute: typeof AuthenticatedOrdensRoute
+    }
     '/_authenticated/ordens/novo': {
       id: '/_authenticated/ordens/novo'
       path: '/novo'
@@ -374,6 +424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdensIdEditarRouteImport
       parentRoute: typeof AuthenticatedOrdensRoute
     }
+    '/_authenticated/ordens/$id_/imprimir': {
+      id: '/_authenticated/ordens/$id_/imprimir'
+      path: '/$id/imprimir'
+      fullPath: '/ordens/$id/imprimir'
+      preLoaderRoute: typeof AuthenticatedOrdensIdImprimirRouteImport
+      parentRoute: typeof AuthenticatedOrdensRoute
+    }
     '/_authenticated/veiculos/$id_/editar': {
       id: '/_authenticated/veiculos/$id_/editar'
       path: '/veiculos/$id/editar'
@@ -385,13 +442,19 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedOrdensRouteChildren {
+  AuthenticatedOrdensIdRoute: typeof AuthenticatedOrdensIdRoute
   AuthenticatedOrdensNovoRoute: typeof AuthenticatedOrdensNovoRoute
+  AuthenticatedOrdensIndexRoute: typeof AuthenticatedOrdensIndexRoute
   AuthenticatedOrdensIdEditarRoute: typeof AuthenticatedOrdensIdEditarRoute
+  AuthenticatedOrdensIdImprimirRoute: typeof AuthenticatedOrdensIdImprimirRoute
 }
 
 const AuthenticatedOrdensRouteChildren: AuthenticatedOrdensRouteChildren = {
+  AuthenticatedOrdensIdRoute: AuthenticatedOrdensIdRoute,
   AuthenticatedOrdensNovoRoute: AuthenticatedOrdensNovoRoute,
+  AuthenticatedOrdensIndexRoute: AuthenticatedOrdensIndexRoute,
   AuthenticatedOrdensIdEditarRoute: AuthenticatedOrdensIdEditarRoute,
+  AuthenticatedOrdensIdImprimirRoute: AuthenticatedOrdensIdImprimirRoute,
 }
 
 const AuthenticatedOrdensRouteWithChildren =

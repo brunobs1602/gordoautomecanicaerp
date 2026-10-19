@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Car, ClipboardList, LayoutDashboard, LogOut, Menu, Settings, Users, UserCog, X } from "lucide-react";
+import { Car, ClipboardList, LayoutDashboard, LogOut, Menu, Package, Settings, Users, UserCog, Wrench, X } from "lucide-react";
 import { logout, type User } from "@/lib/auth";
 import { BrandName, LogoSlot } from "./Brand";
 
@@ -8,7 +8,9 @@ const items = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/clientes", label: "Clientes", icon: Users },
   { to: "/veiculos", label: "Veículos", icon: Car },
-  { to: "/ordens", label: "Ordens de Serviço", icon: ClipboardList },
+  { to: "/ordens", label: "Orçamentos e OS", icon: ClipboardList },
+  { to: "/produtos", label: "Produtos e peças", icon: Package },
+  { to: "/servicos", label: "Serviços", icon: Wrench },
   { to: "/usuarios", label: "Usuários", icon: UserCog, adminOnly: true },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
@@ -57,7 +59,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
   return (
     <div className="flex min-h-screen w-full">
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-sidebar-border bg-sidebar transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex print:hidden w-64 flex-col border-r border-sidebar-border bg-sidebar transition-transform lg:static lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -73,7 +75,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
       {open && <div className="fixed inset-0 z-30 bg-background/70 lg:hidden" onClick={() => setOpen(false)} />}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-3 border-b border-border bg-sidebar/80 px-4 backdrop-blur">
+        <header className="flex h-14 print:hidden items-center gap-3 border-b border-border bg-sidebar/80 px-4 backdrop-blur">
           <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Abrir menu">
             <Menu className="h-5 w-5" />
           </button>
@@ -82,7 +84,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
             <div className="text-xs text-muted-foreground">{user.role === "admin" ? "Administrador" : "Funcionário"}</div>
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 print:p-0">{children}</main>
       </div>
     </div>
   );
