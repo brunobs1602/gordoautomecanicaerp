@@ -29,7 +29,7 @@ function EditarOrcamento() {
         <p className="mb-4 text-muted-foreground">
           {o ? `Orçamentos com status "${STATUS_LABEL[o.status]}" não podem ser editados.` : "Orçamento não encontrado."}
         </p>
-        <Link to={o ? "/ordens/$id" : "/ordens"} params={{ id }} className="btn-ghost">Voltar</Link>
+        {o ? <Link to="/ordens/$id" params={{ id }} className="btn-ghost">Voltar</Link> : <Link to="/ordens" className="btn-ghost">Voltar</Link>}
       </div>
     );
 

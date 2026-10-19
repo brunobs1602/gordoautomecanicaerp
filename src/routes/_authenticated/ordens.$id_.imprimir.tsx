@@ -68,6 +68,7 @@ function Documento() {
       const t = setTimeout(() => window.print(), 400);
       return () => clearTimeout(t);
     }
+    return undefined;
   }, [auto, o?.id]);
 
   if (!o) return <div className="panel p-10 text-center text-muted-foreground">Orçamento não encontrado.</div>;
