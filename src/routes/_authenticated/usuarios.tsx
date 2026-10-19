@@ -87,7 +87,7 @@ function Usuarios() {
 
 function NewUserForm({ onDone }: { onDone: () => void }) {
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "funcionario" as Role });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<"name" | "email" | "password" | "confirm" | "role", string>>>({});
   const [error, setError] = useState("");
 
   const submit = async (e: React.FormEvent) => {
