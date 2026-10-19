@@ -308,6 +308,13 @@ export type Database = {
             referencedRelation: "perfis"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_perfis_profile_fk"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       veiculos: {
