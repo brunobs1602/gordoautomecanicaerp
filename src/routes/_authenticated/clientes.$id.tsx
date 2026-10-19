@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Car, Pencil, Plus, Power, Trash2 } from "lucide-react";
 import { alterarStatusCliente, excluirCliente, useClientes } from "@/lib/clientes";
-import { getVeiculosDoCliente } from "@/lib/veiculos";
+import { formatarPlaca, useVeiculos } from "@/lib/veiculos";
 import { useCurrentUser } from "@/lib/auth";
 import { mascaraCEP, mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
@@ -47,6 +47,7 @@ function DetalheCliente() {
   const navigate = useNavigate();
   const isAdmin = useCurrentUser()?.role === "admin";
   const c = useClientes().find((x) => x.id === id);
+  const todosVeiculos = useVeiculos();
 
   if (!c)
     return (
@@ -57,7 +58,7 @@ function DetalheCliente() {
     );
 
   const pf = c.tipo === "PF";
-  const veiculos = getVeiculosDoCliente(c.id);
+  const veiculos = todosVeiculos.filter((v) => v.clienteId === c.id);
 
   return (
     <>
