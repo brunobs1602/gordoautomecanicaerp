@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, Pencil, Plus, Power, Search, Trash2, Users } from "lucide-react";
 import { alterarStatusCliente, excluirCliente, useClientes } from "@/lib/clientes";
 import { useCurrentUser } from "@/lib/auth";
+import { useVeiculos } from "@/lib/veiculos";
 import { mascaraDocumento, mascaraTelefone, soDigitos } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -23,6 +24,8 @@ export const Route = createFileRoute("/_authenticated/clientes/")({
 function ListaClientes() {
   const clientes = useClientes();
   const isAdmin = useCurrentUser()?.role === "admin";
+  const veiculos = useVeiculos();
+  const comVeiculo = useMemo(() => new Set(veiculos.map((v) => v.clienteId)), [veiculos]);
   const [busca, setBusca] = useState("");
   const [tipo, setTipo] = useState<"" | "PF" | "PJ">("");
   const [ordem, setOrdem] = useState<"nome" | "recentes" | "antigos">("nome");
@@ -117,7 +120,7 @@ function ListaClientes() {
                         confirmLabel={c.ativo ? "Inativar" : "Ativar"}
                         onConfirm={() => alterarStatusCliente(c.id, !c.ativo)}
                       />
-                      {isAdmin && (
+                      {isAdmin && !comVeiculo.has(c.id) && (
                         <ConfirmDialog
                           trigger={<button className="btn-ghost px-2.5 hover:text-destructive" title="Excluir"><Trash2 className="h-4 w-4" /></button>}
                           title="Excluir cliente?"
