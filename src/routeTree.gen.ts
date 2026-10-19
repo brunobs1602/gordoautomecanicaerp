@@ -15,7 +15,9 @@ import { Route as ConfiguracaoInicialRouteImport } from './routes/configuracao-i
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
+import { Route as AuthenticatedSemPermissaoRouteImport } from './routes/_authenticated/sem-permissao'
 import { Route as AuthenticatedServicosRouteImport } from './routes/_authenticated/servicos'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes.index'
@@ -25,6 +27,7 @@ import { Route as AuthenticatedOrdensIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedOrdensIdRouteImport } from './routes/_authenticated/ordens.$id'
 import { Route as AuthenticatedOrdensNovoRouteImport } from './routes/_authenticated/ordens.novo'
 import { Route as AuthenticatedPerfisIndexRouteImport } from './routes/_authenticated/perfis.index'
+import { Route as AuthenticatedPerfisIdRouteImport } from './routes/_authenticated/perfis.$id'
 import { Route as AuthenticatedPerfisNovoRouteImport } from './routes/_authenticated/perfis.novo'
 import { Route as AuthenticatedVeiculosIndexRouteImport } from './routes/_authenticated/veiculos.index'
 import { Route as AuthenticatedVeiculosIdRouteImport } from './routes/_authenticated/veiculos.$id'
@@ -65,11 +68,22 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedProdutosRoute = AuthenticatedProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSemPermissaoRoute =
+  AuthenticatedSemPermissaoRouteImport.update({
+    id: '/sem-permissao',
+    path: '/sem-permissao',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedServicosRoute = AuthenticatedServicosRouteImport.update({
   id: '/servicos',
   path: '/servicos',
@@ -119,6 +133,11 @@ const AuthenticatedPerfisIndexRoute =
     path: '/perfis/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPerfisIdRoute = AuthenticatedPerfisIdRouteImport.update({
+  id: '/perfis/$id',
+  path: '/perfis/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedPerfisNovoRoute = AuthenticatedPerfisNovoRouteImport.update({
   id: '/perfis/novo',
   path: '/perfis/novo',
@@ -178,13 +197,16 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
   '/produtos': typeof AuthenticatedProdutosRoute
+  '/sem-permissao': typeof AuthenticatedSemPermissaoRoute
   '/servicos': typeof AuthenticatedServicosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/novo': typeof AuthenticatedOrdensNovoRoute
+  '/perfis/$id': typeof AuthenticatedPerfisIdRoute
   '/perfis/novo': typeof AuthenticatedPerfisNovoRoute
   '/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
@@ -204,13 +226,16 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
   '/produtos': typeof AuthenticatedProdutosRoute
+  '/sem-permissao': typeof AuthenticatedSemPermissaoRoute
   '/servicos': typeof AuthenticatedServicosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/novo': typeof AuthenticatedOrdensNovoRoute
+  '/perfis/$id': typeof AuthenticatedPerfisIdRoute
   '/perfis/novo': typeof AuthenticatedPerfisNovoRoute
   '/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
@@ -232,13 +257,16 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
+  '/_authenticated/sem-permissao': typeof AuthenticatedSemPermissaoRoute
   '/_authenticated/servicos': typeof AuthenticatedServicosRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/_authenticated/clientes/novo': typeof AuthenticatedClientesNovoRoute
   '/_authenticated/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/_authenticated/ordens/novo': typeof AuthenticatedOrdensNovoRoute
+  '/_authenticated/perfis/$id': typeof AuthenticatedPerfisIdRoute
   '/_authenticated/perfis/novo': typeof AuthenticatedPerfisNovoRoute
   '/_authenticated/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/_authenticated/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
@@ -260,13 +288,16 @@ export interface FileRouteTypes {
     | '/login'
     | '/configuracoes'
     | '/dashboard'
+    | '/historico'
     | '/produtos'
+    | '/sem-permissao'
     | '/servicos'
     | '/usuarios'
     | '/clientes/$id'
     | '/clientes/novo'
     | '/ordens/$id'
     | '/ordens/novo'
+    | '/perfis/$id'
     | '/perfis/novo'
     | '/veiculos/$id'
     | '/veiculos/novo'
@@ -286,13 +317,16 @@ export interface FileRouteTypes {
     | '/login'
     | '/configuracoes'
     | '/dashboard'
+    | '/historico'
     | '/produtos'
+    | '/sem-permissao'
     | '/servicos'
     | '/usuarios'
     | '/clientes/$id'
     | '/clientes/novo'
     | '/ordens/$id'
     | '/ordens/novo'
+    | '/perfis/$id'
     | '/perfis/novo'
     | '/veiculos/$id'
     | '/veiculos/novo'
@@ -313,13 +347,16 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/historico'
     | '/_authenticated/produtos'
+    | '/_authenticated/sem-permissao'
     | '/_authenticated/servicos'
     | '/_authenticated/usuarios'
     | '/_authenticated/clientes/$id'
     | '/_authenticated/clientes/novo'
     | '/_authenticated/ordens/$id'
     | '/_authenticated/ordens/novo'
+    | '/_authenticated/perfis/$id'
     | '/_authenticated/perfis/novo'
     | '/_authenticated/veiculos/$id'
     | '/_authenticated/veiculos/novo'
@@ -385,11 +422,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/historico': {
+      id: '/_authenticated/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/produtos': {
       id: '/_authenticated/produtos'
       path: '/produtos'
       fullPath: '/produtos'
       preLoaderRoute: typeof AuthenticatedProdutosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/sem-permissao': {
+      id: '/_authenticated/sem-permissao'
+      path: '/sem-permissao'
+      fullPath: '/sem-permissao'
+      preLoaderRoute: typeof AuthenticatedSemPermissaoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/servicos': {
@@ -453,6 +504,13 @@ declare module '@tanstack/react-router' {
       path: '/perfis'
       fullPath: '/perfis/'
       preLoaderRoute: typeof AuthenticatedPerfisIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/perfis/$id': {
+      id: '/_authenticated/perfis/$id'
+      path: '/perfis/$id'
+      fullPath: '/perfis/$id'
+      preLoaderRoute: typeof AuthenticatedPerfisIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/perfis/novo': {
@@ -524,13 +582,16 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedProdutosRoute: typeof AuthenticatedProdutosRoute
+  AuthenticatedSemPermissaoRoute: typeof AuthenticatedSemPermissaoRoute
   AuthenticatedServicosRoute: typeof AuthenticatedServicosRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedClientesIdRoute: typeof AuthenticatedClientesIdRoute
   AuthenticatedClientesNovoRoute: typeof AuthenticatedClientesNovoRoute
   AuthenticatedOrdensIdRoute: typeof AuthenticatedOrdensIdRoute
   AuthenticatedOrdensNovoRoute: typeof AuthenticatedOrdensNovoRoute
+  AuthenticatedPerfisIdRoute: typeof AuthenticatedPerfisIdRoute
   AuthenticatedPerfisNovoRoute: typeof AuthenticatedPerfisNovoRoute
   AuthenticatedVeiculosIdRoute: typeof AuthenticatedVeiculosIdRoute
   AuthenticatedVeiculosNovoRoute: typeof AuthenticatedVeiculosNovoRoute
@@ -548,13 +609,16 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedProdutosRoute: AuthenticatedProdutosRoute,
+  AuthenticatedSemPermissaoRoute: AuthenticatedSemPermissaoRoute,
   AuthenticatedServicosRoute: AuthenticatedServicosRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedClientesIdRoute: AuthenticatedClientesIdRoute,
   AuthenticatedClientesNovoRoute: AuthenticatedClientesNovoRoute,
   AuthenticatedOrdensIdRoute: AuthenticatedOrdensIdRoute,
   AuthenticatedOrdensNovoRoute: AuthenticatedOrdensNovoRoute,
+  AuthenticatedPerfisIdRoute: AuthenticatedPerfisIdRoute,
   AuthenticatedPerfisNovoRoute: AuthenticatedPerfisNovoRoute,
   AuthenticatedVeiculosIdRoute: AuthenticatedVeiculosIdRoute,
   AuthenticatedVeiculosNovoRoute: AuthenticatedVeiculosNovoRoute,
