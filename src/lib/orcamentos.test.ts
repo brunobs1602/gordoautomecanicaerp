@@ -34,3 +34,11 @@ describe("orçamentos", () => {
     expect(estoqueBaixo({ estoque: 3, estoqueMinimo: 3 })).toBe(false);
   });
 });
+
+describe("padrões das configurações", () => {
+  it("novo orçamento vem com validade padrão de 7 dias", () => {
+    localStorage.clear();
+    const esperado = new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
+    expect(dadosVazios().validade).toBe(esperado);
+  });
+});

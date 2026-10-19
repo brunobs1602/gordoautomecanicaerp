@@ -211,10 +211,19 @@ export function duplicarOrcamento(id: string, usuario: string) {
   return criarOrcamento({ ...dadosDe(o), itens }, usuario, `Duplicado de ${codigoDoc(o)}`);
 }
 
-export const dadosVazios = (responsavelId = ""): Dados => ({
-  clienteId: "", veiculoId: "", validade: "", previsao: "", responsavelId, quilometragem: "",
-  problema: "", diagnostico: "", obsInterna: "", obsCliente: "", condicoesPagamento: "", itens: [],
-});
+/** Novo orçamento já vem com validade e textos padrão definidos em Configurações. */
+export const dadosVazios = (responsavelId = ""): Dados => {
+  const cfg = getConfig();
+  const dias = Number(cfg.orcamentos.validadeDias || cfg.documentos.validadeDias) || 0;
+  const validade = dias > 0 ? new Date(Date.now() + dias * 86_400_000).toISOString().slice(0, 10) : "";
+  return {
+    clienteId: "", veiculoId: "", validade, previsao: "", responsavelId, quilometragem: "", problema: "", diagnostico: "",
+    obsInterna: String(cfg.orcamentos.obsInterna || ""),
+    obsCliente: String(cfg.orcamentos.obsCliente || cfg.documentos.obsCliente || ""),
+    condicoesPagamento: String(cfg.documentos.pagamento || cfg.financeiro.condicoes || ""),
+    itens: [],
+  };
+};
 
 export const novoItem = (tipo: Item["tipo"], p: Partial<Item> = {}): Item => ({
   id: novoId(), tipo, refId: "", descricao: "", quantidade: 1, valorUnit: 0, desconto: 0, acrescimo: 0, observacao: "", ...p,
