@@ -1,3 +1,4 @@
+import { exigir } from "./acesso";
 import { z } from "zod";
 import { agoraISO, createCollection, novoId } from "./store";
 
@@ -52,6 +53,7 @@ function checarCodigo(list: Produto[], codigo: string, ignorar?: string) {
 }
 
 export function criarProduto(d: ProdutoInput) {
+  exigir("produtos", "criar");
   const list = col.get();
   checarCodigo(list, d.codigo);
   const p: Produto = { ...d, id: novoId(), criadoEm: agoraISO(), atualizadoEm: agoraISO() };
@@ -59,11 +61,13 @@ export function criarProduto(d: ProdutoInput) {
   return p;
 }
 export function atualizarProduto(id: string, d: ProdutoInput) {
+  exigir("produtos", "editar");
   const list = col.get();
   checarCodigo(list, d.codigo, id);
   col.save(list.map((p) => (p.id === id ? { ...p, ...d, atualizadoEm: agoraISO() } : p)));
 }
 export function alterarStatusProduto(id: string, ativo: boolean) {
+  exigir("produtos", "inativar");
   col.save(col.get().map((p) => (p.id === id ? { ...p, ativo, atualizadoEm: agoraISO() } : p)));
 }
 

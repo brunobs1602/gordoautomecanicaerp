@@ -1,9 +1,11 @@
+import { guard } from "@/lib/acesso";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { clienteVazio, criarCliente } from "@/lib/clientes";
 import { PageHeader } from "@/components/PageHeader";
 import { ClienteForm } from "@/components/clientes/ClienteForm";
 
 export const Route = createFileRoute("/_authenticated/clientes/novo")({
+  beforeLoad: guard(["clientes", "criar"]),
   head: () => ({
     meta: [
       { title: "Novo cliente · Gordo Auto Mecânica ERP" },

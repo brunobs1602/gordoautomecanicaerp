@@ -1,3 +1,4 @@
+import { guard, useAcesso } from "@/lib/acesso";
 import { useState, type ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRightLeft, Copy, FileDown, History, Pencil, Printer, RotateCcw, Wrench } from "lucide-react";
@@ -5,6 +6,7 @@ import { toast } from "sonner";
 import {
   STATUS_LABEL, TRANSICOES, alterarStatus, calcularTotais, codigoDoc, duplicarOrcamento, podeEditar,
   subtotalItem, useOrcamentos, type Item, type Status,
+  permissaoStatus,
 } from "@/lib/orcamentos";
 import { useClientes } from "@/lib/clientes";
 import { formatarPlaca, useVeiculos } from "@/lib/veiculos";
@@ -18,6 +20,7 @@ import { StatusOrc } from "@/components/orcamentos/StatusOrc";
 import { ResumoFinanceiro } from "@/components/orcamentos/OrcamentoForm";
 
 export const Route = createFileRoute("/_authenticated/ordens/$id")({
+  beforeLoad: guard(["orcamentos"], ["ordens"]),
   head: () => ({
     meta: [
       { title: "Orçamento · Gordo Auto Mecânica ERP" },
@@ -80,8 +83,9 @@ function TabelaItens({ itens }: { itens: Item[] }) {
   );
 }
 
-function AlterarStatus({ id, atual, usuario }: { id: string; atual: Status; usuario: string }) {
-  const opcoes = TRANSICOES[atual].filter((s) => s !== "reaberto" && s !== "convertido");
+function AlterarStatus({ id, atual, usuario, tipo }: { id: string; atual: Status; usuario: string; tipo: "orcamento" | "os" }) {
+  const { pode } = useAcesso();
+  const opcoes = TRANSICOES[atual].filter((s) => s !== "reaberto" && s !== "convertido" && pode(...permissaoStatus(tipo, s)));
   const [open, setOpen] = useState(false);
   const [novo, setNovo] = useState<Status | "">("");
   const [obs, setObs] = useState("");
@@ -132,6 +136,7 @@ function DetalheOrcamento() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const user = useCurrentUser();
+  const { pode } = useAcesso();
   const nomeUser = user?.name ?? "—";
   const o = useOrcamentos().find((x) => x.id === id);
   const clientes = useClientes();
@@ -173,29 +178,31 @@ function DetalheOrcamento() {
         subtitle={`Criado em ${dt(o.criadoEm)} · Atualizado em ${dt(o.atualizadoEm)}`}
         action={
           <div className="flex flex-wrap gap-2">
-            {podeEditar(o.status) && <Link to="/ordens/$id/editar" params={{ id }} className="btn-ghost h-11"><Pencil className="h-4 w-4" /> Editar</Link>}
-            <AlterarStatus id={o.id} atual={o.status} usuario={nomeUser} />
-            {o.status === "recusado" && (
+            {podeEditar(o.status) && pode(o.tipo === "os" ? "ordens" : "orcamentos", "editar") && <Link to="/ordens/$id/editar" params={{ id }} className="btn-ghost h-11"><Pencil className="h-4 w-4" /> Editar</Link>}
+            <AlterarStatus id={o.id} atual={o.status} usuario={nomeUser} tipo={o.tipo} />
+            {o.status === "recusado" && pode("orcamentos", "reabrir") && (
               <ConfirmDialog
                 trigger={<button className="btn-ghost h-11"><RotateCcw className="h-4 w-4" /> Reabrir orçamento</button>}
                 title="Reabrir orçamento?" description="O status mudará para Reaberto e o orçamento voltará a permitir edição."
                 confirmLabel="Reabrir" onConfirm={() => mudar("reaberto", "Orçamento reaberto.")}
               />
             )}
-            {o.status === "aprovado" && (
+            {o.status === "aprovado" && pode("ordens", "criar") && (
               <ConfirmDialog
                 trigger={<button className="btn-primary"><Wrench className="h-4 w-4" /> Converter em OS</button>}
                 title="Converter em ordem de serviço?" description="Todos os dados, itens, valores e histórico serão preservados."
                 confirmLabel="Converter" onConfirm={() => mudar("convertido", "Convertido em ordem de serviço.")}
               />
             )}
-            <ConfirmDialog
+            {pode("orcamentos", "criar") && <ConfirmDialog
               trigger={<button className="btn-ghost h-11"><Copy className="h-4 w-4" /> Duplicar</button>}
               title="Duplicar orçamento?" description="Será criado um novo rascunho com os mesmos dados." confirmLabel="Duplicar"
               onConfirm={() => { const n = duplicarOrcamento(o.id, nomeUser); toast.success(`Criado ${codigoDoc(n)}.`); navigate({ to: "/ordens/$id", params: { id: n.id } }); }}
-            />
+            />}
+            {pode(o.tipo === "os" ? "ordens" : "orcamentos", "exportar") && <>
             <Link to="/ordens/$id/imprimir" params={{ id }} search={{ auto: true }} className="btn-ghost h-11"><FileDown className="h-4 w-4" /> Exportar PDF</Link>
             <Link to="/ordens/$id/imprimir" params={{ id }} search={{ auto: true }} className="btn-ghost h-11"><Printer className="h-4 w-4" /> Imprimir</Link>
+            </>}
           </div>
         }
       />

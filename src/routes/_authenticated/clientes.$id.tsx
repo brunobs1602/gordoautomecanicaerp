@@ -1,15 +1,16 @@
+import { guard, useAcesso } from "@/lib/acesso";
 import type { ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Car, Pencil, Plus, Power, Trash2 } from "lucide-react";
 import { alterarStatusCliente, excluirCliente, useClientes } from "@/lib/clientes";
 import { formatarPlaca, useVeiculos } from "@/lib/veiculos";
-import { useCurrentUser } from "@/lib/auth";
 import { mascaraCEP, mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge, TipoBadge } from "@/components/clientes/StatusBadge";
 
 export const Route = createFileRoute("/_authenticated/clientes/$id")({
+  beforeLoad: guard(["clientes"]),
   head: () => ({
     meta: [
       { title: "Detalhes do cliente · Gordo Auto Mecânica ERP" },
@@ -45,7 +46,7 @@ const dataSimples = (d: string) => (d ? d.split("-").reverse().join("/") : "");
 function DetalheCliente() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const isAdmin = useCurrentUser()?.role === "admin";
+  const { pode } = useAcesso();
   const c = useClientes().find((x) => x.id === id);
   const todosVeiculos = useVeiculos();
 
@@ -70,15 +71,15 @@ function DetalheCliente() {
         subtitle={c.nomeFantasia || undefined}
         action={
           <div className="flex flex-wrap gap-2">
-            <Link to="/clientes/$id/editar" params={{ id }} className="btn-ghost h-11"><Pencil className="h-4 w-4" /> Editar</Link>
-            <ConfirmDialog
+            {pode("clientes", "editar") && <Link to="/clientes/$id/editar" params={{ id }} className="btn-ghost h-11"><Pencil className="h-4 w-4" /> Editar</Link>}
+            {pode("clientes", "inativar") && <ConfirmDialog
               trigger={<button className="btn-ghost h-11"><Power className="h-4 w-4" /> {c.ativo ? "Inativar" : "Ativar"}</button>}
               title={c.ativo ? "Inativar cliente?" : "Ativar cliente?"}
               description={`Deseja ${c.ativo ? "inativar" : "ativar"} o cliente "${c.nome}"?`}
               confirmLabel={c.ativo ? "Inativar" : "Ativar"}
               onConfirm={() => alterarStatusCliente(c.id, !c.ativo)}
-            />
-            {isAdmin && veiculos.length === 0 && (
+            />}
+            {pode("clientes", "excluir") && veiculos.length === 0 && (
               <ConfirmDialog
                 trigger={<button className="btn-ghost h-11 hover:text-destructive"><Trash2 className="h-4 w-4" /> Excluir</button>}
                 title="Excluir cliente?"

@@ -1,3 +1,4 @@
+import { exigir } from "./acesso";
 import { useSyncExternalStore } from "react";
 import { z } from "zod";
 import { soDigitos, validarCEP, validarCNPJ, validarCPF, validarTelefone } from "./validacao";
@@ -99,6 +100,7 @@ function normalizar(input: ClienteInput): ClienteInput {
 }
 
 export function criarCliente(input: ClienteInput) {
+  exigir("clientes", "criar");
   const list = getClientes();
   if (documentoDuplicado(list, input.documento)) throw new Error("Já existe um cliente com este CPF/CNPJ.");
   const agora = new Date().toISOString();
@@ -108,16 +110,19 @@ export function criarCliente(input: ClienteInput) {
 }
 
 export function atualizarCliente(id: string, input: ClienteInput) {
+  exigir("clientes", "editar");
   const list = getClientes();
   if (documentoDuplicado(list, input.documento, id)) throw new Error("Já existe um cliente com este CPF/CNPJ.");
   salvar(list.map((c) => (c.id === id ? { ...c, ...normalizar(input), atualizadoEm: new Date().toISOString() } : c)));
 }
 
 export function alterarStatusCliente(id: string, ativo: boolean) {
+  exigir("clientes", "inativar");
   salvar(getClientes().map((c) => (c.id === id ? { ...c, ativo, atualizadoEm: new Date().toISOString() } : c)));
 }
 
 export function excluirCliente(id: string) {
+  exigir("clientes", "excluir");
   salvar(getClientes().filter((c) => c.id !== id));
 }
 

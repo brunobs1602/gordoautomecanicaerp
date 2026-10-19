@@ -1,3 +1,4 @@
+import { guard } from "@/lib/acesso";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { atualizarOrcamento, codigoDoc, podeEditar, STATUS_LABEL, useOrcamentos, type Dados } from "@/lib/orcamentos";
@@ -6,6 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { OrcamentoForm } from "@/components/orcamentos/OrcamentoForm";
 
 export const Route = createFileRoute("/_authenticated/ordens/$id_/editar")({
+  beforeLoad: guard(["orcamentos", "editar"], ["ordens", "editar"]),
   head: () => ({
     meta: [
       { title: "Editar orçamento · Gordo Auto Mecânica ERP" },

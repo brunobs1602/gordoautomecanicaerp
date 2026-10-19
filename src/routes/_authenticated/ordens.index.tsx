@@ -1,3 +1,4 @@
+import { guard, useAcesso } from "@/lib/acesso";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ClipboardList, Copy, Eye, FileDown, Pencil, Plus, Search } from "lucide-react";
@@ -12,6 +13,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusOrc } from "@/components/orcamentos/StatusOrc";
 
 export const Route = createFileRoute("/_authenticated/ordens/")({
+  beforeLoad: guard(["orcamentos"], ["ordens"]),
   head: () => ({
     meta: [
       { title: "Orçamentos e OS · Gordo Auto Mecânica ERP" },
@@ -29,6 +31,7 @@ function ListaOrcamentos() {
   const veiculos = useVeiculos();
   const usuarios = useUsers();
   const user = useCurrentUser();
+  const { pode } = useAcesso();
   const navigate = useNavigate();
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState<"" | Status>("");
@@ -46,6 +49,7 @@ function ListaOrcamentos() {
     const qp = normalizarPlaca(q);
     return orcs
       .map((o) => ({ o, c: cMap.get(o.clienteId), v: vMap.get(o.veiculoId), total: calcularTotais(o.itens).total }))
+      .filter(({ o }) => pode(o.tipo === "os" ? "ordens" : "orcamentos"))
       .filter(({ o }) => (!status || o.status === status) && (!resp || o.responsavelId === resp))
       .filter(({ o }) => (!de || o.criadoEm.slice(0, 10) >= de) && (!ate || o.criadoEm.slice(0, 10) <= ate))
       .filter(({ o, c, v }) =>
@@ -61,14 +65,14 @@ function ListaOrcamentos() {
           : ordem === "valor" ? b.total - a.total
           : (a.c?.nome ?? "").localeCompare(b.c?.nome ?? "", "pt-BR"),
       );
-  }, [orcs, cMap, vMap, busca, status, resp, de, ate, ordem]);
+  }, [orcs, cMap, vMap, busca, status, resp, de, ate, ordem, pode]);
 
   return (
     <>
       <PageHeader
         title="Orçamentos e OS"
         subtitle={`${orcs.length} documento(s)`}
-        action={<Link to="/ordens/novo" className="btn-primary"><Plus className="h-4 w-4" /> Novo orçamento</Link>}
+        action={pode("orcamentos", "criar") && <Link to="/ordens/novo" className="btn-primary"><Plus className="h-4 w-4" /> Novo orçamento</Link>}
       />
 
       <div className="panel mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6">
@@ -99,7 +103,7 @@ function ListaOrcamentos() {
           <ClipboardList className="h-10 w-10 text-primary" />
           <h2 className="text-2xl font-bold uppercase">Nenhum orçamento ainda</h2>
           <p className="text-sm text-muted-foreground">Crie o primeiro orçamento para um cliente.</p>
-          <Link to="/ordens/novo" className="btn-primary mt-2"><Plus className="h-4 w-4" /> Novo orçamento</Link>
+          {pode("orcamentos", "criar") && <Link to="/ordens/novo" className="btn-primary mt-2"><Plus className="h-4 w-4" /> Novo orçamento</Link>}
         </div>
       ) : lista.length === 0 ? (
         <div className="panel p-10 text-center text-muted-foreground">Nenhum orçamento encontrado com estes filtros.</div>
@@ -133,8 +137,8 @@ function ListaOrcamentos() {
                   <td className="p-4">
                     <div className="flex justify-end gap-1.5">
                       <Link to="/ordens/$id" params={{ id: o.id }} className="btn-ghost px-2.5" title="Visualizar"><Eye className="h-4 w-4" /></Link>
-                      {podeEditar(o.status) && <Link to="/ordens/$id/editar" params={{ id: o.id }} className="btn-ghost px-2.5" title="Editar"><Pencil className="h-4 w-4" /></Link>}
-                      <ConfirmDialog
+                      {podeEditar(o.status) && pode(o.tipo === "os" ? "ordens" : "orcamentos", "editar") && <Link to="/ordens/$id/editar" params={{ id: o.id }} className="btn-ghost px-2.5" title="Editar"><Pencil className="h-4 w-4" /></Link>}
+                      {pode("orcamentos", "criar") && <ConfirmDialog
                         trigger={<button className="btn-ghost px-2.5" title="Duplicar"><Copy className="h-4 w-4" /></button>}
                         title="Duplicar orçamento?"
                         description={`Será criado um novo rascunho com os mesmos dados de ${codigoDoc(o)}.`}
@@ -144,8 +148,8 @@ function ListaOrcamentos() {
                           toast.success(`Criado ${codigoDoc(n)}.`);
                           navigate({ to: "/ordens/$id", params: { id: n.id } });
                         }}
-                      />
-                      <Link to="/ordens/$id/imprimir" params={{ id: o.id }} search={{ auto: true }} className="btn-ghost px-2.5" title="Exportar PDF"><FileDown className="h-4 w-4" /></Link>
+                      />}
+                      {pode(o.tipo === "os" ? "ordens" : "orcamentos", "exportar") && <Link to="/ordens/$id/imprimir" params={{ id: o.id }} search={{ auto: true }} className="btn-ghost px-2.5" title="Exportar PDF"><FileDown className="h-4 w-4" /></Link>}
                     </div>
                   </td>
                 </tr>

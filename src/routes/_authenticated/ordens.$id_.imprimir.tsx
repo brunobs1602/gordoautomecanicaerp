@@ -1,16 +1,19 @@
+import { guard } from "@/lib/acesso";
 import { useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Cog, Printer } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
 import { z } from "zod";
 import { STATUS_LABEL, calcularTotais, codigoDoc, subtotalItem, useOrcamentos, type Item } from "@/lib/orcamentos";
 import { useClientes } from "@/lib/clientes";
 import { formatarPlaca, useVeiculos } from "@/lib/veiculos";
 import { useUsers } from "@/lib/auth";
-import { OFICINA } from "@/lib/oficina";
+import { useConfig } from "@/lib/config";
+import { LogoSlot } from "@/components/Brand";
 import { moeda } from "@/lib/store";
 import { mascaraCEP, mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
 
 export const Route = createFileRoute("/_authenticated/ordens/$id_/imprimir")({
+  beforeLoad: guard(["orcamentos", "exportar"], ["ordens", "exportar"]),
   validateSearch: z.object({ auto: z.boolean().optional() }),
   head: () => ({
     meta: [
@@ -61,10 +64,17 @@ function Documento() {
   const c = useClientes().find((x) => x.id === o?.clienteId);
   const v = useVeiculos().find((x) => x.id === o?.veiculoId);
   const resp = useUsers().find((u) => u.id === o?.responsavelId);
+  const cfg = useConfig();
+  const emp = cfg.empresa;
+  const doc = cfg.documentos;
+  const nomeEmp = String(emp.nomeFantasia || emp.razaoSocial || "Gordo Auto Mecânica");
+  const endereco = [emp.logradouro && `${emp.logradouro}${emp.numero ? `, ${emp.numero}` : ""}`, emp.complemento, emp.bairro, [emp.cidade, emp.estado].filter(Boolean).join("/"), emp.cep].filter(Boolean).join(" · ");
+  const contato = [emp.whatsapp && `WhatsApp ${emp.whatsapp}`, emp.telefone && `Tel. ${emp.telefone}`, emp.instagram && `Instagram ${emp.instagram}`].filter(Boolean).join(" · ");
+  const pagamento = String(doc.pagamento || cfg.financeiro.condicoes || "");
 
   useEffect(() => {
     if (auto && o) {
-      document.title = `${codigoDoc(o)} - Gordo Auto Mecânica`;
+      document.title = `${codigoDoc(o)} - ${nomeEmp}`;
       const t = setTimeout(() => window.print(), 400);
       return () => clearTimeout(t);
     }
@@ -88,17 +98,15 @@ function Documento() {
       <article className="mx-auto max-w-[210mm] bg-paper p-8 text-ink shadow-2xl print:max-w-none print:p-0 print:shadow-none">
         <header className="flex items-start justify-between gap-6 border-b-4 border-primary pb-4">
           <div className="flex items-center gap-4">
-            <div className="grid h-16 w-16 place-items-center rounded-full border-2 border-dashed border-primary" title="Espaço para a logo">
-              <Cog className="h-8 w-8 text-primary" />
-            </div>
+            {doc.mostrarLogo && cfg.visual.logoDocs && <LogoSlot size={64} docs />}
             <div>
-              <div className="font-display text-2xl font-extrabold italic uppercase leading-none">{OFICINA.nome}</div>
-              <div className="mt-1 text-[11px] text-ink-muted">{OFICINA.endereco}</div>
-              <div className="text-[11px] text-ink-muted">WhatsApp {OFICINA.telefone} · Instagram {OFICINA.instagram}</div>
+              <div className="font-display text-2xl font-extrabold italic uppercase leading-none">{nomeEmp}</div>
+              {doc.mostrarEndereco && endereco && <div className="mt-1 text-[11px] text-ink-muted">{endereco}</div>}{emp.documento && <div className="text-[11px] text-ink-muted">CNPJ/CPF {String(emp.documento)}</div>}
+              {doc.mostrarTelefone && contato && <div className="text-[11px] text-ink-muted">{contato}</div>}
             </div>
           </div>
           <div className="text-right">
-            <div className="font-display text-xs font-bold uppercase tracking-widest text-primary">{ehOS ? "Ordem de serviço" : "Orçamento"}</div>
+            <div className="font-display text-xs font-bold uppercase tracking-widest text-primary">{ehOS ? "Ordem de serviço" : String(doc.titulo || "Orçamento")}</div>
             <div className="font-display text-2xl font-bold">{codigoDoc(o)}</div>
             <div className="text-[11px] text-ink-muted">Emissão: {new Date().toLocaleDateString("pt-BR")}</div>
             {!ehOS && <div className="text-[11px] text-ink-muted">Validade: {dataBr(o.validade)}</div>}
@@ -106,6 +114,7 @@ function Documento() {
           </div>
         </header>
 
+        {doc.apresentacao && <p className="mt-4 whitespace-pre-wrap text-[12px]">{String(doc.apresentacao)}</p>}
         <section className="mt-4 grid grid-cols-2 gap-4 text-[12px]">
           <div className="rounded border border-paper-border p-3">
             <div className="mb-1 font-display text-xs font-bold uppercase tracking-wider text-primary">Cliente</div>
@@ -148,23 +157,33 @@ function Documento() {
           <div className="w-64 space-y-1 text-[12px]">
             <div className="flex justify-between"><span>Serviços</span><span>{moeda(t.servicos)}</span></div>
             <div className="flex justify-between"><span>Produtos</span><span>{moeda(t.produtos)}</span></div>
+            {doc.mostrarDescontos && <>
             <div className="flex justify-between"><span>Descontos</span><span>− {moeda(t.descontos)}</span></div>
             <div className="flex justify-between"><span>Acréscimos</span><span>+ {moeda(t.acrescimos)}</span></div>
+            </>}
             <div className="mt-1 flex justify-between border-t-2 border-primary pt-1.5 font-display text-lg font-bold"><span>TOTAL</span><span>{moeda(t.total)}</span></div>
           </div>
         </section>
 
-        {(o.obsCliente || o.condicoesPagamento || OFICINA.condicoesPagamento) && (
+        {(o.obsCliente || o.condicoesPagamento || pagamento) && (
           <section className="mt-4 space-y-2 text-[12px]">
             {o.obsCliente && <div><div className="font-display text-xs font-bold uppercase tracking-wider">Observações</div><p className="whitespace-pre-wrap">{o.obsCliente}</p></div>}
-            {(o.condicoesPagamento || OFICINA.condicoesPagamento) && <div><div className="font-display text-xs font-bold uppercase tracking-wider">Condições de pagamento</div><p className="whitespace-pre-wrap">{o.condicoesPagamento || OFICINA.condicoesPagamento}</p></div>}
+            {(o.condicoesPagamento || pagamento) && <div><div className="font-display text-xs font-bold uppercase tracking-wider">Condições de pagamento</div><p className="whitespace-pre-wrap">{o.condicoesPagamento || pagamento}</p></div>}
           </section>
         )}
 
+        {(doc.garantia || (!ehOS && doc.validadeTexto)) && (
+          <section className="mt-4 space-y-1 text-[11px] text-ink-muted">
+            {!ehOS && doc.validadeTexto && <p>{String(doc.validadeTexto)}</p>}
+            {doc.garantia && <p>{String(doc.garantia)}</p>}
+          </section>
+        )}
+        {doc.mostrarAssinatura && doc.textoAprovacao && <p className="mt-6 text-center text-[11px]">{String(doc.textoAprovacao)}</p>}
         <section className="mt-12 grid grid-cols-2 gap-10 text-center text-[11px]">
-          <div><div className="border-t border-ink pt-1">{resp?.name ?? OFICINA.nome}<br />Responsável</div></div>
-          <div><div className="border-t border-ink pt-1">{c?.nome ?? "Cliente"}<br />Aprovação do cliente — Data: ____/____/______</div></div>
+          {doc.mostrarResponsavel ? <div><div className="border-t border-ink pt-1">{resp?.name ?? nomeEmp}<br />Responsável</div></div> : <div />}
+          {doc.mostrarAssinatura && <div><div className="border-t border-ink pt-1">{c?.nome ?? "Cliente"}<br />Aprovação do cliente — Data: ____/____/______</div></div>}
         </section>
+        {doc.rodape && <p className="mt-6 text-center text-[11px] text-ink-muted">{String(doc.rodape)}</p>}
         {!ehOS && o.previsao && <p className="mt-6 text-center text-[10px] text-ink-muted">Previsão de conclusão: {dataBr(o.previsao)}</p>}
       </article>
     </div>

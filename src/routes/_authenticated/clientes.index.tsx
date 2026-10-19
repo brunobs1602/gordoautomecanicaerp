@@ -1,8 +1,8 @@
+import { guard, useAcesso } from "@/lib/acesso";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, Pencil, Plus, Power, Search, Trash2, Users } from "lucide-react";
 import { alterarStatusCliente, excluirCliente, useClientes } from "@/lib/clientes";
-import { useCurrentUser } from "@/lib/auth";
 import { useVeiculos } from "@/lib/veiculos";
 import { mascaraDocumento, mascaraTelefone, soDigitos } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
@@ -10,6 +10,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge, TipoBadge } from "@/components/clientes/StatusBadge";
 
 export const Route = createFileRoute("/_authenticated/clientes/")({
+  beforeLoad: guard(["clientes"]),
   head: () => ({
     meta: [
       { title: "Clientes · Gordo Auto Mecânica ERP" },
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/clientes/")({
 
 function ListaClientes() {
   const clientes = useClientes();
-  const isAdmin = useCurrentUser()?.role === "admin";
+  const { pode } = useAcesso();
   const veiculos = useVeiculos();
   const comVeiculo = useMemo(() => new Set(veiculos.map((v) => v.clienteId)), [veiculos]);
   const [busca, setBusca] = useState("");
@@ -54,7 +55,7 @@ function ListaClientes() {
       <PageHeader
         title="Clientes"
         subtitle={`${clientes.length} cliente(s) cadastrado(s)`}
-        action={<Link to="/clientes/novo" className="btn-primary"><Plus className="h-4 w-4" /> Novo cliente</Link>}
+        action={pode("clientes", "criar") && <Link to="/clientes/novo" className="btn-primary"><Plus className="h-4 w-4" /> Novo cliente</Link>}
       />
 
       <div className="panel mb-4 grid gap-3 p-4 md:grid-cols-[1fr_auto_auto]">
@@ -79,7 +80,7 @@ function ListaClientes() {
           <Users className="h-10 w-10 text-primary" />
           <h2 className="text-2xl font-bold uppercase">Nenhum cliente cadastrado</h2>
           <p className="text-sm text-muted-foreground">Comece cadastrando o primeiro cliente da oficina.</p>
-          <Link to="/clientes/novo" className="btn-primary mt-2"><Plus className="h-4 w-4" /> Novo cliente</Link>
+          {pode("clientes", "criar") && <Link to="/clientes/novo" className="btn-primary mt-2"><Plus className="h-4 w-4" /> Novo cliente</Link>}
         </div>
       ) : lista.length === 0 ? (
         <div className="panel p-10 text-center text-muted-foreground">Nenhum cliente encontrado para esta busca.</div>
@@ -112,15 +113,15 @@ function ListaClientes() {
                   <td className="p-4">
                     <div className="flex justify-end gap-1.5">
                       <Link to="/clientes/$id" params={{ id: c.id }} className="btn-ghost px-2.5" title="Visualizar"><Eye className="h-4 w-4" /></Link>
-                      <Link to="/clientes/$id/editar" params={{ id: c.id }} className="btn-ghost px-2.5" title="Editar"><Pencil className="h-4 w-4" /></Link>
-                      <ConfirmDialog
+                      {pode("clientes", "editar") && <Link to="/clientes/$id/editar" params={{ id: c.id }} className="btn-ghost px-2.5" title="Editar"><Pencil className="h-4 w-4" /></Link>}
+                      {pode("clientes", "inativar") && <ConfirmDialog
                         trigger={<button className="btn-ghost px-2.5" title={c.ativo ? "Inativar" : "Ativar"}><Power className="h-4 w-4" /></button>}
                         title={c.ativo ? "Inativar cliente?" : "Ativar cliente?"}
                         description={`Deseja ${c.ativo ? "inativar" : "ativar"} o cliente "${c.nome}"?`}
                         confirmLabel={c.ativo ? "Inativar" : "Ativar"}
                         onConfirm={() => alterarStatusCliente(c.id, !c.ativo)}
-                      />
-                      {isAdmin && !comVeiculo.has(c.id) && (
+                      />}
+                      {pode("clientes", "excluir") && !comVeiculo.has(c.id) && (
                         <ConfirmDialog
                           trigger={<button className="btn-ghost px-2.5 hover:text-destructive" title="Excluir"><Trash2 className="h-4 w-4" /></button>}
                           title="Excluir cliente?"
