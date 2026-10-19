@@ -5,7 +5,7 @@ import type { PerfilInput } from "@/lib/perfis";
 import { Field, FormError } from "@/components/AuthCard";
 
 /** Tabela de permissões por módulo. Somente leitura quando onChange não for passado. */
-export function MatrizPermissoes({ valor, onChange, bloqueado }: { valor: Permissoes; onChange?: (p: Permissoes) => void; bloqueado?: boolean }) {
+export function MatrizPermissoes({ valor, onChange, bloqueado }: { valor: Permissoes; onChange?: (p: Permissoes) => void; bloqueado?: boolean | undefined }) {
   const editavel = Boolean(onChange) && !bloqueado;
   const tem = (m: Modulo, a: Acao) => valor[m]?.includes(a) ?? false;
   const set = (m: Modulo, acoes: Acao[]) => onChange?.({ ...valor, [m]: acoes });

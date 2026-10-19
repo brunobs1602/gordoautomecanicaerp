@@ -93,7 +93,10 @@ function EditorSecao({ secao, cfg, podeAlterar }: { secao: string; cfg: Config; 
   const gravar = (novo: Record<string, Valor>, descricao: string) => {
     const atual = getConfig();
     const diff = diffSecao(secao, secaoDe(atual, secao), novo);
-    if (!diff.length) return toast.info("Nenhuma alteração para salvar.");
+    if (!diff.length) {
+      toast.info("Nenhuma alteração para salvar.");
+      return;
+    }
     salvarConfig({ ...atual, [secao]: novo } as Config);
     if (atual.seguranca.auditoria !== false)
       diff.forEach((d) => registrar({ tipo: "Configuração alterada", alvo: def.titulo, secao: def.titulo, descricao: `${descricao}: ${d.campo}`, antes: d.antes, depois: d.depois }));
@@ -115,8 +118,8 @@ function EditorSecao({ secao, cfg, podeAlterar }: { secao: string; cfg: Config; 
         </div>
       </div>
 
-      {secao === "visual" && <PreviaVisual v={rascunho} />}
-      {secao === "documentos" && <PreviaDocumento d={rascunho} empresa={cfg.empresa} />}
+      {secao === "visual" && <PreviaVisual v={rascunho as Config["visual"]} />}
+      {secao === "documentos" && <PreviaDocumento d={rascunho as Config["documentos"]} empresa={cfg.empresa} />}
 
       {podeAlterar && (
         <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 rounded-md border border-border bg-card/95 p-3 backdrop-blur">
@@ -157,8 +160,8 @@ function CampoConfig({ campo: f, valor, onChange, disabled }: { campo: Campo; va
   if (f.tipo === "imagem") {
     const enviar = (file?: File) => {
       if (!file) return;
-      if (!file.type.startsWith("image/")) return toast.error("Envie um arquivo de imagem.");
-      if (file.size > 500_000) return toast.error("Imagem muito grande. Use até 500 KB.");
+      if (!file.type.startsWith("image/")) { toast.error("Envie um arquivo de imagem."); return; }
+      if (file.size > 500_000) { toast.error("Imagem muito grande. Use até 500 KB."); return; }
       const r = new FileReader();
       r.onload = () => onChange(String(r.result));
       r.readAsDataURL(file);
@@ -209,7 +212,7 @@ function CampoConfig({ campo: f, valor, onChange, disabled }: { campo: Campo; va
   );
 }
 
-function PreviaVisual({ v }: { v: Record<string, Valor> }) {
+function PreviaVisual({ v }: { v: Config["visual"] }) {
   const vars = variaveisTema(v) as React.CSSProperties;
   return (
     <div className="panel p-5">
@@ -239,7 +242,7 @@ function PreviaVisual({ v }: { v: Record<string, Valor> }) {
   );
 }
 
-function PreviaDocumento({ d, empresa }: { d: Record<string, Valor>; empresa: Record<string, Valor> }) {
+function PreviaDocumento({ d, empresa }: { d: Config["documentos"]; empresa: Config["empresa"] }) {
   const end = [empresa.logradouro, empresa.numero, empresa.bairro, empresa.cidade].filter(Boolean).join(", ");
   return (
     <div className="panel p-5">

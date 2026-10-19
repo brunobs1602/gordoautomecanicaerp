@@ -1,7 +1,5 @@
 import { useEffect } from "react";
-import { CONFIG_PADRAO, useConfig, type Valor } from "@/lib/config";
-
-const PADRAO: Record<string, Valor> = CONFIG_PADRAO.visual;
+import { CONFIG_PADRAO, useConfig, type Config, type Valor } from "@/lib/config";
 
 const CLARO: Record<string, string> = {
   "--background": "#f4f4f5", "--foreground": "#1a1b1e", "--card": "#ffffff", "--card-foreground": "#1a1b1e",
@@ -11,7 +9,9 @@ const CLARO: Record<string, string> = {
 };
 
 /** Mapeia as cores escolhidas nas configurações para os tokens de tema. */
-export function variaveisTema(v: Record<string, Valor>, padrao: Record<string, Valor> = PADRAO): Record<string, string> {
+export function variaveisTema(v: Config["visual"], padrao: Config["visual"] = CONFIG_PADRAO.visual): Record<string, string> {
+  const vv = v as Record<string, Valor>;
+  const pp = padrao as Record<string, Valor>;
   const out: Record<string, string> = v.tema === "claro" ? { ...CLARO } : {};
   const map: [string, string[]][] = [
     ["primaria", ["--primary", "--primary-glow", "--ring", "--sidebar-primary", "--sidebar-ring"]],
@@ -23,7 +23,7 @@ export function variaveisTema(v: Record<string, Valor>, padrao: Record<string, V
     ["alerta", ["--warning"]],
     ["erro", ["--destructive"]],
   ];
-  for (const [k, vars] of map) if (v[k] !== padrao[k]) vars.forEach((x) => (out[x] = String(v[k])));
+  for (const [k, vars] of map) if (vv[k] !== pp[k]) vars.forEach((x) => (out[x] = String(vv[k])));
   if (v.arredondamento !== padrao.arredondamento) out["--radius"] = `${Number(v.arredondamento) || 0}px`;
   return out;
 }
@@ -33,7 +33,7 @@ export function AplicarTema() {
   const cfg = useConfig();
   useEffect(() => {
     const root = document.documentElement;
-    const vars = variaveisTema(cfg.visual as Record<string, Valor>);
+    const vars = variaveisTema(cfg.visual);
     const aplicadas = Object.keys(vars);
     aplicadas.forEach((k) => root.style.setProperty(k, vars[k]!));
     root.style.fontSize = `${Number(cfg.visual.fonte) || 16}px`;
