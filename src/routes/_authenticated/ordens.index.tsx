@@ -49,6 +49,7 @@ function ListaOrcamentos() {
     const qp = normalizarPlaca(q);
     return orcs
       .map((o) => ({ o, c: cMap.get(o.clienteId), v: vMap.get(o.veiculoId), total: calcularTotais(o.itens).total }))
+      .filter(({ o }) => pode(o.tipo === "os" ? "ordens" : "orcamentos"))
       .filter(({ o }) => (!status || o.status === status) && (!resp || o.responsavelId === resp))
       .filter(({ o }) => (!de || o.criadoEm.slice(0, 10) >= de) && (!ate || o.criadoEm.slice(0, 10) <= ate))
       .filter(({ o, c, v }) =>
