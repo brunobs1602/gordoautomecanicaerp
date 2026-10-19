@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useImagem } from "@/lib/arquivos";
 import { CONFIG_PADRAO, useConfig, type Config, type Valor } from "@/lib/config";
 
 const CLARO: Record<string, string> = {
@@ -31,6 +32,7 @@ export function variaveisTema(v: Config["visual"], padrao: Config["visual"] = CO
 /** Aplica a identidade visual salva em todo o sistema. */
 export function AplicarTema() {
   const cfg = useConfig();
+  const fav = useImagem(String(cfg.empresa.favicon || ""));
   useEffect(() => {
     const root = document.documentElement;
     const vars = variaveisTema(cfg.visual);
@@ -38,13 +40,12 @@ export function AplicarTema() {
     aplicadas.forEach((k) => root.style.setProperty(k, vars[k]!));
     root.style.fontSize = `${Number(cfg.visual.fonte) || 16}px`;
     root.dataset["densidade"] = String(cfg.visual.densidade);
-    const fav = String(cfg.empresa.favicon || "");
     let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
     if (fav) {
       if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
       link.href = fav;
     }
     return () => aplicadas.forEach((k) => root.style.removeProperty(k));
-  }, [cfg]);
+  }, [cfg, fav]);
   return null;
 }
