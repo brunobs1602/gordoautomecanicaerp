@@ -65,7 +65,7 @@ function ListaOrcamentos() {
           : ordem === "valor" ? b.total - a.total
           : (a.c?.nome ?? "").localeCompare(b.c?.nome ?? "", "pt-BR"),
       );
-  }, [orcs, cMap, vMap, busca, status, resp, de, ate, ordem]);
+  }, [orcs, cMap, vMap, busca, status, resp, de, ate, ordem, pode]);
 
   return (
     <>
