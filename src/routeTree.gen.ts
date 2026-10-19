@@ -24,12 +24,15 @@ import { Route as AuthenticatedClientesNovoRouteImport } from './routes/_authent
 import { Route as AuthenticatedOrdensIndexRouteImport } from './routes/_authenticated/ordens.index'
 import { Route as AuthenticatedOrdensIdRouteImport } from './routes/_authenticated/ordens.$id'
 import { Route as AuthenticatedOrdensNovoRouteImport } from './routes/_authenticated/ordens.novo'
+import { Route as AuthenticatedPerfisIndexRouteImport } from './routes/_authenticated/perfis.index'
+import { Route as AuthenticatedPerfisNovoRouteImport } from './routes/_authenticated/perfis.novo'
 import { Route as AuthenticatedVeiculosIndexRouteImport } from './routes/_authenticated/veiculos.index'
 import { Route as AuthenticatedVeiculosIdRouteImport } from './routes/_authenticated/veiculos.$id'
 import { Route as AuthenticatedVeiculosNovoRouteImport } from './routes/_authenticated/veiculos.novo'
 import { Route as AuthenticatedClientesIdEditarRouteImport } from './routes/_authenticated/clientes.$id_.editar'
 import { Route as AuthenticatedOrdensIdEditarRouteImport } from './routes/_authenticated/ordens.$id_.editar'
 import { Route as AuthenticatedOrdensIdImprimirRouteImport } from './routes/_authenticated/ordens.$id_.imprimir'
+import { Route as AuthenticatedPerfisIdEditarRouteImport } from './routes/_authenticated/perfis.$id_.editar'
 import { Route as AuthenticatedVeiculosIdEditarRouteImport } from './routes/_authenticated/veiculos.$id_.editar'
 
 const IndexRoute = IndexRouteImport.update({
@@ -110,6 +113,17 @@ const AuthenticatedOrdensNovoRoute = AuthenticatedOrdensNovoRouteImport.update({
   path: '/ordens/novo',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPerfisIndexRoute =
+  AuthenticatedPerfisIndexRouteImport.update({
+    id: '/perfis/',
+    path: '/perfis/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPerfisNovoRoute = AuthenticatedPerfisNovoRouteImport.update({
+  id: '/perfis/novo',
+  path: '/perfis/novo',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedVeiculosIndexRoute =
   AuthenticatedVeiculosIndexRouteImport.update({
     id: '/veiculos/',
@@ -145,6 +159,12 @@ const AuthenticatedOrdensIdImprimirRoute =
     path: '/ordens/$id/imprimir',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPerfisIdEditarRoute =
+  AuthenticatedPerfisIdEditarRouteImport.update({
+    id: '/perfis/$id_/editar',
+    path: '/perfis/$id/editar',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedVeiculosIdEditarRoute =
   AuthenticatedVeiculosIdEditarRouteImport.update({
     id: '/veiculos/$id_/editar',
@@ -165,14 +185,17 @@ export interface FileRoutesByFullPath {
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/novo': typeof AuthenticatedOrdensNovoRoute
+  '/perfis/novo': typeof AuthenticatedPerfisNovoRoute
   '/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
   '/clientes/': typeof AuthenticatedClientesIndexRoute
   '/ordens/': typeof AuthenticatedOrdensIndexRoute
+  '/perfis/': typeof AuthenticatedPerfisIndexRoute
   '/veiculos/': typeof AuthenticatedVeiculosIndexRoute
   '/clientes/$id/editar': typeof AuthenticatedClientesIdEditarRoute
   '/ordens/$id/editar': typeof AuthenticatedOrdensIdEditarRoute
   '/ordens/$id/imprimir': typeof AuthenticatedOrdensIdImprimirRoute
+  '/perfis/$id/editar': typeof AuthenticatedPerfisIdEditarRoute
   '/veiculos/$id/editar': typeof AuthenticatedVeiculosIdEditarRoute
 }
 export interface FileRoutesByTo {
@@ -188,14 +211,17 @@ export interface FileRoutesByTo {
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/novo': typeof AuthenticatedOrdensNovoRoute
+  '/perfis/novo': typeof AuthenticatedPerfisNovoRoute
   '/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
   '/clientes': typeof AuthenticatedClientesIndexRoute
   '/ordens': typeof AuthenticatedOrdensIndexRoute
+  '/perfis': typeof AuthenticatedPerfisIndexRoute
   '/veiculos': typeof AuthenticatedVeiculosIndexRoute
   '/clientes/$id/editar': typeof AuthenticatedClientesIdEditarRoute
   '/ordens/$id/editar': typeof AuthenticatedOrdensIdEditarRoute
   '/ordens/$id/imprimir': typeof AuthenticatedOrdensIdImprimirRoute
+  '/perfis/$id/editar': typeof AuthenticatedPerfisIdEditarRoute
   '/veiculos/$id/editar': typeof AuthenticatedVeiculosIdEditarRoute
 }
 export interface FileRoutesById {
@@ -213,14 +239,17 @@ export interface FileRoutesById {
   '/_authenticated/clientes/novo': typeof AuthenticatedClientesNovoRoute
   '/_authenticated/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/_authenticated/ordens/novo': typeof AuthenticatedOrdensNovoRoute
+  '/_authenticated/perfis/novo': typeof AuthenticatedPerfisNovoRoute
   '/_authenticated/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/_authenticated/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
   '/_authenticated/clientes/': typeof AuthenticatedClientesIndexRoute
   '/_authenticated/ordens/': typeof AuthenticatedOrdensIndexRoute
+  '/_authenticated/perfis/': typeof AuthenticatedPerfisIndexRoute
   '/_authenticated/veiculos/': typeof AuthenticatedVeiculosIndexRoute
   '/_authenticated/clientes/$id_/editar': typeof AuthenticatedClientesIdEditarRoute
   '/_authenticated/ordens/$id_/editar': typeof AuthenticatedOrdensIdEditarRoute
   '/_authenticated/ordens/$id_/imprimir': typeof AuthenticatedOrdensIdImprimirRoute
+  '/_authenticated/perfis/$id_/editar': typeof AuthenticatedPerfisIdEditarRoute
   '/_authenticated/veiculos/$id_/editar': typeof AuthenticatedVeiculosIdEditarRoute
 }
 export interface FileRouteTypes {
@@ -238,14 +267,17 @@ export interface FileRouteTypes {
     | '/clientes/novo'
     | '/ordens/$id'
     | '/ordens/novo'
+    | '/perfis/novo'
     | '/veiculos/$id'
     | '/veiculos/novo'
     | '/clientes/'
     | '/ordens/'
+    | '/perfis/'
     | '/veiculos/'
     | '/clientes/$id/editar'
     | '/ordens/$id/editar'
     | '/ordens/$id/imprimir'
+    | '/perfis/$id/editar'
     | '/veiculos/$id/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -261,14 +293,17 @@ export interface FileRouteTypes {
     | '/clientes/novo'
     | '/ordens/$id'
     | '/ordens/novo'
+    | '/perfis/novo'
     | '/veiculos/$id'
     | '/veiculos/novo'
     | '/clientes'
     | '/ordens'
+    | '/perfis'
     | '/veiculos'
     | '/clientes/$id/editar'
     | '/ordens/$id/editar'
     | '/ordens/$id/imprimir'
+    | '/perfis/$id/editar'
     | '/veiculos/$id/editar'
   id:
     | '__root__'
@@ -285,14 +320,17 @@ export interface FileRouteTypes {
     | '/_authenticated/clientes/novo'
     | '/_authenticated/ordens/$id'
     | '/_authenticated/ordens/novo'
+    | '/_authenticated/perfis/novo'
     | '/_authenticated/veiculos/$id'
     | '/_authenticated/veiculos/novo'
     | '/_authenticated/clientes/'
     | '/_authenticated/ordens/'
+    | '/_authenticated/perfis/'
     | '/_authenticated/veiculos/'
     | '/_authenticated/clientes/$id_/editar'
     | '/_authenticated/ordens/$id_/editar'
     | '/_authenticated/ordens/$id_/imprimir'
+    | '/_authenticated/perfis/$id_/editar'
     | '/_authenticated/veiculos/$id_/editar'
   fileRoutesById: FileRoutesById
 }
@@ -410,6 +448,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdensNovoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/perfis/': {
+      id: '/_authenticated/perfis/'
+      path: '/perfis'
+      fullPath: '/perfis/'
+      preLoaderRoute: typeof AuthenticatedPerfisIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/perfis/novo': {
+      id: '/_authenticated/perfis/novo'
+      path: '/perfis/novo'
+      fullPath: '/perfis/novo'
+      preLoaderRoute: typeof AuthenticatedPerfisNovoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/veiculos/': {
       id: '/_authenticated/veiculos/'
       path: '/veiculos'
@@ -452,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdensIdImprimirRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/perfis/$id_/editar': {
+      id: '/_authenticated/perfis/$id_/editar'
+      path: '/perfis/$id/editar'
+      fullPath: '/perfis/$id/editar'
+      preLoaderRoute: typeof AuthenticatedPerfisIdEditarRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/veiculos/$id_/editar': {
       id: '/_authenticated/veiculos/$id_/editar'
       path: '/veiculos/$id/editar'
@@ -472,14 +531,17 @@ interface AuthenticatedRouteChildren {
   AuthenticatedClientesNovoRoute: typeof AuthenticatedClientesNovoRoute
   AuthenticatedOrdensIdRoute: typeof AuthenticatedOrdensIdRoute
   AuthenticatedOrdensNovoRoute: typeof AuthenticatedOrdensNovoRoute
+  AuthenticatedPerfisNovoRoute: typeof AuthenticatedPerfisNovoRoute
   AuthenticatedVeiculosIdRoute: typeof AuthenticatedVeiculosIdRoute
   AuthenticatedVeiculosNovoRoute: typeof AuthenticatedVeiculosNovoRoute
   AuthenticatedClientesIndexRoute: typeof AuthenticatedClientesIndexRoute
   AuthenticatedOrdensIndexRoute: typeof AuthenticatedOrdensIndexRoute
+  AuthenticatedPerfisIndexRoute: typeof AuthenticatedPerfisIndexRoute
   AuthenticatedVeiculosIndexRoute: typeof AuthenticatedVeiculosIndexRoute
   AuthenticatedClientesIdEditarRoute: typeof AuthenticatedClientesIdEditarRoute
   AuthenticatedOrdensIdEditarRoute: typeof AuthenticatedOrdensIdEditarRoute
   AuthenticatedOrdensIdImprimirRoute: typeof AuthenticatedOrdensIdImprimirRoute
+  AuthenticatedPerfisIdEditarRoute: typeof AuthenticatedPerfisIdEditarRoute
   AuthenticatedVeiculosIdEditarRoute: typeof AuthenticatedVeiculosIdEditarRoute
 }
 
@@ -493,14 +555,17 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClientesNovoRoute: AuthenticatedClientesNovoRoute,
   AuthenticatedOrdensIdRoute: AuthenticatedOrdensIdRoute,
   AuthenticatedOrdensNovoRoute: AuthenticatedOrdensNovoRoute,
+  AuthenticatedPerfisNovoRoute: AuthenticatedPerfisNovoRoute,
   AuthenticatedVeiculosIdRoute: AuthenticatedVeiculosIdRoute,
   AuthenticatedVeiculosNovoRoute: AuthenticatedVeiculosNovoRoute,
   AuthenticatedClientesIndexRoute: AuthenticatedClientesIndexRoute,
   AuthenticatedOrdensIndexRoute: AuthenticatedOrdensIndexRoute,
+  AuthenticatedPerfisIndexRoute: AuthenticatedPerfisIndexRoute,
   AuthenticatedVeiculosIndexRoute: AuthenticatedVeiculosIndexRoute,
   AuthenticatedClientesIdEditarRoute: AuthenticatedClientesIdEditarRoute,
   AuthenticatedOrdensIdEditarRoute: AuthenticatedOrdensIdEditarRoute,
   AuthenticatedOrdensIdImprimirRoute: AuthenticatedOrdensIdImprimirRoute,
+  AuthenticatedPerfisIdEditarRoute: AuthenticatedPerfisIdEditarRoute,
   AuthenticatedVeiculosIdEditarRoute: AuthenticatedVeiculosIdEditarRoute,
 }
 

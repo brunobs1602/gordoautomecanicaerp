@@ -5,7 +5,6 @@ import { ADMIN_ID, usePerfis } from "@/lib/permissoes";
 import { atualizarPerfil } from "@/lib/perfis";
 import { PageHeader } from "@/components/PageHeader";
 import { PerfilForm } from "@/components/perfis/PerfilForm";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export const Route = createFileRoute("/_authenticated/perfis/$id_/editar")({
   beforeLoad: guard(["perfis", "editar"]),
@@ -27,6 +26,8 @@ function Editar() {
   const p = usePerfis().find((x) => x.id === id);
   if (!p) return <div className="panel p-10 text-center"><p className="mb-4 text-muted-foreground">Perfil não encontrado.</p><Link to="/perfis" className="btn-ghost">Voltar</Link></div>;
   const salvar = (d: Parameters<typeof atualizarPerfil>[1]) => {
+    const perdeAcesso = user?.role === id && (!d.ativo || !(d.permissoes.perfis ?? []).includes("ver"));
+    if (perdeAcesso && !window.confirm("Você está removendo seu próprio acesso aos perfis. Deseja continuar?")) return;
     atualizarPerfil(id, d);
     toast.success("Perfil atualizado.");
     navigate({ to: "/perfis/$id", params: { id } });
@@ -43,8 +44,6 @@ function Editar() {
         onCancelar={() => navigate({ to: "/perfis/$id", params: { id } })}
         onSalvar={salvar}
       />
-      {/* Confirmação extra ao remover a própria permissão de gerenciar perfis. */}
-      <span className="hidden"><ConfirmDialog trigger={<button />} title="" description="" confirmLabel="" onConfirm={() => {}} /></span>
     </>
   );
 }
