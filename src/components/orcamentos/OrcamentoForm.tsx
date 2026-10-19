@@ -10,6 +10,7 @@ import { calcularTotais, novoItem, subtotalItem, type Dados, type Item } from "@
 import { moeda } from "@/lib/store";
 import { mascaraDocumento, mascaraTelefone, soDigitos } from "@/lib/validacao";
 import { Field, FormError } from "@/components/AuthCard";
+import { MoneyInput } from "@/components/MoneyInput";
 import { Autocomplete } from "@/components/Autocomplete";
 import { Modal } from "@/components/Modal";
 import { ProdutoForm } from "@/components/estoque/ProdutoForm";
@@ -196,9 +197,9 @@ export function OrcamentoForm({ inicial, onSalvar, submitLabel, cancelarPara }: 
                       <Field label="Descrição" value={i.descricao} onChange={(e) => setItem(i.id, { descricao: e.target.value })} />
                     </div>
                     <div className="sm:col-span-2 lg:col-span-1"><Field label="Qtd." type="number" min="0" step="1" value={String(i.quantidade)} onChange={(e) => setItem(i.id, { quantidade: num(e.target.value) })} /></div>
-                    <div className="sm:col-span-2 lg:col-span-2"><Field label="Valor unit." type="number" min="0" step="0.01" value={String(i.valorUnit)} onChange={(e) => setItem(i.id, { valorUnit: num(e.target.value) })} /></div>
-                    <div className="sm:col-span-2 lg:col-span-2"><Field label="Desconto" type="number" min="0" step="0.01" value={String(i.desconto)} onChange={(e) => setItem(i.id, { desconto: num(e.target.value) })} /></div>
-                    <div className="sm:col-span-3 lg:col-span-2"><Field label="Acréscimo" type="number" min="0" step="0.01" value={String(i.acrescimo)} onChange={(e) => setItem(i.id, { acrescimo: num(e.target.value) })} /></div>
+                    <div className="sm:col-span-2 lg:col-span-2"><MoneyInput label="Valor unit." value={i.valorUnit} onChange={(n) => setItem(i.id, { valorUnit: n })} /></div>
+                    <div className="sm:col-span-2 lg:col-span-2"><MoneyInput label="Desconto" value={i.desconto} onChange={(n) => setItem(i.id, { desconto: n })} /></div>
+                    <div className="sm:col-span-3 lg:col-span-2"><MoneyInput label="Acréscimo" value={i.acrescimo} onChange={(n) => setItem(i.id, { acrescimo: n })} /></div>
                     <div className="flex items-end justify-between gap-2 sm:col-span-3 lg:col-span-1 lg:flex-col lg:items-end">
                       <div className="text-right">
                         <div className="text-xs text-muted-foreground">Subtotal</div>

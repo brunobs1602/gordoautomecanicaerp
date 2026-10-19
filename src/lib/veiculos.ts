@@ -147,3 +147,8 @@ export function veiculoVazio(clienteId = ""): VeiculoInput {
     portas: "", cambio: "Manual", observacoes: "", ativo: true,
   };
 }
+
+export function renomearMarcaVeiculos(antigo: string, novo: string) {
+  const l = getVeiculos();
+  if (l.some((v) => v.marca === antigo)) salvar(l.map((v) => (v.marca === antigo ? { ...v, marca: novo, atualizadoEm: new Date().toISOString() } : v)));
+}

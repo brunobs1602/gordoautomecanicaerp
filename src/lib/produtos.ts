@@ -1,6 +1,7 @@
 import { exigir } from "./acesso";
 import { z } from "zod";
 import { agoraISO, createCollection, novoId } from "./store";
+import { proximoCodigo } from "./moeda";
 
 export interface Produto {
   id: string;
@@ -55,6 +56,7 @@ function checarCodigo(list: Produto[], codigo: string, ignorar?: string) {
 export function criarProduto(d: ProdutoInput) {
   exigir("produtos", "criar");
   const list = col.get();
+  if (!d.codigo.trim()) d = { ...d, codigo: proximoCodigoProduto() };
   checarCodigo(list, d.codigo);
   const p: Produto = { ...d, id: novoId(), criadoEm: agoraISO(), atualizadoEm: agoraISO() };
   col.save([...list, p]);
@@ -63,6 +65,7 @@ export function criarProduto(d: ProdutoInput) {
 export function atualizarProduto(id: string, d: ProdutoInput) {
   exigir("produtos", "editar");
   const list = col.get();
+  if (!d.codigo.trim()) d = { ...d, codigo: list.find((p) => p.id === id)?.codigo || proximoCodigoProduto() };
   checarCodigo(list, d.codigo, id);
   col.save(list.map((p) => (p.id === id ? { ...p, ...d, atualizadoEm: agoraISO() } : p)));
 }
@@ -71,10 +74,17 @@ export function alterarStatusProduto(id: string, ativo: boolean) {
   col.save(col.get().map((p) => (p.id === id ? { ...p, ativo, atualizadoEm: agoraISO() } : p)));
 }
 
+export const proximoCodigoProduto = () => proximoCodigo("PROD", col.get().map((p) => p.codigo));
+
 export const produtoVazio = (): ProdutoInput => ({
-  nome: "", codigo: "", codigoBarras: "", categoria: "", marca: "", unidade: "UN", descricao: "",
+  nome: "", codigo: proximoCodigoProduto(), codigoBarras: "", categoria: "", marca: "", unidade: "UN", descricao: "",
   custo: 0, preco: 0, estoque: 0, estoqueMinimo: 0, localizacao: "", ativo: true,
 });
 
 // Futuro: baixa de estoque quando a ordem de serviço for aprovada/finalizada.
 // export function baixarEstoque(itens: { produtoId: string; quantidade: number }[]) {}
+
+export function renomearCategoriaProdutos(antigo: string, novo: string) {
+  const l = col.get();
+  if (l.some((p) => p.categoria === antigo)) col.save(l.map((p) => (p.categoria === antigo ? { ...p, categoria: novo, atualizadoEm: agoraISO() } : p)));
+}

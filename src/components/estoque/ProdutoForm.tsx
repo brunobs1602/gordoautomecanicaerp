@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { produtoSchema, UNIDADES, type ProdutoInput } from "@/lib/produtos";
 import { Field, FormError } from "@/components/AuthCard";
+import { MoneyInput } from "@/components/MoneyInput";
+import { CategoriaCombo } from "./CategoriaCombo";
 
 type Erros = Partial<Record<keyof ProdutoInput, string>>;
-const NUM: (keyof ProdutoInput)[] = ["custo", "preco", "estoque", "estoqueMinimo"];
+const NUM: (keyof ProdutoInput)[] = ["estoque", "estoqueMinimo"];
 
 /** Formulário de produto. `simplificado` mostra apenas os campos do cadastro rápido. */
 export function ProdutoForm({ inicial, onSalvar, onCancelar, simplificado, submitLabel = "Salvar produto" }: {
@@ -12,6 +14,7 @@ export function ProdutoForm({ inicial, onSalvar, onCancelar, simplificado, submi
   const [f, setF] = useState<Record<keyof ProdutoInput, string | boolean>>(
     Object.fromEntries(Object.entries(inicial).map(([k, v]) => [k, typeof v === "number" ? String(v) : v])) as never,
   );
+  const [valores, setValores] = useState({ custo: inicial.custo, preco: inicial.preco });
   const [erros, setErros] = useState<Erros>({});
   const [erro, setErro] = useState("");
   const txt = (k: keyof ProdutoInput) => ({
@@ -25,6 +28,7 @@ export function ProdutoForm({ inicial, onSalvar, onCancelar, simplificado, submi
     e.stopPropagation();
     const dados = { ...f } as Record<string, unknown>;
     for (const k of NUM) dados[k] = f[k] === "" ? 0 : Number(String(f[k]).replace(",", "."));
+    Object.assign(dados, valores);
     const r = produtoSchema.safeParse(dados);
     if (!r.success) {
       const m: Erros = {};
@@ -44,9 +48,9 @@ export function ProdutoForm({ inicial, onSalvar, onCancelar, simplificado, submi
       <FormError message={erro} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2"><Field label="Nome do produto *" {...txt("nome")} /></div>
-        <Field label="Código interno" {...txt("codigo")} />
+        <Field label="Código interno" placeholder="Gerado automaticamente se vazio" {...txt("codigo")} />
         {!simplificado && <Field label="Código de barras" inputMode="numeric" {...txt("codigoBarras")} />}
-        <Field label="Categoria" {...txt("categoria")} />
+        <CategoriaCombo tipo="produto" value={String(f.categoria)} onChange={(v) => setF((p) => ({ ...p, categoria: v }))} />
         {!simplificado && <Field label="Marca" {...txt("marca")} />}
         <label className="block space-y-1.5">
           <span className="text-sm font-medium text-metal">Unidade</span>
@@ -54,8 +58,8 @@ export function ProdutoForm({ inicial, onSalvar, onCancelar, simplificado, submi
             {UNIDADES.map((u) => <option key={u}>{u}</option>)}
           </select>
         </label>
-        <Field label="Preço de custo (R$)" type="number" step="0.01" min="0" {...txt("custo")} />
-        <Field label="Preço de venda (R$)" type="number" step="0.01" min="0" {...txt("preco")} />
+        <MoneyInput label="Preço de custo" value={valores.custo} error={erros.custo} onChange={(n) => setValores((v) => ({ ...v, custo: n }))} />
+        <MoneyInput label="Preço de venda" value={valores.preco} error={erros.preco} onChange={(n) => setValores((v) => ({ ...v, preco: n }))} />
         <Field label={simplificado ? "Estoque inicial" : "Estoque atual"} type="number" step="1" min="0" {...txt("estoque")} />
         {!simplificado && (
           <>

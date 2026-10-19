@@ -33,7 +33,7 @@ function Servicos() {
   const lista = useMemo(() => {
     const q = busca.trim().toLowerCase();
     return servicos
-      .filter((s) => (!status || String(s.ativo) === status) && (!q || s.nome.toLowerCase().includes(q) || s.categoria.toLowerCase().includes(q)))
+      .filter((s) => (!status || String(s.ativo) === status) && (!q || s.nome.toLowerCase().includes(q) || (s.codigo ?? "").toLowerCase().includes(q) || s.categoria.toLowerCase().includes(q)))
       .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   }, [servicos, busca, status]);
 
@@ -43,7 +43,7 @@ function Servicos() {
       <div className="panel mb-4 grid gap-3 p-4 md:grid-cols-[1fr_auto]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input className="field pl-9" placeholder="Buscar por nome ou categoria" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          <input className="field pl-9" placeholder="Buscar por nome, código ou categoria" value={busca} onChange={(e) => setBusca(e.target.value)} />
         </div>
         <select className="field md:w-40" value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status">
           <option value="">Todos status</option>
@@ -70,7 +70,7 @@ function Servicos() {
             <tbody>
               {lista.map((s) => (
                 <tr key={s.id} className="border-b border-border/60 last:border-0 hover:bg-accent/40">
-                  <td className="p-4 font-medium">{s.nome}</td>
+                  <td className="p-4"><div className="font-medium">{s.nome}</div>{s.codigo && <div className="font-mono text-xs text-muted-foreground">{s.codigo}</div>}</td>
                   <td className="p-4">{s.categoria || "—"}</td>
                   <td className="p-4">{s.tempoEstimado || "—"}</td>
                   <td className="p-4 text-right">{moeda(s.preco)}</td>
