@@ -127,17 +127,29 @@ function DetalheCliente() {
 
         <section className="panel p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-bold uppercase text-metal">Veículos vinculados</h2>
-            <button className="btn-primary h-10" disabled title="Módulo de veículos em desenvolvimento">
+            <h2 className="text-lg font-bold uppercase text-metal">Veículos vinculados ({veiculos.length})</h2>
+            <Link to="/veiculos/novo" search={{ clienteId: c.id }} className="btn-primary h-10">
               <Plus className="h-4 w-4" /> Adicionar veículo
-            </button>
+            </Link>
           </div>
-          {veiculos.length === 0 && (
+          {veiculos.length === 0 ? (
             <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-border p-8 text-center">
               <Car className="h-8 w-8 text-muted-foreground" />
               <p className="font-medium">Nenhum veículo vinculado a este cliente.</p>
-              <p className="text-xs text-muted-foreground">O cadastro de veículos está em desenvolvimento.</p>
             </div>
+          ) : (
+            <ul className="divide-y divide-border/60 rounded-md border border-border">
+              {veiculos.map((v) => (
+                <li key={v.id}>
+                  <Link to="/veiculos/$id" params={{ id: v.id }} className="flex flex-wrap items-center gap-x-4 gap-y-1 p-3 hover:bg-accent/40">
+                    <span className="rounded border border-metal/40 px-2 py-1 font-mono text-xs font-bold tracking-wider">{formatarPlaca(v.placa)}</span>
+                    <span className="flex-1 font-medium">{[v.marca, v.modelo].filter(Boolean).join(" ") || "—"}</span>
+                    <span className="text-sm text-muted-foreground">{v.anoModelo || v.anoFabricacao || "—"}</span>
+                    <StatusBadge ativo={v.ativo} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       </div>

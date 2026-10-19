@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/veiculos/novo")({
   component: NovoVeiculo,
 });
 
-export const clienteExiste = (id: string) => getClientes().some((c) => c.id === id);
+const clienteExiste = (id: string) => getClientes().some((c) => c.id === id);
 
 function NovoVeiculo() {
   const { clienteId } = Route.useSearch();
