@@ -28,6 +28,12 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-paper-border: var(--paper-border);
   --color-metal: var(--metal);
   --color-border: var(--border);
   --color-input: var(--input);
@@ -62,6 +68,12 @@
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
   --success: oklch(0.7 0.16 150);
+  --warning: oklch(0.8 0.15 80);
+  --info: oklch(0.72 0.12 230);
+  --paper: oklch(1 0 0);
+  --ink: oklch(0.18 0.005 260);
+  --ink-muted: oklch(0.45 0.01 260);
+  --paper-border: oklch(0.88 0.005 260);
   --metal: oklch(0.8 0.01 260);
   --border: oklch(0.32 0.006 260);
   --input: oklch(0.32 0.006 260);
@@ -174,4 +186,9 @@
   font-size: 0.875rem;
   transition: background 0.15s, border-color 0.15s;
   &:hover { background: var(--accent); border-color: var(--metal); }
+}
+
+@media print {
+  @page { size: A4; margin: 12mm; }
+  body { background: var(--paper) !important; background-image: none !important; }
 }
