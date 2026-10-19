@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { CONFIG_PADRAO, useConfig, type Valor } from "@/lib/config";
 
+const PADRAO: Record<string, Valor> = CONFIG_PADRAO.visual;
+
 const CLARO: Record<string, string> = {
   "--background": "#f4f4f5", "--foreground": "#1a1b1e", "--card": "#ffffff", "--card-foreground": "#1a1b1e",
   "--popover": "#ffffff", "--popover-foreground": "#1a1b1e", "--secondary": "#e7e7ea", "--secondary-foreground": "#1a1b1e",
@@ -9,7 +11,7 @@ const CLARO: Record<string, string> = {
 };
 
 /** Mapeia as cores escolhidas nas configurações para os tokens de tema. */
-export function variaveisTema(v: Record<string, Valor>, padrao = CONFIG_PADRAO.visual): Record<string, string> {
+export function variaveisTema(v: Record<string, Valor>, padrao: Record<string, Valor> = PADRAO): Record<string, string> {
   const out: Record<string, string> = v.tema === "claro" ? { ...CLARO } : {};
   const map: [string, string[]][] = [
     ["primaria", ["--primary", "--primary-glow", "--ring", "--sidebar-primary", "--sidebar-ring"]],
@@ -31,7 +33,7 @@ export function AplicarTema() {
   const cfg = useConfig();
   useEffect(() => {
     const root = document.documentElement;
-    const vars = variaveisTema(cfg.visual);
+    const vars = variaveisTema(cfg.visual as Record<string, Valor>);
     const aplicadas = Object.keys(vars);
     aplicadas.forEach((k) => root.style.setProperty(k, vars[k]!));
     root.style.fontSize = `${Number(cfg.visual.fonte) || 16}px`;

@@ -4,7 +4,7 @@ import { Download, History, Lock, RotateCcw, Save, Search, Trash2, Upload, X } f
 import { toast } from "sonner";
 import { guard, useAcesso } from "@/lib/acesso";
 import {
-  CONFIG_PADRAO, SECOES, VERSAO, diffSecao, getConfig, importarConfig, salvarConfig, useConfig,
+  CONFIG_PADRAO, SECOES, VERSAO, diffSecao, secaoDe, getConfig, importarConfig, salvarConfig, useConfig,
   type Campo, type Config, type Valor,
 } from "@/lib/config";
 import { registrar } from "@/lib/auditoria";
@@ -86,15 +86,15 @@ function Configuracoes() {
 
 function EditorSecao({ secao, cfg, podeAlterar }: { secao: string; cfg: Config; podeAlterar: boolean }) {
   const def = SECOES.find((s) => s.key === secao)!;
-  const [rascunho, setRascunho] = useState<Record<string, Valor>>(cfg[secao]!);
-  const mudancas = diffSecao(secao, cfg[secao]!, rascunho);
+  const [rascunho, setRascunho] = useState<Record<string, Valor>>(secaoDe(cfg, secao));
+  const mudancas = diffSecao(secao, secaoDe(cfg, secao), rascunho);
   const set = (k: string, v: Valor) => setRascunho((r) => ({ ...r, [k]: v }));
 
   const gravar = (novo: Record<string, Valor>, descricao: string) => {
     const atual = getConfig();
-    const diff = diffSecao(secao, atual[secao]!, novo);
+    const diff = diffSecao(secao, secaoDe(atual, secao), novo);
     if (!diff.length) return toast.info("Nenhuma alteração para salvar.");
-    salvarConfig({ ...atual, [secao]: novo });
+    salvarConfig({ ...atual, [secao]: novo } as Config);
     if (atual.seguranca.auditoria !== false)
       diff.forEach((d) => registrar({ tipo: "Configuração alterada", alvo: def.titulo, secao: def.titulo, descricao: `${descricao}: ${d.campo}`, antes: d.antes, depois: d.depois }));
     toast.success("Configurações salvas com sucesso.");
@@ -124,9 +124,9 @@ function EditorSecao({ secao, cfg, podeAlterar }: { secao: string; cfg: Config; 
           <ConfirmDialog
             trigger={<button className="btn-ghost h-10"><RotateCcw className="h-4 w-4" /> Restaurar padrão</button>}
             title="Restaurar padrão?" description={`Todos os campos de "${def.titulo}" voltarão ao valor original e serão salvos.`}
-            confirmLabel="Restaurar" onConfirm={() => { setRascunho(CONFIG_PADRAO[secao]!); gravar(CONFIG_PADRAO[secao]!, "Restaurado o padrão"); }}
+            confirmLabel="Restaurar" onConfirm={() => { setRascunho(secaoDe(CONFIG_PADRAO, secao)); gravar(secaoDe(CONFIG_PADRAO, secao), "Restaurado o padrão"); }}
           />
-          <button className="btn-ghost h-10" disabled={!mudancas.length} onClick={() => setRascunho(cfg[secao]!)}><X className="h-4 w-4" /> Cancelar</button>
+          <button className="btn-ghost h-10" disabled={!mudancas.length} onClick={() => setRascunho(secaoDe(cfg, secao))}><X className="h-4 w-4" /> Cancelar</button>
           <ConfirmDialog
             trigger={<button className="btn-primary h-10" disabled={!mudancas.length}><Save className="h-4 w-4" /> Salvar alterações</button>}
             title="Salvar alterações?"
