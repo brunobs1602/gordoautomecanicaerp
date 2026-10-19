@@ -130,14 +130,14 @@ function UsuarioForm({ user, meId, onClose }: { user: User | null; meId?: string
   const [form, setForm] = useState({
     name: user?.name ?? "", email: user?.email ?? "", phone: user?.phone ?? "", role: user?.role ?? "", active: user?.active ?? true, password: "",
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<"name" | "email" | "password" | "role", string>>>({});
   const [error, setError] = useState("");
   const proprio = user?.id === meId;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const r = schema.safeParse(form);
-    const errs: Record<string, string> = r.success ? {} : Object.fromEntries(r.error.issues.map((i) => [String(i.path[0]), i.message]));
+    const errs: Partial<Record<"name" | "email" | "password" | "role", string>> = r.success ? {} : Object.fromEntries(r.error.issues.map((i) => [String(i.path[0]), i.message]));
     if (!user) {
       const s = validarSenha(form.password);
       if (s) errs.password = s;

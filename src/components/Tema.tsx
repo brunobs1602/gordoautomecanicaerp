@@ -37,7 +37,7 @@ export function AplicarTema() {
     const aplicadas = Object.keys(vars);
     aplicadas.forEach((k) => root.style.setProperty(k, vars[k]!));
     root.style.fontSize = `${Number(cfg.visual.fonte) || 16}px`;
-    root.dataset.densidade = String(cfg.visual.densidade);
+    root.dataset["densidade"] = String(cfg.visual.densidade);
     const fav = String(cfg.empresa.favicon || "");
     let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
     if (fav) {
