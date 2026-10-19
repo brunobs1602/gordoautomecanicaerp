@@ -1,3 +1,5 @@
+import { exigir } from "./acesso";
+import { getConfig } from "./config";
 import { agoraISO, createCollection, moeda, novoId } from "./store";
 
 export type Status = "rascunho" | "aguardando" | "aprovado" | "recusado" | "reaberto" | "cancelado" | "convertido";
@@ -93,8 +95,16 @@ export function calcularTotais(itens: Item[]) {
   return { servicos, produtos, descontos, acrescimos, total };
 }
 
+/** Permissão exigida para cada mudança de status. */
+export function permissaoStatus(tipo: "orcamento" | "os", novo: Status): ["orcamentos" | "ordens", "aprovar" | "reabrir" | "criar" | "status"] {
+  if (novo === "aprovado" || novo === "recusado") return ["orcamentos", "aprovar"];
+  if (novo === "reaberto") return ["orcamentos", "reabrir"];
+  if (novo === "convertido") return ["ordens", "criar"];
+  return [tipo === "os" ? "ordens" : "orcamentos", "status"];
+}
+
 export const codigoDoc = (o: Pick<Orcamento, "numero" | "tipo">) =>
-  `${o.tipo === "os" ? "OS" : "ORC"}-${String(o.numero).padStart(5, "0")}`;
+  `${o.tipo === "os" ? getConfig().orcamentos.prefixoOS || "OS" : getConfig().orcamentos.prefixoOrc || "ORC"}-${String(o.numero).padStart(5, "0")}`;
 
 /** Lista as diferenças relevantes entre duas versões (para o histórico). */
 export function diferencas(antes: Dados, depois: Dados): string[] {
@@ -130,10 +140,12 @@ const evento = (usuario: string, acao: string, extra: Partial<Evento> = {}): Eve
 });
 
 function proximoNumero(list: Orcamento[]) {
-  return list.reduce((m, o) => Math.max(m, o.numero), 0) + 1;
+  const inicial = Number(getConfig().orcamentos.numeracaoInicial) || 1;
+  return Math.max(list.reduce((m, o) => Math.max(m, o.numero), 0) + 1, inicial);
 }
 
 export function criarOrcamento(d: Dados, usuario: string, origem?: string) {
+  exigir("orcamentos", "criar");
   const list = col.get();
   const o: Orcamento = {
     ...d,
@@ -159,6 +171,7 @@ export function atualizarOrcamento(id: string, d: Dados, usuario: string) {
   const list = col.get();
   const o = list.find((x) => x.id === id);
   if (!o) throw new Error("Orçamento não encontrado.");
+  exigir(o.tipo === "os" ? "ordens" : "orcamentos", "editar");
   if (!podeEditar(o.status)) throw new Error("Este orçamento não pode mais ser editado.");
   const antes = dadosDe(o);
   const det = diferencas(antes, d);
@@ -176,6 +189,8 @@ export function alterarStatus(id: string, novo: Status, usuario: string, observa
   const list = col.get();
   const o = list.find((x) => x.id === id);
   if (!o) throw new Error("Orçamento não encontrado.");
+  exigir(...permissaoStatus(o.tipo, novo));
+  if (novo === "reaberto" && getConfig().orcamentos.reabrirRecusado === false) throw new Error("A reabertura de orçamentos recusados está desativada nas configurações.");
   if (!TRANSICOES[o.status].includes(novo)) throw new Error(`Não é possível mudar de "${STATUS_LABEL[o.status]}" para "${STATUS_LABEL[novo]}".`);
   const acao = novo === "reaberto" ? "Orçamento reaberto" : novo === "convertido" ? "Convertido em ordem de serviço" : "Status alterado";
   const atualizado: Orcamento = {

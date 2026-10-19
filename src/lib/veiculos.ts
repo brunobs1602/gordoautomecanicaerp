@@ -1,3 +1,4 @@
+import { exigir } from "./acesso";
 import { useSyncExternalStore } from "react";
 import { z } from "zod";
 
@@ -107,6 +108,7 @@ function normalizar(d: VeiculoInput): VeiculoInput {
 }
 
 export function criarVeiculo(d: VeiculoInput, clienteExiste: (id: string) => boolean) {
+  exigir("veiculos", "criar");
   if (!clienteExiste(d.clienteId)) throw new Error("Cliente proprietário não encontrado.");
   const list = getVeiculos();
   const dup = verificarDuplicidade(list, d);
@@ -118,6 +120,7 @@ export function criarVeiculo(d: VeiculoInput, clienteExiste: (id: string) => boo
 }
 
 export function atualizarVeiculo(id: string, d: VeiculoInput, clienteExiste: (id: string) => boolean) {
+  exigir("veiculos", "editar");
   if (!clienteExiste(d.clienteId)) throw new Error("Cliente proprietário não encontrado.");
   const list = getVeiculos();
   const dup = verificarDuplicidade(list, d, id);
@@ -126,11 +129,13 @@ export function atualizarVeiculo(id: string, d: VeiculoInput, clienteExiste: (id
 }
 
 export function alterarProprietario(id: string, clienteId: string, clienteExiste: (id: string) => boolean) {
+  exigir("veiculos", "editar");
   if (!clienteExiste(clienteId)) throw new Error("Cliente proprietário não encontrado.");
   salvar(getVeiculos().map((v) => (v.id === id ? { ...v, clienteId, atualizadoEm: new Date().toISOString() } : v)));
 }
 
 export function alterarStatusVeiculo(id: string, ativo: boolean) {
+  exigir("veiculos", "inativar");
   salvar(getVeiculos().map((v) => (v.id === id ? { ...v, ativo, atualizadoEm: new Date().toISOString() } : v)));
 }
 

@@ -1,3 +1,4 @@
+import { exigir } from "./acesso";
 import { z } from "zod";
 import { agoraISO, createCollection, novoId } from "./store";
 
@@ -28,14 +29,17 @@ export const getServicos = col.get;
 export const useServicos = col.use;
 
 export function criarServico(d: ServicoInput) {
+  exigir("servicos", "criar");
   const s: Servico = { ...d, id: novoId(), criadoEm: agoraISO(), atualizadoEm: agoraISO() };
   col.save([...col.get(), s]);
   return s;
 }
 export function atualizarServico(id: string, d: ServicoInput) {
+  exigir("servicos", "editar");
   col.save(col.get().map((s) => (s.id === id ? { ...s, ...d, atualizadoEm: agoraISO() } : s)));
 }
 export function alterarStatusServico(id: string, ativo: boolean) {
+  exigir("servicos", "inativar");
   col.save(col.get().map((s) => (s.id === id ? { ...s, ativo, atualizadoEm: agoraISO() } : s)));
 }
 export const servicoVazio = (): ServicoInput => ({ nome: "", categoria: "", descricao: "", preco: 0, tempoEstimado: "", ativo: true });
