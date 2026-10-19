@@ -4,6 +4,8 @@ import { CAMBIOS, CATEGORIAS, COMBUSTIVEIS, TIPOS, formatarPlaca, normalizarChas
 import { soDigitos } from "@/lib/validacao";
 import { Field, FormError } from "@/components/AuthCard";
 import { ClienteSelect } from "./ClienteSelect";
+import { MarcaCombo } from "./MarcaCombo";
+import { useConfig } from "@/lib/config";
 
 type Erros = Partial<Record<keyof VeiculoInput, string>>;
 
@@ -43,6 +45,7 @@ export function VeiculoForm({ inicial, onSalvar, submitLabel, cancelarPara, most
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => set(k, (mask ? mask(e.target.value) : e.target.value) as never),
     error: erros[k],
   });
+  const cad = useConfig().cadastros;
   const num = (max: number) => (v: string) => soDigitos(v).slice(0, max);
 
   const submit = (e: React.FormEvent) => {
@@ -74,10 +77,10 @@ export function VeiculoForm({ inicial, onSalvar, submitLabel, cancelarPara, most
         </section>
       )}
       <Secao titulo="Identificação">
-        <Field label="Placa *" {...txt("placa", formatarPlaca)} placeholder="ABC-1234 ou ABC1D23" />
+        <Field label={cad.exigirPlaca !== false ? "Placa *" : "Placa"} {...txt("placa", formatarPlaca)} placeholder="ABC-1234 ou ABC1D23" />
         <Field label="Renavam" inputMode="numeric" {...txt("renavam", num(11))} />
         <Field label="Chassi" {...txt("chassi", normalizarChassi)} />
-        <Field label="Marca" {...txt("marca")} />
+        <MarcaCombo value={f.marca} onChange={(v) => set("marca", v)} error={erros.marca} />
         <Field label="Modelo" {...txt("modelo")} />
         <Field label="Versão" {...txt("versao")} />
         <Field label="Ano de fabricação" inputMode="numeric" {...txt("anoFabricacao", num(4))} />
@@ -88,7 +91,7 @@ export function VeiculoForm({ inicial, onSalvar, submitLabel, cancelarPara, most
         <Opcoes label="Tipo de veículo" value={f.tipo} onChange={(v) => set("tipo", v)} opcoes={TIPOS} />
         <Opcoes label="Categoria" value={f.categoria} onChange={(v) => set("categoria", v)} opcoes={CATEGORIAS} />
         <Opcoes label="Combustível" value={f.combustivel} onChange={(v) => set("combustivel", v)} opcoes={COMBUSTIVEIS} />
-        <Field label="Quilometragem atual" inputMode="numeric" {...txt("quilometragem", (v) => v.replace(/[^\d-]/g, "").slice(0, 8))} />
+        <Field label={cad.exigirKm === true ? "Quilometragem atual *" : "Quilometragem atual"} inputMode="numeric" {...txt("quilometragem", (v) => v.replace(/[^\d-]/g, "").slice(0, 8))} />
         <Field label="Número de portas" inputMode="numeric" {...txt("portas", num(2))} />
         <Opcoes label="Câmbio" value={f.cambio} onChange={(v) => set("cambio", v)} opcoes={CAMBIOS} />
       </Secao>

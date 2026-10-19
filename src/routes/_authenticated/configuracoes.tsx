@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Download, History, Lock, RotateCcw, Save, Search, Trash2, Upload, X } from "lucide-react";
+import { ChevronRight, Download, History, Lock, ShieldCheck, UserCog, RotateCcw, Save, Search, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { guard, useAcesso } from "@/lib/acesso";
 import {
@@ -25,9 +25,10 @@ import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
 import { variaveisTema } from "@/components/Tema";
+import { GerenciarCategorias, GerenciarMarcas } from "@/components/config/Cadastros";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
-  beforeLoad: guard(["configuracoes"]),
+  beforeLoad: guard(["configuracoes"], ["usuarios"], ["perfis"]),
   head: () => ({
     meta: [
       { title: "Configurações · Gordo Auto Mecânica ERP" },
@@ -40,12 +41,39 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
 });
 
 const MANUT = "manutencao";
+const MARCAS = "marcas";
+const CAT_PROD = "categorias-produtos";
+const CAT_SERV = "categorias-servicos";
 
 function Configuracoes() {
   const cfg = useConfig();
   const { pode } = useAcesso();
   const podeAlterar = pode("configuracoes", "config");
-  const [aba, setAba] = useState(SECOES[0]!.key);
+  const podeVer = pode("configuracoes");
+  const [aba, setAba] = useState<string>(podeVer ? SECOES[0]!.key : "");
+  const sistema = [
+    podeVer && { key: MANUT, titulo: "Backup e manutenção" },
+  ].filter(Boolean) as { key: string; titulo: string }[];
+  const cadastrosAbas = podeAlterar ? [
+    { key: MARCAS, titulo: "Marcas de veículos" },
+    { key: CAT_PROD, titulo: "Categorias de produtos" },
+    { key: CAT_SERV, titulo: "Categorias de serviços" },
+  ] : [];
+  const admin = [
+    pode("usuarios") && { to: "/usuarios", titulo: "Usuários", icon: UserCog },
+    pode("perfis") && { to: "/perfis", titulo: "Perfis de acesso", icon: ShieldCheck },
+    (pode("usuarios") || pode("perfis") || podeAlterar) && { to: "/historico", titulo: "Histórico e auditoria", icon: History },
+  ].filter(Boolean) as { to: "/usuarios" | "/perfis" | "/historico"; titulo: string; icon: typeof History }[];
+  const botao = (s: { key: string; titulo: string }) => (
+    <button
+      key={s.key}
+      onClick={() => setAba(s.key)}
+      className={`whitespace-nowrap rounded-md border-l-2 px-3 py-2 text-left text-sm font-medium ${aba === s.key ? "border-primary bg-accent" : "border-transparent text-muted-foreground hover:bg-accent/60"}`}
+    >
+      {s.titulo}
+    </button>
+  );
+  const grupo = (t: string) => <div className="hidden px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-primary lg:block">{t}</div>;
   const [busca, setBusca] = useState("");
   const q = busca.trim().toLowerCase();
   const resultados = useMemo(
@@ -56,10 +84,10 @@ function Configuracoes() {
   return (
     <>
       <PageHeader title="Configurações" subtitle={podeAlterar ? "Ajuste a empresa, documentos e regras do sistema." : "Somente leitura: seu perfil não pode alterar as configurações."} />
-      <div className="relative mb-4">
+      {podeVer && <div className="relative mb-4">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input className="field pl-9" placeholder="Buscar configuração..." value={busca} onChange={(e) => setBusca(e.target.value)} />
-      </div>
+      </div>}
 
       {q ? (
         <div className="panel p-5">
@@ -79,18 +107,28 @@ function Configuracoes() {
       ) : (
         <div className="grid gap-5 lg:grid-cols-[230px_1fr]">
           <nav className="panel flex gap-1 overflow-x-auto p-2 lg:flex-col">
-            {[...SECOES.map((s) => ({ key: s.key, titulo: s.titulo })), { key: MANUT, titulo: "Backup e manutenção" }].map((s) => (
-              <button
-                key={s.key}
-                onClick={() => setAba(s.key)}
-                className={`whitespace-nowrap rounded-md border-l-2 px-3 py-2 text-left text-sm font-medium ${aba === s.key ? "border-primary bg-accent" : "border-transparent text-muted-foreground hover:bg-accent/60"}`}
-              >
-                {s.titulo}
-              </button>
-            ))}
-            {podeAlterar && <Link to="/historico" className="flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent/60"><History className="h-4 w-4" /> Auditoria</Link>}
+            {podeVer && <>{grupo("Sistema")}{SECOES.map(botao)}{sistema.map(botao)}</>}
+            {cadastrosAbas.length > 0 && <>{grupo("Cadastros auxiliares")}{cadastrosAbas.map(botao)}</>}
+            {admin.length > 0 && <>{grupo("Administração")}{admin.map((a) => (
+              <Link key={a.to} to={a.to} className="flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent/60">
+                <a.icon className="h-4 w-4" /> {a.titulo} <ChevronRight className="ml-auto hidden h-4 w-4 lg:block" />
+              </Link>
+            ))}</>}
           </nav>
-          {aba === MANUT ? <Manutencao podeAlterar={podeAlterar} /> : <EditorSecao key={aba} secao={aba} cfg={cfg} podeAlterar={podeAlterar} />}
+          {aba === MANUT ? <Manutencao podeAlterar={podeAlterar} />
+            : aba === MARCAS && podeAlterar ? <GerenciarMarcas />
+            : aba === CAT_PROD && podeAlterar ? <GerenciarCategorias tipo="produto" />
+            : aba === CAT_SERV && podeAlterar ? <GerenciarCategorias tipo="servico" />
+            : podeVer && SECOES.some((x) => x.key === aba) ? <EditorSecao key={aba} secao={aba} cfg={cfg} podeAlterar={podeAlterar} />
+            : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {admin.map((a) => (
+                  <Link key={a.to} to={a.to} className="panel flex items-center gap-3 p-5 hover:bg-accent/40">
+                    <a.icon className="h-6 w-6 text-primary" /> <span className="font-semibold">{a.titulo}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
         </div>
       )}
     </>

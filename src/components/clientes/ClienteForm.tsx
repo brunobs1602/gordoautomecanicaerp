@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
+import { useConfig } from "@/lib/config";
 import { clienteSchema, ORIGENS, UFS, type ClienteInput } from "@/lib/clientes";
 import { mascaraCEP, mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
 import { Field, FormError } from "@/components/AuthCard";
@@ -34,6 +35,8 @@ export function ClienteForm({ inicial, onSalvar, submitLabel, cancelarPara }: {
   const [erros, setErros] = useState<Erros>({});
   const [erro, setErro] = useState("");
   const pf = f.tipo === "PF";
+  const cad = useConfig().cadastros;
+  const ob = (l: string, sim: boolean) => (sim ? `${l} *` : l);
 
   const set = <K extends keyof ClienteInput>(k: K, v: ClienteInput[K]) => setF((p) => ({ ...p, [k]: v }));
   const txt = (k: keyof ClienteInput, mask?: (v: string) => string) => ({
@@ -71,24 +74,24 @@ export function ClienteForm({ inicial, onSalvar, submitLabel, cancelarPara }: {
         </Select>
         <Field label={pf ? "Nome completo *" : "Razão social *"} {...txt("nome")} />
         <Field label="Nome fantasia" {...txt("nomeFantasia")} />
-        <Field label={pf ? "CPF *" : "CNPJ *"} inputMode="numeric" {...txt("documento", (v) => mascaraDocumento(v, f.tipo))} />
+        <Field label={ob(pf ? "CPF" : "CNPJ", cad.exigirDocumento !== false)} inputMode="numeric" {...txt("documento", (v) => mascaraDocumento(v, f.tipo))} />
         <Field label={pf ? "RG" : "Inscrição estadual"} {...txt("rgIe")} />
         <Field label={pf ? "Data de nascimento" : "Data de abertura"} type="date" {...txt("dataNascimento")} />
       </Secao>
 
       <Secao titulo="Contato">
         <Field label="E-mail" type="email" {...txt("email")} />
-        <Field label="Telefone principal" inputMode="tel" {...txt("telefone", mascaraTelefone)} />
+        <Field label={ob("Telefone principal", cad.exigirTelefone !== false)} inputMode="tel" {...txt("telefone", mascaraTelefone)} />
         <Field label="Telefone/WhatsApp secundário" inputMode="tel" {...txt("telefone2", mascaraTelefone)} />
       </Secao>
 
       <Secao titulo="Endereço">
         <Field label="CEP" inputMode="numeric" {...txt("cep", mascaraCEP)} />
-        <Field label="Logradouro" {...txt("logradouro")} />
+        <Field label={ob("Logradouro", cad.exigirEndereco === true)} {...txt("logradouro")} />
         <Field label="Número" {...txt("numero")} />
         <Field label="Complemento" {...txt("complemento")} />
         <Field label="Bairro" {...txt("bairro")} />
-        <Field label="Cidade" {...txt("cidade")} />
+        <Field label={ob("Cidade", cad.exigirEndereco === true)} {...txt("cidade")} />
         <Select label="Estado" value={f.estado} onChange={(v) => set("estado", v)}>
           <option value="">Selecione</option>
           {UFS.map((u) => <option key={u} value={u}>{u}</option>)}

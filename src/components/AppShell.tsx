@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  Bell, Car, ClipboardList, History, LayoutDashboard, LogOut, Menu, Package, Settings, ShieldCheck, Users, UserCog, Wrench, X,
+  Bell, Car, ClipboardList, LayoutDashboard, LogOut, Menu, Package, Settings, Users, Wrench, X,
 } from "lucide-react";
 import { logout, type User } from "@/lib/auth";
 import { useAcesso } from "@/lib/acesso";
@@ -19,10 +19,7 @@ const items: Item[] = [
   { to: "/ordens", label: "Orçamentos e OS", icon: ClipboardList, req: [["orcamentos"], ["ordens"]] },
   { to: "/produtos", label: "Produtos e peças", icon: Package, req: [["produtos"]] },
   { to: "/servicos", label: "Serviços", icon: Wrench, req: [["servicos"]] },
-  { to: "/usuarios", label: "Usuários", icon: UserCog, req: [["usuarios"]] },
-  { to: "/perfis", label: "Perfis de acesso", icon: ShieldCheck, req: [["perfis"]] },
-  { to: "/historico", label: "Histórico", icon: History, req: [["usuarios"], ["perfis"], ["configuracoes", "config"]] },
-  { to: "/configuracoes", label: "Configurações", icon: Settings, req: [["configuracoes"]] },
+  { to: "/configuracoes", label: "Configurações", icon: Settings, req: [["configuracoes"], ["usuarios"], ["perfis"]] },
 ];
 
 function Notificacoes() {
