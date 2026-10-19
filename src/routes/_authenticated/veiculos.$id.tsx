@@ -4,7 +4,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Pencil, Power, UserRoundCog } from "lucide-react";
 import { alterarProprietario, alterarStatusVeiculo, formatarPlaca, useVeiculos } from "@/lib/veiculos";
 import { getClientes, useClientes } from "@/lib/clientes";
-import { useCurrentUser } from "@/lib/auth";
 import { mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";

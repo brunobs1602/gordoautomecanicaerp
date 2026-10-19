@@ -4,7 +4,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Car, Pencil, Plus, Power, Trash2 } from "lucide-react";
 import { alterarStatusCliente, excluirCliente, useClientes } from "@/lib/clientes";
 import { formatarPlaca, useVeiculos } from "@/lib/veiculos";
-import { useCurrentUser } from "@/lib/auth";
 import { mascaraCEP, mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";

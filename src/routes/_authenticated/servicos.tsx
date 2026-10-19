@@ -4,7 +4,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Pencil, Plus, Power, Search, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { alterarStatusServico, atualizarServico, criarServico, servicoVazio, useServicos, type Servico } from "@/lib/servicos";
-import { useCurrentUser } from "@/lib/auth";
 import { moeda } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";

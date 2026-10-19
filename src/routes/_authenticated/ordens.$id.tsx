@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   STATUS_LABEL, TRANSICOES, alterarStatus, calcularTotais, codigoDoc, duplicarOrcamento, podeEditar,
   subtotalItem, useOrcamentos, type Item, type Status,
+  permissaoStatus,
 } from "@/lib/orcamentos";
 import { useClientes } from "@/lib/clientes";
 import { formatarPlaca, useVeiculos } from "@/lib/veiculos";

@@ -4,7 +4,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AlertTriangle, Package, Pencil, Plus, Power, Search } from "lucide-react";
 import { toast } from "sonner";
 import { alterarStatusProduto, atualizarProduto, criarProduto, estoqueBaixo, produtoVazio, useProdutos, type Produto } from "@/lib/produtos";
-import { useCurrentUser } from "@/lib/auth";
 import { moeda } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";

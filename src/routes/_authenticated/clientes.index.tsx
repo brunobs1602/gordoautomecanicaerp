@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, Pencil, Plus, Power, Search, Trash2, Users } from "lucide-react";
 import { alterarStatusCliente, excluirCliente, useClientes } from "@/lib/clientes";
-import { useCurrentUser } from "@/lib/auth";
 import { useVeiculos } from "@/lib/veiculos";
 import { mascaraDocumento, mascaraTelefone, soDigitos } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
