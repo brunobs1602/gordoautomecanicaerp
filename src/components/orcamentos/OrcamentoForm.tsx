@@ -216,7 +216,7 @@ export function OrcamentoForm({ inicial, onSalvar, submitLabel, cancelarPara }: 
         </Secao>
       ))}
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+      <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
         <Secao titulo="Observações">
           <div className="grid gap-4">
             <Area label="Observações para o cliente (aparecem no documento)" value={f.obsCliente} onChange={(v) => set("obsCliente", v)} />

@@ -201,7 +201,7 @@ function DetalheOrcamento() {
       />
       <div className="mb-5 flex flex-wrap items-center gap-3"><StatusOrc status={o.status} /><span className="text-sm text-muted-foreground">Responsável: {resp?.name ?? "—"}</span></div>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+      <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
         <div className="space-y-5">
           <div className="grid gap-5 md:grid-cols-2">
             <Bloco titulo="Cliente">
