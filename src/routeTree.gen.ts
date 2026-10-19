@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as ConfiguracaoInicialRouteImport } from './routes/configuracao-inicial'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedOrdensRouteImport } from './routes/_authenticated/ordens'
@@ -38,11 +37,6 @@ const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
-  id: '/clientes',
-  path: '/clientes',
-  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedConfiguracoesRoute =
   AuthenticatedConfiguracoesRouteImport.update({
@@ -75,7 +69,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/configuracao-inicial': typeof ConfiguracaoInicialRoute
   '/login': typeof LoginRoute
-  '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/ordens': typeof AuthenticatedOrdensRoute
@@ -86,7 +79,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/configuracao-inicial': typeof ConfiguracaoInicialRoute
   '/login': typeof LoginRoute
-  '/clientes': typeof AuthenticatedClientesRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/ordens': typeof AuthenticatedOrdensRoute
@@ -99,7 +91,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/configuracao-inicial': typeof ConfiguracaoInicialRoute
   '/login': typeof LoginRoute
-  '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/ordens': typeof AuthenticatedOrdensRoute
@@ -112,7 +103,6 @@ export interface FileRouteTypes {
     | '/'
     | '/configuracao-inicial'
     | '/login'
-    | '/clientes'
     | '/configuracoes'
     | '/dashboard'
     | '/ordens'
@@ -123,7 +113,6 @@ export interface FileRouteTypes {
     | '/'
     | '/configuracao-inicial'
     | '/login'
-    | '/clientes'
     | '/configuracoes'
     | '/dashboard'
     | '/ordens'
@@ -135,7 +124,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/configuracao-inicial'
     | '/login'
-    | '/_authenticated/clientes'
     | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
     | '/_authenticated/ordens'
@@ -180,13 +168,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/clientes': {
-      id: '/_authenticated/clientes'
-      path: '/clientes'
-      fullPath: '/clientes'
-      preLoaderRoute: typeof AuthenticatedClientesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/configuracoes': {
       id: '/_authenticated/configuracoes'
       path: '/configuracoes'
@@ -226,7 +207,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOrdensRoute: typeof AuthenticatedOrdensRoute
@@ -235,7 +215,6 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOrdensRoute: AuthenticatedOrdensRoute,
