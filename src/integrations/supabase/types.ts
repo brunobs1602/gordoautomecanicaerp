@@ -53,6 +53,33 @@ export type Database = {
         }
         Relationships: []
       }
+      categorias: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          id: string
+          nome: string
+          tipo: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          nome: string
+          tipo: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          nome?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           ativo: boolean
@@ -104,6 +131,30 @@ export type Database = {
           atualizado_por?: string | null
           data?: Json
           id?: number
+        }
+        Relationships: []
+      }
+      marcas: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          nome?: string
         }
         Relationships: []
       }
