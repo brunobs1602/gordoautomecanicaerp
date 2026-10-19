@@ -56,7 +56,9 @@ interface Opcoes<T> {
   select?: string;
 }
 
-const coletores: { carregar: () => Promise<void>; limpar: () => void }[] = [];
+type Coletor = { carregar: () => Promise<void>; limpar: () => void };
+const coletores: Coletor[] = [];
+export const registrarColetor = (c: Coletor) => void coletores.push(c);
 export const carregarColecoes = () => Promise.all(coletores.map((c) => c.carregar()));
 export const limparColecoes = () => coletores.forEach((c) => c.limpar());
 

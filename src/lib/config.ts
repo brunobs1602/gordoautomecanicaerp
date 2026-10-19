@@ -1,4 +1,6 @@
 import { useSyncExternalStore } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { enfileirar, registrarColetor } from "./store";
 
 export type Valor = string | number | boolean;
 export type TipoCampo = "texto" | "area" | "numero" | "bool" | "select" | "cor" | "imagem" | "hora";
@@ -185,8 +187,6 @@ const LISTA = [
     b("trocarSenha", "Exigir troca de senha no primeiro acesso", "", false),
     n("senhaMin", "Tamanho mínimo da senha", "", 6),
     b("letrasNumeros", "Exigir letras e números", "", false),
-    b("bloquearTentativas", "Bloquear após tentativas inválidas", "", true),
-    n("maxTentativas", "Máximo de tentativas de login", "", 5),
     b("multiplasSessoes", "Permitir múltiplas sessões", "", true),
     b("ultimoAcesso", "Exibir último acesso do usuário", "", true),
     b("auditoria", "Ativar registro de auditoria", "", true),
@@ -215,27 +215,34 @@ export const CONFIG_PADRAO = Object.fromEntries(
   SECOES.map((sc) => [sc.key, Object.fromEntries(sc.campos.map((f) => [f.key, f.padrao]))]),
 ) as unknown as Config;
 
-const KEY = "gordo.config";
 const listeners = new Set<() => void>();
-let cache: Config | null = null;
+let cache: Config = CONFIG_PADRAO;
+const emit = () => listeners.forEach((l) => l());
 
 function mesclar(salvo: Record<string, ValoresSecao | undefined>): Config {
   return Object.fromEntries(SECOES.map((sc) => [sc.key, { ...secaoDe(CONFIG_PADRAO, sc.key), ...(salvo[sc.key] ?? {}) }])) as unknown as Config;
 }
-export function getConfig(): Config {
-  if (typeof window === "undefined") return CONFIG_PADRAO;
-  if (cache) return cache;
-  try {
-    cache = mesclar(JSON.parse(localStorage.getItem(KEY) || "{}"));
-  } catch {
-    cache = CONFIG_PADRAO;
-  }
-  return cache;
-}
+export const getConfig = (): Config => cache;
+
+registrarColetor({
+  carregar: async () => {
+    const { data, error } = await supabase.from("configuracoes").select("data").eq("id", 1).maybeSingle();
+    if (error) throw error;
+    cache = mesclar((data?.data ?? {}) as Record<string, ValoresSecao>);
+    emit();
+  },
+  limpar: () => { cache = CONFIG_PADRAO; emit(); },
+});
+
+/** Salva no Lovable Cloud. Em caso de falha, volta para a versão anterior. */
 export function salvarConfig(cfg: Config) {
-  localStorage.setItem(KEY, JSON.stringify(cfg));
-  cache = null;
-  listeners.forEach((l) => l());
+  const anterior = cache;
+  cache = cfg;
+  emit();
+  enfileirar(async () => {
+    const { error } = await supabase.from("configuracoes").upsert({ id: 1, data: cfg as never });
+    if (error) throw error;
+  }, () => { cache = anterior; emit(); });
 }
 export function importarConfig(json: string): Config {
   const obj = JSON.parse(json);
