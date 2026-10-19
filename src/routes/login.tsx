@@ -1,3 +1,4 @@
+import { ErroConexao } from "@/components/ErroConexao";
 import { useState } from "react";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -7,6 +8,7 @@ import { AuthCard, Field, FormError } from "@/components/AuthCard";
 
 export const Route = createFileRoute("/login")({
   ssr: false,
+  errorComponent: ErroConexao,
   beforeLoad: async () => {
     if (await precisaConfiguracaoInicial()) throw redirect({ to: "/configuracao-inicial" });
     if (await carregarSistema().catch(() => null)) throw redirect({ to: "/dashboard" });

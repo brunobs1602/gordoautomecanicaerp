@@ -25,10 +25,14 @@ export const useUsers = col.use;
 export const isAdminRole = (role: Role) => role === ADMIN_ID;
 export const perfilNome = (role: Role) => getPerfis().find((p) => p.id === role)?.nome ?? "Sem perfil";
 
+/** Tenta algumas vezes antes de desistir (a conexão pode oscilar ao abrir o sistema). */
 export async function precisaConfiguracaoInicial() {
-  const { data, error } = await supabase.rpc("precisa_configuracao_inicial");
-  if (error) throw new Error("Falha de conexão. Verifique a internet e tente novamente.");
-  return Boolean(data);
+  for (let i = 0; i < 3; i++) {
+    const { data, error } = await supabase.rpc("precisa_configuracao_inicial");
+    if (!error) return Boolean(data);
+    await new Promise((r) => setTimeout(r, 800 * (i + 1)));
+  }
+  throw new Error("Falha de conexão. Verifique a internet e tente novamente.");
 }
 
 const ATIVIDADE = "gordo.atividade";

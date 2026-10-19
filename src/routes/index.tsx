@@ -1,8 +1,10 @@
+import { ErroConexao } from "@/components/ErroConexao";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { carregarSistema, precisaConfiguracaoInicial } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   ssr: false,
+  errorComponent: ErroConexao,
   beforeLoad: async () => {
     if (await precisaConfiguracaoInicial()) throw redirect({ to: "/configuracao-inicial" });
     const u = await carregarSistema().catch(() => null);

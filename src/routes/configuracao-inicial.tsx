@@ -1,3 +1,4 @@
+import { ErroConexao } from "@/components/ErroConexao";
 import { useState } from "react";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
@@ -16,6 +17,7 @@ const schema = z
 
 export const Route = createFileRoute("/configuracao-inicial")({
   ssr: false,
+  errorComponent: ErroConexao,
   beforeLoad: async () => {
     if (!(await precisaConfiguracaoInicial())) throw redirect({ to: "/login" });
   },
