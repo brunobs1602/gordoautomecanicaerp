@@ -1,7 +1,9 @@
+import { ErroConexao } from "@/components/ErroConexao";
 import { useState } from "react";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { createUser, hasAdmin } from "@/lib/auth";
+import { login, precisaConfiguracaoInicial } from "@/lib/auth";
+import { criarPrimeiroAdmin } from "@/lib/usuarios.functions";
 import { AuthCard, Field, FormError } from "@/components/AuthCard";
 
 const schema = z
@@ -15,8 +17,9 @@ const schema = z
 
 export const Route = createFileRoute("/configuracao-inicial")({
   ssr: false,
-  beforeLoad: () => {
-    if (hasAdmin()) throw redirect({ to: "/login" });
+  errorComponent: ErroConexao,
+  beforeLoad: async () => {
+    if (!(await precisaConfiguracaoInicial())) throw redirect({ to: "/login" });
   },
   head: () => ({
     meta: [
@@ -34,6 +37,7 @@ function Setup() {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [errors, setErrors] = useState<Partial<Record<"name" | "email" | "password" | "confirm" | "role", string>>>({});
   const [error, setError] = useState("");
+  const [salvando, setSalvando] = useState(false);
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
 
   const submit = async (e: React.FormEvent) => {
@@ -44,11 +48,15 @@ function Setup() {
       return;
     }
     setErrors({});
+    setSalvando(true);
     try {
-      await createUser({ ...r.data, role: "admin" });
-      navigate({ to: "/login", replace: true });
+      await criarPrimeiroAdmin({ data: { name: r.data.name, email: r.data.email, password: r.data.password } });
+      await login(r.data.email, r.data.password);
+      navigate({ to: "/dashboard", replace: true });
     } catch (err) {
-      setError((err as Error).message);
+      setError((err as Error).message || "Não foi possível criar o administrador.");
+    } finally {
+      setSalvando(false);
     }
   };
 
@@ -60,7 +68,7 @@ function Setup() {
         <Field label="E-mail" type="email" value={form.email} onChange={set("email")} error={errors.email} />
         <Field label="Senha" type="password" value={form.password} onChange={set("password")} error={errors.password} />
         <Field label="Confirmar senha" type="password" value={form.confirm} onChange={set("confirm")} error={errors.confirm} />
-        <button className="btn-primary w-full">Criar administrador</button>
+        <button className="btn-primary w-full" disabled={salvando}>{salvando ? "Criando..." : "Criar administrador"}</button>
       </form>
     </AuthCard>
   );

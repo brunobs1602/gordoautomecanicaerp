@@ -1,10 +1,11 @@
 import { Cog } from "lucide-react";
 import { useConfig } from "@/lib/config";
+import { useImagem } from "@/lib/arquivos";
 
 /** Logo da empresa (configurável em Configurações). Mostra uma engrenagem quando não há logo. */
 export function LogoSlot({ size = 48, docs = false }: { size?: number; docs?: boolean }) {
   const cfg = useConfig();
-  const src = String((docs && cfg.empresa.logoDocs) || cfg.empresa.logo || "");
+  const src = useImagem(String((docs && cfg.empresa.logoDocs) || cfg.empresa.logo || ""));
   if (src) return <img src={src} alt="Logo da empresa" className="shrink-0 rounded-full object-contain" style={{ width: size, height: size }} />;
   return (
     <div

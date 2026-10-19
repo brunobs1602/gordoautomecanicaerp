@@ -13,3 +13,6 @@
 - Access control lives in `src/lib/permissoes.ts` (profiles + `pode`) and `src/lib/acesso.ts` (`guard` for route `beforeLoad`, `exigir` inside data mutations); every new screen/action must use both so menu, URL and data writes stay blocked together.
 - System settings are declared once in `src/lib/config.ts` (`SECOES`); the settings screen renders from that list, so new options are added there, not in the page.
 - Admin actions and settings changes are logged via `registrar` in `src/lib/auditoria.ts`; the log is append-only.
+- All data lives in Lovable Cloud: `createCollection` in `src/lib/store.ts` keeps an in-memory cache loaded after login (`carregarSistema`) and writes through one sequential queue; database RLS uses `tem_permissao(modulo, acao)` so permissions are enforced server-side too.
+- User accounts are managed only through server functions in `src/lib/usuarios.functions.ts` (public sign-up is disabled); roles live in `user_perfis`, never on `profiles`.
+- Logos are stored in the private `marca` bucket; config keeps a `marca:<path>` reference resolved with `useImagem` (signed URLs).

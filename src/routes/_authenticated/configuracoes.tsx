@@ -8,6 +8,19 @@ import {
   type Campo, type Config, type Valor,
 } from "@/lib/config";
 import { registrar } from "@/lib/auditoria";
+import { enviarImagem, useImagem } from "@/lib/arquivos";
+import { aguardarGravacoes, mensagemErro } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+import { limparDadosDemonstracao } from "@/lib/usuarios.functions";
+import { getClientes } from "@/lib/clientes";
+import { getVeiculos } from "@/lib/veiculos";
+import { getOrcamentos } from "@/lib/orcamentos";
+import { getProdutos } from "@/lib/produtos";
+import { getServicos } from "@/lib/servicos";
+import { getPerfis } from "@/lib/permissoes";
+import { getUsers } from "@/lib/auth";
+import { getAuditoria, useAuditoria } from "@/lib/auditoria";
+import { carregarColecoes } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
@@ -157,33 +170,7 @@ function CampoConfig({ campo: f, valor, onChange, disabled }: { campo: Campo; va
         <input type="checkbox" className="h-5 w-5 accent-[var(--primary)]" checked={Boolean(valor)} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       </label>
     );
-  if (f.tipo === "imagem") {
-    const enviar = (file?: File) => {
-      if (!file) return;
-      if (!file.type.startsWith("image/")) { toast.error("Envie um arquivo de imagem."); return; }
-      if (file.size > 500_000) { toast.error("Imagem muito grande. Use até 500 KB."); return; }
-      const r = new FileReader();
-      r.onload = () => onChange(String(r.result));
-      r.readAsDataURL(file);
-    };
-    return (
-      <div className="space-y-2 rounded-md border border-border p-3">
-        {label}
-        <div className="flex items-center gap-3">
-          <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-md border border-dashed border-border bg-background">
-            {valor ? <img src={String(valor)} alt={f.label} className="h-full w-full object-contain" /> : <span className="text-[10px] text-muted-foreground">Sem imagem</span>}
-          </div>
-          {!disabled && (
-            <div className="flex flex-wrap gap-2">
-              <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { enviar(e.target.files?.[0]); e.target.value = ""; }} />
-              <button type="button" className="btn-ghost h-9 text-xs" onClick={() => inputRef.current?.click()}><Upload className="h-3.5 w-3.5" /> {valor ? "Substituir" : "Enviar"}</button>
-              {valor && <button type="button" className="btn-ghost h-9 text-xs hover:text-destructive" onClick={() => onChange("")}><Trash2 className="h-3.5 w-3.5" /> Remover</button>}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+  if (f.tipo === "imagem") return <CampoImagem campo={f} valor={String(valor || "")} onChange={onChange} disabled={disabled} label={label} />;
   return (
     <label className={`block space-y-1.5 ${f.tipo === "area" ? "md:col-span-2" : ""}`}>
       {label}
@@ -209,6 +196,41 @@ function CampoConfig({ campo: f, valor, onChange, disabled }: { campo: Campo; va
         />
       )}
     </label>
+  );
+}
+
+function CampoImagem({ campo: f, valor, onChange, disabled, label }: { campo: Campo; valor: string; onChange: (v: Valor) => void; disabled: boolean; label: React.ReactNode }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const url = useImagem(valor);
+  const [enviando, setEnviando] = useState(false);
+  const enviar = async (file?: File) => {
+    if (!file) return;
+    setEnviando(true);
+    try {
+      onChange(await enviarImagem(f.key, file));
+      toast.success("Imagem enviada. Salve as alterações para aplicar.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setEnviando(false);
+    }
+  };
+  return (
+    <div className="space-y-2 rounded-md border border-border p-3">
+      {label}
+      <div className="flex items-center gap-3">
+        <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-md border border-dashed border-border bg-background">
+          {url ? <img src={url} alt={f.label} className="h-full w-full object-contain" /> : <span className="text-[10px] text-muted-foreground">Sem imagem</span>}
+        </div>
+        {!disabled && (
+          <div className="flex flex-wrap gap-2">
+            <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon" className="hidden" onChange={(e) => { void enviar(e.target.files?.[0]); e.target.value = ""; }} />
+            <button type="button" disabled={enviando} className="btn-ghost h-9 text-xs" onClick={() => inputRef.current?.click()}><Upload className="h-3.5 w-3.5" /> {enviando ? "Enviando..." : valor ? "Substituir" : "Enviar"}</button>
+            {valor && <button type="button" className="btn-ghost h-9 text-xs hover:text-destructive" onClick={() => onChange("")}><Trash2 className="h-3.5 w-3.5" /> Remover</button>}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -269,8 +291,27 @@ function PreviaDocumento({ d, empresa }: { d: Config["documentos"]; empresa: Con
   );
 }
 
-const DEMO_KEYS = ["gordo.clientes", "gordo.veiculos", "gordo.orcamentos", "gordo.produtos", "gordo.servicos"];
-const BACKUP_AT = "gordo.backup.at";
+const LOCAIS: { chave: string; tabela: "clientes" | "veiculos" | "produtos" | "servicos" | "orcamentos"; nome: string }[] = [
+  { chave: "gordo.clientes", tabela: "clientes", nome: "Clientes" },
+  { chave: "gordo.veiculos", tabela: "veiculos", nome: "Veículos" },
+  { chave: "gordo.produtos", tabela: "produtos", nome: "Produtos" },
+  { chave: "gordo.servicos", tabela: "servicos", nome: "Serviços" },
+  { chave: "gordo.orcamentos", tabela: "orcamentos", nome: "Orçamentos e OS" },
+];
+type Reg = Record<string, unknown> & { id: string };
+function linhaDe(tabela: string, r: Reg) {
+  const { id, ...resto } = r;
+  const extra: Record<string, unknown> =
+    tabela === "clientes" ? { documento: r["documento"] ?? "", ativo: r["ativo"] ?? true }
+    : tabela === "veiculos" ? { cliente_id: r["clienteId"], placa: r["placa"] ?? "", ativo: r["ativo"] ?? true }
+    : tabela === "produtos" ? { codigo: String(r["codigo"] ?? "").trim(), ativo: r["ativo"] ?? true }
+    : tabela === "servicos" ? { ativo: r["ativo"] ?? true }
+    : { numero: r["numero"], tipo: r["tipo"], status: r["status"], cliente_id: r["clienteId"] || null, veiculo_id: r["veiculoId"] || null };
+  return { id, data: resto, ...extra };
+}
+const lerLocal = (k: string): Reg[] => {
+  try { const v = JSON.parse(localStorage.getItem(k) || "[]"); return Array.isArray(v) ? v : []; } catch { return []; }
+};
 
 function baixar(nome: string, conteudo: string) {
   const url = URL.createObjectURL(new Blob([conteudo], { type: "application/json" }));
@@ -286,17 +327,18 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
   const [importado, setImportado] = useState<Config | null>(null);
   const [limpar, setLimpar] = useState(false);
   const [texto, setTexto] = useState("");
-  const [ultimo, setUltimo] = useState(() => localStorage.getItem(BACKUP_AT));
+  const [ocupado, setOcupado] = useState(false);
+  const [relatorio, setRelatorio] = useState<string[] | null>(null);
   const hoje = new Date().toISOString().slice(0, 10);
-  const uso = Math.round(Object.keys(localStorage).filter((k) => k.startsWith("gordo.")).reduce((t, k) => t + (localStorage.getItem(k)?.length ?? 0), 0) / 1024);
+  const backups = useAuditoriaTipo("Backup manual");
+  const ultimo = backups.at(-1)?.data;
+  const locais = LOCAIS.map((l) => ({ ...l, qtd: lerLocal(l.chave).length })).filter((l) => l.qtd > 0);
+  const totais = [["Clientes", getClientes().length], ["Veículos", getVeiculos().length], ["Produtos", getProdutos().length], ["Serviços", getServicos().length], ["Orçamentos e OS", getOrcamentos().length], ["Usuários", getUsers().length]] as const;
 
   const backup = () => {
-    const dados = Object.fromEntries(Object.keys(localStorage).filter((k) => k.startsWith("gordo.") && !k.startsWith("gordo.session")).map((k) => [k, localStorage.getItem(k)]));
+    const dados = { perfis: getPerfis(), usuarios: getUsers(), configuracoes: getConfig(), clientes: getClientes(), veiculos: getVeiculos(), produtos: getProdutos(), servicos: getServicos(), orcamentos: getOrcamentos(), auditoria: getAuditoria() };
     baixar(`gordo-backup-${hoje}.json`, JSON.stringify({ versao: VERSAO, criadoEm: new Date().toISOString(), dados }, null, 2));
-    const agora = new Date().toISOString();
-    localStorage.setItem(BACKUP_AT, agora);
-    setUltimo(agora);
-    registrar({ tipo: "Backup manual", alvo: "Sistema", descricao: "Backup completo baixado." });
+    registrar({ tipo: "Backup manual", alvo: "Sistema", descricao: "Cópia dos dados baixada pelo administrador." });
   };
   const exportar = () => baixar(`gordo-configuracoes-${hoje}.json`, JSON.stringify({ versao: VERSAO, config: getConfig() }, null, 2));
   const lerArquivo = (f?: File) => {
@@ -306,19 +348,79 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
     });
   };
 
+  /** Copia os dados que estavam salvos só neste navegador para o banco, sem duplicar. */
+  const migrar = async () => {
+    setOcupado(true);
+    const linhas: string[] = [];
+    try {
+      for (const l of LOCAIS) {
+        const regs = lerLocal(l.chave);
+        if (!regs.length) continue;
+        const { data: existentes } = await supabase.from(l.tabela).select("id");
+        const ja = new Set((existentes ?? []).map((x) => x.id));
+        const novos = regs.filter((r) => r && typeof r.id === "string" && !ja.has(r.id));
+        let ok = 0;
+        const falhas: string[] = [];
+        for (const r of novos) {
+          const { error } = await supabase.from(l.tabela).insert(linhaDe(l.tabela, r) as never);
+          if (error) falhas.push(mensagemErro(error, "erro"));
+          else ok++;
+        }
+        linhas.push(`${l.nome}: ${regs.length} no navegador, ${regs.length - novos.length} já existiam, ${ok} migrado(s)${falhas.length ? `, ${falhas.length} com problema (${[...new Set(falhas)].join("; ")})` : ""}.`);
+      }
+      await carregarColecoes();
+      registrar({ tipo: "Migração de dados", alvo: "Sistema", descricao: linhas.join(" ") });
+      setRelatorio(linhas.length ? linhas : ["Nenhum dado local encontrado."]);
+    } catch (e) {
+      toast.error(mensagemErro(e, "Falha na migração. Nada foi apagado do navegador."));
+    } finally {
+      setOcupado(false);
+    }
+  };
+
+  const apagarDemo = async () => {
+    setOcupado(true);
+    try {
+      await aguardarGravacoes();
+      await limparDadosDemonstracao();
+      registrar({ tipo: "Dados de demonstração apagados", alvo: "Sistema", descricao: "Cadastros e orçamentos removidos." });
+      await carregarColecoes();
+      setLimpar(false);
+      toast.success("Dados apagados.");
+    } catch (e) {
+      toast.error((e as Error).message || "Falha ao apagar os dados.");
+    } finally {
+      setOcupado(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="panel grid gap-4 p-5 sm:grid-cols-2">
         <Info label="Versão do sistema" valor={VERSAO} />
-        <Info label="Ambiente" valor={import.meta.env.DEV ? "Desenvolvimento (pré-visualização)" : "Produção"} />
-        <Info label="Armazenamento" valor={`Neste navegador · ${uso} KB usados`} />
-        <Info label="Último backup" valor={ultimo ? new Date(ultimo).toLocaleString("pt-BR") : "Nenhum backup realizado"} />
+        <Info label="Ambiente" valor={import.meta.env.DEV ? "Pré-visualização" : "Publicado"} />
+        <Info label="Armazenamento" valor="Lovable Cloud (banco de dados online)" />
+        <Info label="Último backup manual" valor={ultimo ? new Date(ultimo).toLocaleString("pt-BR") : "Nenhum backup manual baixado"} />
+        <div className="sm:col-span-2">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Registros no banco</div>
+          <div className="mt-1 flex flex-wrap gap-2 text-sm">{totais.map(([n, q]) => <span key={n} className="rounded-md border border-border px-2 py-1">{n}: <b>{q}</b></span>)}</div>
+        </div>
       </div>
       {podeAlterar ? (
         <div className="panel space-y-3 p-5">
           <h2 className="text-xl font-bold uppercase">Ações</h2>
+          {locais.length > 0 && (
+            <div className="rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
+              <p className="mb-2">Este navegador ainda tem dados da versão anterior: {locais.map((l) => `${l.nome} (${l.qtd})`).join(", ")}.</p>
+              <ConfirmDialog
+                trigger={<button className="btn-primary h-9 text-xs" disabled={ocupado}><Upload className="h-3.5 w-3.5" /> {ocupado ? "Migrando..." : "Migrar para o banco online"}</button>}
+                title="Migrar dados deste navegador?" description="Os registros serão copiados para o banco online. Registros já existentes não são duplicados e nada é apagado deste navegador."
+                confirmLabel="Migrar" onConfirm={() => void migrar()}
+              />
+            </div>
+          )}
           <div className="flex flex-wrap gap-2">
-            <button className="btn-primary h-10" onClick={backup}><Download className="h-4 w-4" /> Baixar backup completo</button>
+            <button className="btn-primary h-10" onClick={backup}><Download className="h-4 w-4" /> Baixar cópia dos dados</button>
             <button className="btn-ghost h-10" onClick={exportar}><Download className="h-4 w-4" /> Exportar configurações</button>
             <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => { lerArquivo(e.target.files?.[0]); e.target.value = ""; }} />
             <button className="btn-ghost h-10" onClick={() => fileRef.current?.click()}><Upload className="h-4 w-4" /> Importar configurações</button>
@@ -330,17 +432,21 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
             />
             <button className="btn-ghost h-10 hover:text-destructive" onClick={() => { setTexto(""); setLimpar(true); }}><Trash2 className="h-4 w-4" /> Limpar dados de demonstração</button>
           </div>
-          <p className="text-xs text-muted-foreground">Os dados ficam salvos neste navegador. Faça backups com frequência.</p>
+          <p className="text-xs text-muted-foreground">Os dados ficam no banco online do Lovable Cloud, que tem cópias de segurança automáticas da plataforma. A cópia baixada aqui é uma garantia extra guardada por você.</p>
         </div>
       ) : <p className="text-sm text-muted-foreground">Seu perfil não pode executar ações de manutenção.</p>}
 
+      <Modal open={relatorio !== null} onOpenChange={(o) => !o && setRelatorio(null)} title="Resultado da migração">
+        <ul className="list-disc space-y-1 pl-5 text-sm">{relatorio?.map((l) => <li key={l}>{l}</li>)}</ul>
+        <p className="mt-3 text-xs text-muted-foreground">Usuários antigos não são migrados porque as senhas não podem ser copiadas: cadastre-os novamente em Usuários.</p>
+      </Modal>
       <Modal open={importado !== null} onOpenChange={(o) => !o && setImportado(null)} title="Importar configurações?" description="As configurações atuais serão substituídas pelas do arquivo.">
         <div className="flex justify-end gap-2">
           <button className="btn-ghost h-10" onClick={() => setImportado(null)}>Cancelar</button>
           <button className="btn-primary h-10" onClick={() => { salvarConfig(importado!); registrar({ tipo: "Configurações importadas", alvo: "Todas", secao: "Todas", descricao: "Configurações importadas de arquivo." }); setImportado(null); toast.success("Configurações importadas."); }}>Importar</button>
         </div>
       </Modal>
-      <Modal open={limpar} onOpenChange={setLimpar} title="Limpar dados de demonstração" description="Clientes, veículos, orçamentos, OS, produtos e serviços serão apagados definitivamente. Usuários, perfis, configurações e histórico serão mantidos.">
+      <Modal open={limpar} onOpenChange={setLimpar} title="Limpar dados de demonstração" description="Clientes, veículos, orçamentos, OS, produtos e serviços serão apagados definitivamente do banco. Usuários, perfis, configurações e histórico serão mantidos.">
         <label className="block space-y-1.5">
           <span className="text-sm font-medium text-metal">Para confirmar, digite LIMPAR</span>
           <input className="field" value={texto} onChange={(e) => setTexto(e.target.value)} />
@@ -348,14 +454,18 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
         <div className="mt-4 flex justify-end gap-2">
           <button className="btn-ghost h-10" onClick={() => setLimpar(false)}>Cancelar</button>
           <ConfirmDialog
-            trigger={<button className="btn-primary h-10" disabled={texto !== "LIMPAR"}>Apagar dados</button>}
+            trigger={<button className="btn-primary h-10" disabled={texto !== "LIMPAR" || ocupado}>Apagar dados</button>}
             title="Tem certeza absoluta?" description="Esta ação não pode ser desfeita." confirmLabel="Sim, apagar"
-            onConfirm={() => { DEMO_KEYS.forEach((k) => localStorage.removeItem(k)); registrar({ tipo: "Dados de demonstração apagados", alvo: "Sistema", descricao: "Cadastros e orçamentos removidos." }); window.location.reload(); }}
+            onConfirm={() => void apagarDemo()}
           />
         </div>
       </Modal>
     </div>
   );
+}
+
+function useAuditoriaTipo(tipo: string) {
+  return useAuditoria().filter((r) => r.tipo === tipo);
 }
 
 function Info({ label, valor }: { label: string; valor: string }) {

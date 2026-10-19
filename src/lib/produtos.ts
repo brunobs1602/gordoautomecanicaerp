@@ -41,7 +41,7 @@ export const produtoSchema = z.object({
   ativo: z.boolean(),
 });
 
-const col = createCollection<Produto>("gordo.produtos");
+const col = createCollection<Produto>("produtos", { colunas: (p) => ({ codigo: p.codigo.trim(), ativo: p.ativo }) });
 export const getProdutos = col.get;
 export const useProdutos = col.use;
 

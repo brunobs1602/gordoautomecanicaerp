@@ -1,18 +1,55 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { getCurrentUser, hasAdmin, useCurrentUser } from "@/lib/auth";
+import { useEffect } from "react";
+import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import { carregarSistema, logout, precisaConfiguracaoInicial, registrarAtividade, sessaoExpirada, useCurrentUser } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
+import "@/lib/dados";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: () => {
-    if (!hasAdmin()) throw redirect({ to: "/configuracao-inicial" });
-    if (!getCurrentUser()) throw redirect({ to: "/login" });
+  beforeLoad: async () => {
+    const user = await carregarSistema();
+    if (!user) {
+      if (await precisaConfiguracaoInicial()) throw redirect({ to: "/configuracao-inicial" });
+      throw redirect({ to: "/login" });
+    }
+    if (sessaoExpirada()) {
+      await logout();
+      throw redirect({ to: "/login" });
+    }
+    registrarAtividade();
   },
+  pendingComponent: () => (
+    <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Carregando dados...</div>
+  ),
+  errorComponent: ({ error }) => (
+    <div className="flex min-h-screen items-center justify-center p-6">
+      <div className="panel max-w-md p-8 text-center">
+        <h1 className="mb-2 text-2xl font-bold uppercase">Não foi possível carregar</h1>
+        <p className="mb-4 text-sm text-muted-foreground">{error instanceof Error ? error.message : "Falha de conexão."}</p>
+        <button className="btn-primary" onClick={() => window.location.reload()}>Tentar novamente</button>
+      </div>
+    </div>
+  ),
   component: Layout,
 });
 
 function Layout() {
   const user = useCurrentUser();
+  const navigate = useNavigate();
+  // Expiração da sessão por inatividade, conforme Configurações.
+  useEffect(() => {
+    const ativo = () => registrarAtividade();
+    window.addEventListener("pointerdown", ativo);
+    window.addEventListener("keydown", ativo);
+    const t = setInterval(() => {
+      if (sessaoExpirada()) void logout().then(() => navigate({ to: "/login", replace: true }));
+    }, 60_000);
+    return () => {
+      window.removeEventListener("pointerdown", ativo);
+      window.removeEventListener("keydown", ativo);
+      clearInterval(t);
+    };
+  }, [navigate]);
   if (!user) return null;
   return (
     <AppShell user={user}>

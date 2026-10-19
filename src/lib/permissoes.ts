@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { createCollection } from "./store";
 
 export type Acao = "ver" | "criar" | "editar" | "inativar" | "excluir" | "exportar" | "aprovar" | "reabrir" | "status" | "config";
@@ -94,13 +93,14 @@ export function diffPermissoes(antes: Permissoes, depois: Permissoes): string[] 
   return out;
 }
 
-const col = createCollection<Perfil>("gordo.perfis");
-export const getPerfis = (): Perfil[] => {
-  const l = col.get();
-  return l.length ? l : PERFIS_PADRAO;
-};
-export const salvarPerfis = (l: Perfil[]) => col.save(l);
-export function usePerfis() {
-  const l = col.use();
-  return useMemo(() => (l.length ? l : PERFIS_PADRAO), [l]);
-}
+const col = createCollection<Perfil>("perfis", {
+  select: "id,nome,descricao,ativo,permissoes,criado_em,atualizado_em",
+  paraLinha: (p) => ({ id: p.id, nome: p.nome, descricao: p.descricao, ativo: p.ativo, permissoes: p.permissoes }),
+  deLinha: (l) => ({
+    id: l.id, nome: String(l["nome"]), descricao: String(l["descricao"] ?? ""), ativo: Boolean(l["ativo"]),
+    permissoes: (l["permissoes"] ?? {}) as Permissoes, criadoEm: String(l["criado_em"]), atualizadoEm: String(l["atualizado_em"]),
+  }),
+});
+export const getPerfis = col.get;
+export const salvarPerfis = col.save;
+export const usePerfis = col.use;

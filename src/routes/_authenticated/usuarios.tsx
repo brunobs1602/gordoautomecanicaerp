@@ -84,7 +84,7 @@ function Usuarios() {
                         title={u.active ? "Inativar usuário?" : "Ativar usuário?"}
                         description={u.active ? `${u.name} não poderá mais entrar no sistema.` : `${u.name} poderá voltar a entrar no sistema.`}
                         confirmLabel={u.active ? "Inativar" : "Ativar"}
-                        onConfirm={() => { try { setUserActive(u.id, !u.active); toast.success("Status atualizado."); } catch (e) { erroMsg(e); } }}
+                        onConfirm={() => void setUserActive(u.id, !u.active).then(() => toast.success("Status atualizado."), erroMsg)}
                       />
                     )}
                     {pode("usuarios", "excluir") && u.id !== me?.id && (
@@ -93,7 +93,7 @@ function Usuarios() {
                         title="Excluir usuário?"
                         description={`${u.name} será excluído definitivamente. O histórico de ações é mantido.`}
                         confirmLabel="Excluir"
-                        onConfirm={() => { try { deleteUser(u.id); toast.success("Usuário excluído."); } catch (e) { erroMsg(e); } }}
+                        onConfirm={() => void deleteUser(u.id).then(() => toast.success("Usuário excluído."), erroMsg)}
                       />
                     )}
                   </div>
@@ -132,6 +132,7 @@ function UsuarioForm({ user, meId, onClose }: { user: User | null; meId?: string
   });
   const [errors, setErrors] = useState<Partial<Record<"name" | "email" | "password" | "role", string>>>({});
   const [error, setError] = useState("");
+  const [salvando, setSalvando] = useState(false);
   const proprio = user?.id === meId;
 
   const submit = async (e: React.FormEvent) => {
@@ -146,10 +147,11 @@ function UsuarioForm({ user, meId, onClose }: { user: User | null; meId?: string
     if (Object.keys(errs).length || !r.success) return;
     if (proprio && user && isAdminRole(user.role) && !isAdminRole(form.role) &&
       !window.confirm("Você está removendo sua própria permissão de administrador. Deseja continuar?")) return;
+    setSalvando(true);
     try {
       const phone = r.data.phone.replace(/\D/g, "");
       if (user) {
-        updateUser(user.id, { ...r.data, phone });
+        await updateUser(user.id, { ...r.data, phone });
         toast.success("Usuário atualizado.");
       } else {
         await createUser({ ...r.data, phone, password: form.password });
@@ -158,6 +160,8 @@ function UsuarioForm({ user, meId, onClose }: { user: User | null; meId?: string
       onClose();
     } catch (err) {
       setError((err as Error).message);
+    } finally {
+      setSalvando(false);
     }
   };
 
@@ -187,7 +191,7 @@ function UsuarioForm({ user, meId, onClose }: { user: User | null; meId?: string
         )}
         <div className="flex justify-end gap-2">
           <button type="button" className="btn-ghost h-10" onClick={onClose}>Cancelar</button>
-          <button className="btn-primary h-10">Salvar usuário</button>
+          <button className="btn-primary h-10" disabled={salvando}>{salvando ? "Salvando..." : "Salvar usuário"}</button>
         </div>
       </form>
     </Modal>
@@ -198,15 +202,19 @@ function ResetSenha({ user, onClose }: { user: User; onClose: () => void }) {
   const [pw, setPw] = useState("");
   const [conf, setConf] = useState("");
   const [erro, setErro] = useState("");
+  const [salvando, setSalvando] = useState(false);
   const salvar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (pw !== conf) return setErro("As senhas não conferem.");
+    setSalvando(true);
     try {
       await resetPassword(user.id, pw);
       toast.success("Senha redefinida.");
       onClose();
     } catch (err) {
       setErro((err as Error).message);
+    } finally {
+      setSalvando(false);
     }
   };
   return (
@@ -217,7 +225,7 @@ function ResetSenha({ user, onClose }: { user: User; onClose: () => void }) {
         <Field label="Confirmar senha" type="password" autoComplete="new-password" value={conf} onChange={(e) => setConf(e.target.value)} />
         <div className="flex justify-end gap-2">
           <button type="button" className="btn-ghost h-10" onClick={onClose}>Cancelar</button>
-          <button className="btn-primary h-10">Redefinir</button>
+          <button className="btn-primary h-10" disabled={salvando}>{salvando ? "Salvando..." : "Redefinir"}</button>
         </div>
       </form>
     </Modal>

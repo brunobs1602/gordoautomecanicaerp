@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as ConfiguracaoInicialRouteImport } from './routes/configuracao-inicial'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
@@ -55,6 +56,11 @@ const ConfiguracaoInicialRoute = ConfiguracaoInicialRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedConfiguracoesRoute =
@@ -195,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/configuracao-inicial': typeof ConfiguracaoInicialRoute
   '/login': typeof LoginRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/configuracao-inicial': typeof ConfiguracaoInicialRoute
   '/login': typeof LoginRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/configuracao-inicial': typeof ConfiguracaoInicialRoute
   '/login': typeof LoginRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/'
     | '/configuracao-inicial'
     | '/login'
+    | '/redefinir-senha'
     | '/configuracoes'
     | '/dashboard'
     | '/historico'
@@ -315,6 +325,7 @@ export interface FileRouteTypes {
     | '/'
     | '/configuracao-inicial'
     | '/login'
+    | '/redefinir-senha'
     | '/configuracoes'
     | '/dashboard'
     | '/historico'
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/configuracao-inicial'
     | '/login'
+    | '/redefinir-senha'
     | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
     | '/_authenticated/historico'
@@ -376,6 +388,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ConfiguracaoInicialRoute: typeof ConfiguracaoInicialRoute
   LoginRoute: typeof LoginRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -406,6 +419,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/configuracoes': {
@@ -642,6 +662,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ConfiguracaoInicialRoute: ConfiguracaoInicialRoute,
   LoginRoute: LoginRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
