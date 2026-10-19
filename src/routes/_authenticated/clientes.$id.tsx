@@ -77,7 +77,7 @@ function DetalheCliente() {
               confirmLabel={c.ativo ? "Inativar" : "Ativar"}
               onConfirm={() => alterarStatusCliente(c.id, !c.ativo)}
             />
-            {isAdmin && (
+            {isAdmin && veiculos.length === 0 && (
               <ConfirmDialog
                 trigger={<button className="btn-ghost h-11 hover:text-destructive"><Trash2 className="h-4 w-4" /> Excluir</button>}
                 title="Excluir cliente?"
