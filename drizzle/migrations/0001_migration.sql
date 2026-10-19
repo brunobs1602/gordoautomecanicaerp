@@ -1,0 +1,1 @@
+CREATE POLICY "marca_ler" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'marca');
