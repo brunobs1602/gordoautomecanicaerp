@@ -28,7 +28,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
       {items
         .filter((i) => !("adminOnly" in i) || user.role === "admin")
         .map((i) => {
-          const active = path === i.to;
+          const active = path === i.to || path.startsWith(i.to + "/");
           return (
             <Link
               key={i.to}
