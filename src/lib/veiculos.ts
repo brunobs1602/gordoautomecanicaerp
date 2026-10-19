@@ -1,4 +1,5 @@
 import { exigir } from "./acesso";
+import { getConfig } from "./config";
 import { createCollection } from "./store";
 import { z } from "zod";
 
