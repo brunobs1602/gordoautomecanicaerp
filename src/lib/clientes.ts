@@ -1,4 +1,5 @@
 import { exigir } from "./acesso";
+import { getConfig } from "./config";
 import { createCollection } from "./store";
 import { z } from "zod";
 import { soDigitos, validarCEP, validarCNPJ, validarCPF, validarTelefone } from "./validacao";
@@ -38,12 +39,18 @@ export const UFS = "AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN 
 
 const opcional = z.string().trim().max(200);
 
+/** Campos obrigatórios conforme Configurações > Clientes e veículos. */
+export function regrasCliente() {
+  const c = getConfig().cadastros;
+  return { documento: c.exigirDocumento !== false, telefone: c.exigirTelefone !== false, endereco: c.exigirEndereco === true };
+}
+
 export const clienteSchema = z
   .object({
     tipo: z.enum(["PF", "PJ"]),
     nome: z.string().trim().min(2, "Informe o nome ou razão social.").max(150, "Máximo de 150 caracteres."),
     nomeFantasia: opcional,
-    documento: z.string().trim().min(1, "Informe o CPF ou CNPJ."),
+    documento: z.string().trim(),
     rgIe: z.string().trim().max(30),
     dataNascimento: z.string(),
     email: z.string().trim().max(255).refine((v) => !v || z.string().email().safeParse(v).success, "E-mail inválido."),
@@ -62,7 +69,16 @@ export const clienteSchema = z
     ativo: z.boolean(),
   })
   .superRefine((d, ctx) => {
-    if (!d.documento) return;
+    const r = regrasCliente();
+    if (r.telefone && !d.telefone) ctx.addIssue({ code: "custom", path: ["telefone"], message: "O telefone é obrigatório." });
+    if (r.endereco) {
+      if (!d.logradouro.trim()) ctx.addIssue({ code: "custom", path: ["logradouro"], message: "O endereço é obrigatório." });
+      if (!d.cidade.trim()) ctx.addIssue({ code: "custom", path: ["cidade"], message: "A cidade é obrigatória." });
+    }
+    if (!soDigitos(d.documento)) {
+      if (r.documento) ctx.addIssue({ code: "custom", path: ["documento"], message: d.tipo === "PF" ? "O CPF é obrigatório." : "O CNPJ é obrigatório." });
+      return;
+    }
     const ok = d.tipo === "PF" ? validarCPF(d.documento) : validarCNPJ(d.documento);
     if (!ok) ctx.addIssue({ code: "custom", path: ["documento"], message: d.tipo === "PF" ? "CPF inválido." : "CNPJ inválido." });
   });
@@ -73,6 +89,7 @@ const salvar = col.save;
 
 export function documentoDuplicado(list: Cliente[], documento: string, ignorarId?: string) {
   const d = soDigitos(documento);
+  if (!d) return false;
   return list.some((c) => c.documento === d && c.id !== ignorarId);
 }
 

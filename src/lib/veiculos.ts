@@ -49,10 +49,15 @@ export function validarAno(v: string, maxExtra = 1) {
   return n >= 1900 && n <= new Date().getFullYear() + maxExtra;
 }
 
+export function regrasVeiculo() {
+  const c = getConfig().cadastros;
+  return { placa: c.exigirPlaca !== false, km: c.exigirKm === true };
+}
+
 export const veiculoSchema = z
   .object({
     clienteId: z.string().min(1, "Selecione o cliente proprietário."),
-    placa: z.string().min(1, "Informe a placa.").refine(validarPlaca, "Placa inválida. Use ABC-1234 ou ABC1D23."),
+    placa: z.string().refine((v) => !v || validarPlaca(v), "Placa inválida. Use ABC-1234 ou ABC1D23."),
     renavam: z.string().refine((v) => !v || /^\d{9,11}$/.test(v), "Renavam deve ter de 9 a 11 dígitos."),
     chassi: z.string().refine((v) => !v || v.length === 17, "Chassi deve ter 17 caracteres."),
     marca: z.string().trim().max(60),
@@ -71,6 +76,9 @@ export const veiculoSchema = z
     ativo: z.boolean(),
   })
   .superRefine((d, ctx) => {
+    const r = regrasVeiculo();
+    if (r.placa && !d.placa) ctx.addIssue({ code: "custom", path: ["placa"], message: "A placa é obrigatória." });
+    if (r.km && !d.quilometragem) ctx.addIssue({ code: "custom", path: ["quilometragem"], message: "A quilometragem é obrigatória." });
     if (d.anoFabricacao && d.anoModelo && Number(d.anoModelo) < Number(d.anoFabricacao))
       ctx.addIssue({ code: "custom", path: ["anoModelo"], message: "Ano do modelo não pode ser menor que o de fabricação." });
     if (d.anoFabricacao && d.anoModelo && Number(d.anoModelo) > Number(d.anoFabricacao) + 1)
@@ -84,7 +92,7 @@ const salvar = col.save;
 export function verificarDuplicidade(list: Veiculo[], d: { placa: string; chassi: string }, ignorarId?: string) {
   const placa = normalizarPlaca(d.placa);
   const chassi = normalizarChassi(d.chassi);
-  if (list.some((v) => v.id !== ignorarId && v.placa === placa)) return "Já existe um veículo com esta placa.";
+  if (placa && list.some((v) => v.id !== ignorarId && v.placa === placa)) return "Já existe um veículo com esta placa.";
   if (chassi && list.some((v) => v.id !== ignorarId && v.chassi === chassi)) return "Já existe um veículo com este chassi.";
   return null;
 }
