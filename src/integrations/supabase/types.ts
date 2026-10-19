@@ -14,13 +14,357 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      auditoria: {
+        Row: {
+          admin_id: string
+          admin_nome: string
+          alvo: string
+          antes: string | null
+          data: string
+          depois: string | null
+          descricao: string
+          id: string
+          secao: string | null
+          tipo: string
+        }
+        Insert: {
+          admin_id?: string
+          admin_nome?: string
+          alvo?: string
+          antes?: string | null
+          data?: string
+          depois?: string | null
+          descricao?: string
+          id?: string
+          secao?: string | null
+          tipo: string
+        }
+        Update: {
+          admin_id?: string
+          admin_nome?: string
+          alvo?: string
+          antes?: string | null
+          data?: string
+          depois?: string | null
+          descricao?: string
+          id?: string
+          secao?: string | null
+          tipo?: string
+        }
+        Relationships: []
+      }
+      clientes: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          atualizado_por: string | null
+          criado_em: string
+          criado_por: string | null
+          data: Json
+          documento: string
+          id: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          atualizado_por?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          documento?: string
+          id?: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          atualizado_por?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          documento?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      configuracoes: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string | null
+          data: Json
+          id: number
+        }
+        Insert: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          data?: Json
+          id?: number
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          data?: Json
+          id?: number
+        }
+        Relationships: []
+      }
+      orcamentos: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string | null
+          cliente_id: string | null
+          criado_em: string
+          criado_por: string | null
+          data: Json
+          id: string
+          numero: number
+          status: string
+          tipo: string
+          veiculo_id: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          cliente_id?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          id?: string
+          numero: number
+          status?: string
+          tipo?: string
+          veiculo_id?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          cliente_id?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          id?: string
+          numero?: number
+          status?: string
+          tipo?: string
+          veiculo_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      perfis: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          descricao: string
+          id: string
+          nome: string
+          permissoes: Json
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string
+          id: string
+          nome: string
+          permissoes?: Json
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string
+          id?: string
+          nome?: string
+          permissoes?: Json
+        }
+        Relationships: []
+      }
+      produtos: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          atualizado_por: string | null
+          codigo: string
+          criado_em: string
+          criado_por: string | null
+          data: Json
+          id: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          atualizado_por?: string | null
+          codigo?: string
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          id?: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          atualizado_por?: string | null
+          codigo?: string
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          ativo: boolean
+          criado_em: string
+          email: string
+          id: string
+          nome: string
+          telefone: string
+          ultimo_acesso: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          criado_em?: string
+          email: string
+          id: string
+          nome: string
+          telefone?: string
+          ultimo_acesso?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          criado_em?: string
+          email?: string
+          id?: string
+          nome?: string
+          telefone?: string
+          ultimo_acesso?: string | null
+        }
+        Relationships: []
+      }
+      servicos: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          atualizado_por: string | null
+          criado_em: string
+          criado_por: string | null
+          data: Json
+          id: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          atualizado_por?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          id?: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          atualizado_por?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          id?: string
+        }
+        Relationships: []
+      }
+      user_perfis: {
+        Row: {
+          perfil_id: string
+          user_id: string
+        }
+        Insert: {
+          perfil_id: string
+          user_id: string
+        }
+        Update: {
+          perfil_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_perfis_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      veiculos: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          atualizado_por: string | null
+          cliente_id: string
+          criado_em: string
+          criado_por: string | null
+          data: Json
+          id: string
+          placa: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          atualizado_por?: string | null
+          cliente_id: string
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          id?: string
+          placa?: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          atualizado_por?: string | null
+          cliente_id?: string
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          id?: string
+          placa?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veiculos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      precisa_configuracao_inicial: { Args: never; Returns: boolean }
+      registrar_acesso: { Args: never; Returns: undefined }
+      tem_permissao: {
+        Args: { _acao: string; _modulo: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
