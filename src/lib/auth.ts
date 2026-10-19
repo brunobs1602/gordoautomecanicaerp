@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { ADMIN_ID, getPerfis } from "./permissoes";
+import { ADMIN_ID, getPerfis, pode, type Acao } from "./permissoes";
 import { getConfig, validarSenha } from "./config";
 import { registrar } from "./auditoria";
 
@@ -69,10 +69,17 @@ export function getCurrentUser(): User | null {
   return u && u.active ? u : null;
 }
 
+/** Garante a permissão do usuário logado sobre o módulo Usuários (bloqueio fora da tela). */
+function exigirUsuarios(a: Acao) {
+  const me = getCurrentUser();
+  if (!pode(getPerfis().find((p) => p.id === me?.role), "usuarios", a)) throw new Error("Você não tem permissão para realizar esta ação.");
+}
+
 const ativosAdmin = (users: User[]) => users.filter((u) => u.active && isAdminRole(u.role));
 
 export async function createUser(data: { name: string; email: string; password: string; role: Role; phone?: string; active?: boolean }) {
   const users = getUsers();
+  if (users.length > 0) exigirUsuarios("criar");
   const email = data.email.trim().toLowerCase();
   if (users.some((u) => u.email === email)) throw new Error("Já existe um usuário com este e-mail.");
   if (!data.role) throw new Error("Selecione um perfil de acesso.");
@@ -95,6 +102,7 @@ export async function createUser(data: { name: string; email: string; password: 
 }
 
 export function updateUser(id: string, data: { name: string; email: string; role: Role; phone: string; active: boolean }) {
+  exigirUsuarios("editar");
   const users = getUsers();
   const u = users.find((x) => x.id === id);
   if (!u) throw new Error("Usuário não encontrado.");
@@ -125,6 +133,7 @@ export const toggleUserActive = (id: string) => {
 };
 
 export function deleteUser(id: string) {
+  exigirUsuarios("excluir");
   const users = getUsers();
   const u = users.find((x) => x.id === id);
   if (!u) return;
@@ -136,6 +145,7 @@ export function deleteUser(id: string) {
 }
 
 export async function resetPassword(id: string, password: string) {
+  exigirUsuarios("editar");
   const erro = validarSenha(password);
   if (erro) throw new Error(erro);
   const hash = await hashPassword(password);
