@@ -1,11 +1,12 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { getCurrentUser, hasAdmin } from "@/lib/auth";
+import { carregarSistema, precisaConfiguracaoInicial } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   ssr: false,
-  beforeLoad: () => {
-    if (!hasAdmin()) throw redirect({ to: "/configuracao-inicial" });
-    throw redirect({ to: getCurrentUser() ? "/dashboard" : "/login" });
+  beforeLoad: async () => {
+    if (await precisaConfiguracaoInicial()) throw redirect({ to: "/configuracao-inicial" });
+    const u = await carregarSistema().catch(() => null);
+    throw redirect({ to: u ? "/dashboard" : "/login" });
   },
   head: () => ({
     meta: [
