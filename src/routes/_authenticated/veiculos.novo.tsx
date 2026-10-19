@@ -1,3 +1,4 @@
+import { guard } from "@/lib/acesso";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { criarVeiculo, veiculoVazio } from "@/lib/veiculos";
@@ -6,6 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { VeiculoForm } from "@/components/veiculos/VeiculoForm";
 
 export const Route = createFileRoute("/_authenticated/veiculos/novo")({
+  beforeLoad: guard(["veiculos", "criar"]),
   validateSearch: z.object({ clienteId: z.string().optional() }),
   head: () => ({
     meta: [

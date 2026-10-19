@@ -1,3 +1,4 @@
+import { guard } from "@/lib/acesso";
 import { useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Cog, Printer } from "lucide-react";
@@ -11,6 +12,7 @@ import { moeda } from "@/lib/store";
 import { mascaraCEP, mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
 
 export const Route = createFileRoute("/_authenticated/ordens/$id_/imprimir")({
+  beforeLoad: guard(["orcamentos", "exportar"], ["ordens", "exportar"]),
   validateSearch: z.object({ auto: z.boolean().optional() }),
   head: () => ({
     meta: [

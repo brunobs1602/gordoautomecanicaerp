@@ -1,3 +1,4 @@
+import { guard } from "@/lib/acesso";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { atualizarCliente, useClientes } from "@/lib/clientes";
 import { mascaraCEP, mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
@@ -5,6 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { ClienteForm } from "@/components/clientes/ClienteForm";
 
 export const Route = createFileRoute("/_authenticated/clientes/$id_/editar")({
+  beforeLoad: guard(["clientes", "editar"]),
   head: () => ({
     meta: [
       { title: "Editar cliente · Gordo Auto Mecânica ERP" },

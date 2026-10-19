@@ -1,3 +1,4 @@
+import { guard, useAcesso } from "@/lib/acesso";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Car, Eye, Pencil, Plus, Power, Search } from "lucide-react";
@@ -10,6 +11,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge } from "@/components/clientes/StatusBadge";
 
 export const Route = createFileRoute("/_authenticated/veiculos/")({
+  beforeLoad: guard(["veiculos"]),
   head: () => ({
     meta: [
       { title: "Veículos · Gordo Auto Mecânica ERP" },
@@ -24,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/veiculos/")({
 function ListaVeiculos() {
   const veiculos = useVeiculos();
   const clientes = useClientes();
-  const isAdmin = useCurrentUser()?.role === "admin";
+  const { pode } = useAcesso();
   const [busca, setBusca] = useState("");
   const [marca, setMarca] = useState("");
   const [tipo, setTipo] = useState("");
@@ -64,7 +66,7 @@ function ListaVeiculos() {
       <PageHeader
         title="Veículos"
         subtitle={`${veiculos.length} veículo(s) cadastrado(s)`}
-        action={<Link to="/veiculos/novo" className="btn-primary"><Plus className="h-4 w-4" /> Novo veículo</Link>}
+        action={pode("veiculos", "criar") && <Link to="/veiculos/novo" className="btn-primary"><Plus className="h-4 w-4" /> Novo veículo</Link>}
       />
 
       <div className="panel mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto_auto]">
@@ -98,7 +100,7 @@ function ListaVeiculos() {
           <Car className="h-10 w-10 text-primary" />
           <h2 className="text-2xl font-bold uppercase">Nenhum veículo cadastrado</h2>
           <p className="text-sm text-muted-foreground">Cadastre o primeiro veículo e vincule a um cliente.</p>
-          <Link to="/veiculos/novo" className="btn-primary mt-2"><Plus className="h-4 w-4" /> Novo veículo</Link>
+          {pode("veiculos", "criar") && <Link to="/veiculos/novo" className="btn-primary mt-2"><Plus className="h-4 w-4" /> Novo veículo</Link>}
         </div>
       ) : lista.length === 0 ? (
         <div className="panel p-10 text-center text-muted-foreground">Nenhum veículo encontrado para esta busca.</div>
@@ -131,8 +133,8 @@ function ListaVeiculos() {
                     <td className="p-4">
                       <div className="flex justify-end gap-1.5">
                         <Link to="/veiculos/$id" params={{ id: v.id }} className="btn-ghost px-2.5" title="Visualizar"><Eye className="h-4 w-4" /></Link>
-                        <Link to="/veiculos/$id/editar" params={{ id: v.id }} className="btn-ghost px-2.5" title="Editar"><Pencil className="h-4 w-4" /></Link>
-                        {isAdmin && (
+                        {pode("veiculos", "editar") && <Link to="/veiculos/$id/editar" params={{ id: v.id }} className="btn-ghost px-2.5" title="Editar"><Pencil className="h-4 w-4" /></Link>}
+                        {pode("veiculos", "inativar") && (
                           <ConfirmDialog
                             trigger={<button className="btn-ghost px-2.5" title={v.ativo ? "Inativar" : "Ativar"}><Power className="h-4 w-4" /></button>}
                             title={v.ativo ? "Inativar veículo?" : "Ativar veículo?"}

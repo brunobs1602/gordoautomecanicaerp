@@ -1,3 +1,4 @@
+import { guard, useAcesso } from "@/lib/acesso";
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertTriangle, Package, Pencil, Plus, Power, Search } from "lucide-react";
@@ -12,6 +13,7 @@ import { StatusBadge } from "@/components/clientes/StatusBadge";
 import { ProdutoForm } from "@/components/estoque/ProdutoForm";
 
 export const Route = createFileRoute("/_authenticated/produtos")({
+  beforeLoad: guard(["produtos"]),
   head: () => ({
     meta: [
       { title: "Produtos e peças · Gordo Auto Mecânica ERP" },
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/produtos")({
 
 function Produtos() {
   const produtos = useProdutos();
-  const isAdmin = useCurrentUser()?.role === "admin";
+  const { pode } = useAcesso();
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("");
   const [baixo, setBaixo] = useState(false);
@@ -45,7 +47,7 @@ function Produtos() {
       <PageHeader
         title="Produtos e peças"
         subtitle={`${produtos.length} produto(s)${qtdBaixo ? ` · ${qtdBaixo} com estoque baixo` : ""}`}
-        action={<button className="btn-primary" onClick={() => setEditando("novo")}><Plus className="h-4 w-4" /> Novo produto</button>}
+        action={pode("produtos", "criar") && <button className="btn-primary" onClick={() => setEditando("novo")}><Plus className="h-4 w-4" /> Novo produto</button>}
       />
       <div className="panel mb-4 grid gap-3 p-4 md:grid-cols-[1fr_auto_auto]">
         <div className="relative">
@@ -66,7 +68,7 @@ function Produtos() {
         <div className="panel flex flex-col items-center gap-3 p-12 text-center">
           <Package className="h-10 w-10 text-primary" />
           <h2 className="text-2xl font-bold uppercase">Nenhum produto cadastrado</h2>
-          <button className="btn-primary mt-2" onClick={() => setEditando("novo")}><Plus className="h-4 w-4" /> Novo produto</button>
+          {pode("produtos", "criar") && <button className="btn-primary mt-2" onClick={() => setEditando("novo")}><Plus className="h-4 w-4" /> Novo produto</button>}
         </div>
       ) : lista.length === 0 ? (
         <div className="panel p-10 text-center text-muted-foreground">Nenhum produto encontrado.</div>
@@ -95,8 +97,8 @@ function Produtos() {
                   <td className="p-4"><StatusBadge ativo={p.ativo} /></td>
                   <td className="p-4">
                     <div className="flex justify-end gap-1.5">
-                      <button className="btn-ghost px-2.5" title="Editar" onClick={() => setEditando(p)}><Pencil className="h-4 w-4" /></button>
-                      {isAdmin && (
+                      {pode("produtos", "editar") && <button className="btn-ghost px-2.5" title="Editar" onClick={() => setEditando(p)}><Pencil className="h-4 w-4" /></button>}
+                      {pode("produtos", "inativar") && (
                         <ConfirmDialog
                           trigger={<button className="btn-ghost px-2.5" title={p.ativo ? "Inativar" : "Ativar"}><Power className="h-4 w-4" /></button>}
                           title={p.ativo ? "Inativar produto?" : "Ativar produto?"} description={`Deseja ${p.ativo ? "inativar" : "ativar"} "${p.nome}"?`}

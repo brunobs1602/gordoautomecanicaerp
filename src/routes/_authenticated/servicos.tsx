@@ -1,3 +1,4 @@
+import { guard, useAcesso } from "@/lib/acesso";
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Pencil, Plus, Power, Search, Wrench } from "lucide-react";
@@ -12,6 +13,7 @@ import { StatusBadge } from "@/components/clientes/StatusBadge";
 import { ServicoForm } from "@/components/estoque/ServicoForm";
 
 export const Route = createFileRoute("/_authenticated/servicos")({
+  beforeLoad: guard(["servicos"]),
   head: () => ({
     meta: [
       { title: "Serviços · Gordo Auto Mecânica ERP" },
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/servicos")({
 
 function Servicos() {
   const servicos = useServicos();
-  const isAdmin = useCurrentUser()?.role === "admin";
+  const { pode } = useAcesso();
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("");
   const [editando, setEditando] = useState<Servico | "novo" | null>(null);
@@ -38,7 +40,7 @@ function Servicos() {
 
   return (
     <>
-      <PageHeader title="Serviços" subtitle={`${servicos.length} serviço(s)`} action={<button className="btn-primary" onClick={() => setEditando("novo")}><Plus className="h-4 w-4" /> Novo serviço</button>} />
+      <PageHeader title="Serviços" subtitle={`${servicos.length} serviço(s)`} action={pode("servicos", "criar") && <button className="btn-primary" onClick={() => setEditando("novo")}><Plus className="h-4 w-4" /> Novo serviço</button>} />
       <div className="panel mb-4 grid gap-3 p-4 md:grid-cols-[1fr_auto]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -54,7 +56,7 @@ function Servicos() {
         <div className="panel flex flex-col items-center gap-3 p-12 text-center">
           <Wrench className="h-10 w-10 text-primary" />
           <h2 className="text-2xl font-bold uppercase">Nenhum serviço cadastrado</h2>
-          <button className="btn-primary mt-2" onClick={() => setEditando("novo")}><Plus className="h-4 w-4" /> Novo serviço</button>
+          {pode("servicos", "criar") && <button className="btn-primary mt-2" onClick={() => setEditando("novo")}><Plus className="h-4 w-4" /> Novo serviço</button>}
         </div>
       ) : lista.length === 0 ? (
         <div className="panel p-10 text-center text-muted-foreground">Nenhum serviço encontrado.</div>
@@ -76,8 +78,8 @@ function Servicos() {
                   <td className="p-4"><StatusBadge ativo={s.ativo} /></td>
                   <td className="p-4">
                     <div className="flex justify-end gap-1.5">
-                      <button className="btn-ghost px-2.5" title="Editar" onClick={() => setEditando(s)}><Pencil className="h-4 w-4" /></button>
-                      {isAdmin && (
+                      {pode("servicos", "editar") && <button className="btn-ghost px-2.5" title="Editar" onClick={() => setEditando(s)}><Pencil className="h-4 w-4" /></button>}
+                      {pode("servicos", "inativar") && (
                         <ConfirmDialog
                           trigger={<button className="btn-ghost px-2.5" title={s.ativo ? "Inativar" : "Ativar"}><Power className="h-4 w-4" /></button>}
                           title={s.ativo ? "Inativar serviço?" : "Ativar serviço?"} description={`Deseja ${s.ativo ? "inativar" : "ativar"} "${s.nome}"?`}

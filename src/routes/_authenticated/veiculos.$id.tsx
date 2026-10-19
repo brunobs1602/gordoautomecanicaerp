@@ -1,3 +1,4 @@
+import { guard, useAcesso } from "@/lib/acesso";
 import { useState, type ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Pencil, Power, UserRoundCog } from "lucide-react";
@@ -13,6 +14,7 @@ import { ClienteSelect } from "@/components/veiculos/ClienteSelect";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/veiculos/$id")({
+  beforeLoad: guard(["veiculos"]),
   head: () => ({
     meta: [
       { title: "Detalhes do veículo · Gordo Auto Mecânica ERP" },
@@ -83,7 +85,7 @@ function TrocarProprietario({ veiculoId, atual }: { veiculoId: string; atual: st
 
 function DetalheVeiculo() {
   const { id } = Route.useParams();
-  const isAdmin = useCurrentUser()?.role === "admin";
+  const { pode } = useAcesso();
   const v = useVeiculos().find((x) => x.id === id);
   const clientes = useClientes();
 
@@ -107,8 +109,8 @@ function DetalheVeiculo() {
         subtitle={[v.marca, v.modelo, v.versao].filter(Boolean).join(" ") || undefined}
         action={
           <div className="flex flex-wrap gap-2">
-            <Link to="/veiculos/$id/editar" params={{ id }} className="btn-ghost h-11"><Pencil className="h-4 w-4" /> Editar</Link>
-            {isAdmin && (
+            {pode("veiculos", "editar") && <Link to="/veiculos/$id/editar" params={{ id }} className="btn-ghost h-11"><Pencil className="h-4 w-4" /> Editar</Link>}
+            {pode("veiculos", "inativar") && (
               <ConfirmDialog
                 trigger={<button className="btn-ghost h-11"><Power className="h-4 w-4" /> {v.ativo ? "Inativar" : "Ativar"}</button>}
                 title={v.ativo ? "Inativar veículo?" : "Ativar veículo?"}

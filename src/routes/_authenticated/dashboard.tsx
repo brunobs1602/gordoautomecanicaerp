@@ -1,3 +1,4 @@
+import { guard } from "@/lib/acesso";
 import { createFileRoute } from "@tanstack/react-router";
 import { BarChart3, Car, ClipboardList, DollarSign, Users } from "lucide-react";
 import { useCurrentUser } from "@/lib/auth";
@@ -8,6 +9,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  beforeLoad: guard(["dashboard"]),
   head: () => ({
     meta: [
       { title: "Dashboard · Gordo Auto Mecânica ERP" },
