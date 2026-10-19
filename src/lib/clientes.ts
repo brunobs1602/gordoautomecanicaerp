@@ -1,5 +1,5 @@
 import { exigir } from "./acesso";
-import { useSyncExternalStore } from "react";
+import { createCollection } from "./store";
 import { z } from "zod";
 import { soDigitos, validarCEP, validarCNPJ, validarCPF, validarTelefone } from "./validacao";
 
@@ -67,23 +67,9 @@ export const clienteSchema = z
     if (!ok) ctx.addIssue({ code: "custom", path: ["documento"], message: d.tipo === "PF" ? "CPF inválido." : "CNPJ inválido." });
   });
 
-const KEY = "gordo.clientes";
-const listeners = new Set<() => void>();
-let cache: Cliente[] | null = null;
-
-export function getClientes(): Cliente[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
-function salvar(list: Cliente[]) {
-  localStorage.setItem(KEY, JSON.stringify(list));
-  cache = null;
-  listeners.forEach((l) => l());
-}
+const col = createCollection<Cliente>("clientes", { colunas: (c) => ({ documento: c.documento, ativo: c.ativo }) });
+export const getClientes = col.get;
+const salvar = col.save;
 
 export function documentoDuplicado(list: Cliente[], documento: string, ignorarId?: string) {
   const d = soDigitos(documento);
@@ -126,16 +112,7 @@ export function excluirCliente(id: string) {
   salvar(getClientes().filter((c) => c.id !== id));
 }
 
-export function useClientes() {
-  return useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
-    },
-    () => (cache ??= getClientes()),
-    () => [] as Cliente[],
-  );
-}
+export const useClientes = col.use;
 
 export function clienteVazio(): ClienteInput {
   return {

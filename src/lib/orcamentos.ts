@@ -131,7 +131,9 @@ export function diferencas(antes: Dados, depois: Dados): string[] {
   return out;
 }
 
-const col = createCollection<Orcamento>("gordo.orcamentos");
+const col = createCollection<Orcamento>("orcamentos", {
+  colunas: (o) => ({ numero: o.numero, tipo: o.tipo, status: o.status, cliente_id: o.clienteId || null, veiculo_id: o.veiculoId || null }),
+});
 export const getOrcamentos = col.get;
 export const useOrcamentos = col.use;
 

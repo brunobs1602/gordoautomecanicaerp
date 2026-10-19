@@ -1,5 +1,5 @@
 import { exigir } from "./acesso";
-import { useSyncExternalStore } from "react";
+import { createCollection } from "./store";
 import { z } from "zod";
 
 // Um cliente pode ter vários veículos; cada veículo tem um único proprietário principal (clienteId).
@@ -77,23 +77,9 @@ export const veiculoSchema = z
       ctx.addIssue({ code: "custom", path: ["anoModelo"], message: "Ano do modelo deve ser no máximo 1 ano após a fabricação." });
   });
 
-const KEY = "gordo.veiculos";
-const listeners = new Set<() => void>();
-let cache: Veiculo[] | null = null;
-
-export function getVeiculos(): Veiculo[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
-function salvar(list: Veiculo[]) {
-  localStorage.setItem(KEY, JSON.stringify(list));
-  cache = null;
-  listeners.forEach((l) => l());
-}
+const col = createCollection<Veiculo>("veiculos", { colunas: (v) => ({ cliente_id: v.clienteId, placa: v.placa, ativo: v.ativo }) });
+export const getVeiculos = col.get;
+const salvar = col.save;
 
 export function verificarDuplicidade(list: Veiculo[], d: { placa: string; chassi: string }, ignorarId?: string) {
   const placa = normalizarPlaca(d.placa);
@@ -143,16 +129,7 @@ export function getVeiculosDoCliente(clienteId: string): Veiculo[] {
   return getVeiculos().filter((v) => v.clienteId === clienteId);
 }
 
-export function useVeiculos() {
-  return useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
-    },
-    () => (cache ??= getVeiculos()),
-    () => [] as Veiculo[],
-  );
-}
+export const useVeiculos = col.use;
 
 export function veiculoVazio(clienteId = ""): VeiculoInput {
   return {

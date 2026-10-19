@@ -24,7 +24,7 @@ export const servicoSchema = z.object({
   ativo: z.boolean(),
 });
 
-const col = createCollection<Servico>("gordo.servicos");
+const col = createCollection<Servico>("servicos", { colunas: (s) => ({ ativo: s.ativo }) });
 export const getServicos = col.get;
 export const useServicos = col.use;
 
