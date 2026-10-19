@@ -1,12 +1,16 @@
 import { Cog } from "lucide-react";
+import { useConfig } from "@/lib/config";
 
-/** Espaço reservado para a logo oficial (substituir pelo arquivo da logo). */
-export function LogoSlot({ size = 48 }: { size?: number }) {
+/** Logo da empresa (configurável em Configurações). Mostra uma engrenagem quando não há logo. */
+export function LogoSlot({ size = 48, docs = false }: { size?: number; docs?: boolean }) {
+  const cfg = useConfig();
+  const src = String((docs && cfg.empresa.logoDocs) || cfg.empresa.logo || "");
+  if (src) return <img src={src} alt="Logo da empresa" className="shrink-0 rounded-full object-contain" style={{ width: size, height: size }} />;
   return (
     <div
       className="grid shrink-0 place-items-center rounded-full border-2 border-dashed border-primary/60 bg-background"
       style={{ width: size, height: size }}
-      title="Espaço para a logo"
+      title="Envie a logo em Configurações"
     >
       <Cog className="text-primary" style={{ width: size * 0.5, height: size * 0.5 }} />
     </div>
