@@ -109,7 +109,9 @@ export function createCollection<T extends { id: string }>(tabela: string, op: O
       get,
       get,
     );
-  return { get, save, use, carregar };
+  /** Atualiza só o cache local (dados já gravados por outro caminho). */
+  const definir = (list: T[]) => { cache = list; emit(); };
+  return { get, save, use, carregar, definir };
 }
 
 export const agoraISO = () => new Date().toISOString();

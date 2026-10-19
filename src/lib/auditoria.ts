@@ -43,6 +43,6 @@ export function registrar(r: Omit<RegistroAuditoria, "id" | "data" | "adminId" |
   enfileirar(async () => {
     const { data, error } = await supabase.from("auditoria").insert(linha).select("id,data").single();
     if (error) throw error;
-    col.save([...col.get(), { ...r, id: data.id, data: data.data, adminId: eu.id, adminNome: linha.admin_nome }].filter(Boolean));
+    col.definir([...col.get(), { ...r, id: data.id, data: data.data, adminId: eu.id, adminNome: linha.admin_nome }]);
   });
 }
