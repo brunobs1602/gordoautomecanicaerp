@@ -15,7 +15,8 @@ import { Route as ConfiguracaoInicialRouteImport } from './routes/configuracao-i
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedOrdensRouteImport } from './routes/_authenticated/ordens'
+import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
+import { Route as AuthenticatedServicosRouteImport } from './routes/_authenticated/servicos'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes.index'
 import { Route as AuthenticatedClientesIdRouteImport } from './routes/_authenticated/clientes.$id'
@@ -61,9 +62,14 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedOrdensRoute = AuthenticatedOrdensRouteImport.update({
-  id: '/ordens',
-  path: '/ordens',
+const AuthenticatedProdutosRoute = AuthenticatedProdutosRouteImport.update({
+  id: '/produtos',
+  path: '/produtos',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedServicosRoute = AuthenticatedServicosRouteImport.update({
+  id: '/servicos',
+  path: '/servicos',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
@@ -90,19 +96,19 @@ const AuthenticatedClientesNovoRoute =
   } as any)
 const AuthenticatedOrdensIndexRoute =
   AuthenticatedOrdensIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedOrdensRoute,
+    id: '/ordens/',
+    path: '/ordens/',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedOrdensIdRoute = AuthenticatedOrdensIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedOrdensRoute,
+  id: '/ordens/$id',
+  path: '/ordens/$id',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedOrdensNovoRoute = AuthenticatedOrdensNovoRouteImport.update({
-  id: '/novo',
-  path: '/novo',
-  getParentRoute: () => AuthenticatedOrdensRoute,
+  id: '/ordens/novo',
+  path: '/ordens/novo',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedVeiculosIndexRoute =
   AuthenticatedVeiculosIndexRouteImport.update({
@@ -129,15 +135,15 @@ const AuthenticatedClientesIdEditarRoute =
   } as any)
 const AuthenticatedOrdensIdEditarRoute =
   AuthenticatedOrdensIdEditarRouteImport.update({
-    id: '/$id_/editar',
-    path: '/$id/editar',
-    getParentRoute: () => AuthenticatedOrdensRoute,
+    id: '/ordens/$id_/editar',
+    path: '/ordens/$id/editar',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedOrdensIdImprimirRoute =
   AuthenticatedOrdensIdImprimirRouteImport.update({
-    id: '/$id_/imprimir',
-    path: '/$id/imprimir',
-    getParentRoute: () => AuthenticatedOrdensRoute,
+    id: '/ordens/$id_/imprimir',
+    path: '/ordens/$id/imprimir',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedVeiculosIdEditarRoute =
   AuthenticatedVeiculosIdEditarRouteImport.update({
@@ -152,7 +158,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/ordens': typeof AuthenticatedOrdensRouteWithChildren
+  '/produtos': typeof AuthenticatedProdutosRoute
+  '/servicos': typeof AuthenticatedServicosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
@@ -174,6 +181,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/produtos': typeof AuthenticatedProdutosRoute
+  '/servicos': typeof AuthenticatedServicosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
@@ -197,7 +206,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/ordens': typeof AuthenticatedOrdensRouteWithChildren
+  '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
+  '/_authenticated/servicos': typeof AuthenticatedServicosRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/_authenticated/clientes/novo': typeof AuthenticatedClientesNovoRoute
@@ -221,7 +231,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/configuracoes'
     | '/dashboard'
-    | '/ordens'
+    | '/produtos'
+    | '/servicos'
     | '/usuarios'
     | '/clientes/$id'
     | '/clientes/novo'
@@ -243,6 +254,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/configuracoes'
     | '/dashboard'
+    | '/produtos'
+    | '/servicos'
     | '/usuarios'
     | '/clientes/$id'
     | '/clientes/novo'
@@ -265,7 +278,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
-    | '/_authenticated/ordens'
+    | '/_authenticated/produtos'
+    | '/_authenticated/servicos'
     | '/_authenticated/usuarios'
     | '/_authenticated/clientes/$id'
     | '/_authenticated/clientes/novo'
@@ -333,11 +347,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/ordens': {
-      id: '/_authenticated/ordens'
-      path: '/ordens'
-      fullPath: '/ordens'
-      preLoaderRoute: typeof AuthenticatedOrdensRouteImport
+    '/_authenticated/produtos': {
+      id: '/_authenticated/produtos'
+      path: '/produtos'
+      fullPath: '/produtos'
+      preLoaderRoute: typeof AuthenticatedProdutosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/servicos': {
+      id: '/_authenticated/servicos'
+      path: '/servicos'
+      fullPath: '/servicos'
+      preLoaderRoute: typeof AuthenticatedServicosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/usuarios': {
@@ -370,24 +391,24 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/ordens/': {
       id: '/_authenticated/ordens/'
-      path: '/'
+      path: '/ordens'
       fullPath: '/ordens/'
       preLoaderRoute: typeof AuthenticatedOrdensIndexRouteImport
-      parentRoute: typeof AuthenticatedOrdensRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/ordens/$id': {
       id: '/_authenticated/ordens/$id'
-      path: '/$id'
+      path: '/ordens/$id'
       fullPath: '/ordens/$id'
       preLoaderRoute: typeof AuthenticatedOrdensIdRouteImport
-      parentRoute: typeof AuthenticatedOrdensRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/ordens/novo': {
       id: '/_authenticated/ordens/novo'
-      path: '/novo'
+      path: '/ordens/novo'
       fullPath: '/ordens/novo'
       preLoaderRoute: typeof AuthenticatedOrdensNovoRouteImport
-      parentRoute: typeof AuthenticatedOrdensRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/veiculos/': {
       id: '/_authenticated/veiculos/'
@@ -419,17 +440,17 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/ordens/$id_/editar': {
       id: '/_authenticated/ordens/$id_/editar'
-      path: '/$id/editar'
+      path: '/ordens/$id/editar'
       fullPath: '/ordens/$id/editar'
       preLoaderRoute: typeof AuthenticatedOrdensIdEditarRouteImport
-      parentRoute: typeof AuthenticatedOrdensRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/ordens/$id_/imprimir': {
       id: '/_authenticated/ordens/$id_/imprimir'
-      path: '/$id/imprimir'
+      path: '/ordens/$id/imprimir'
       fullPath: '/ordens/$id/imprimir'
       preLoaderRoute: typeof AuthenticatedOrdensIdImprimirRouteImport
-      parentRoute: typeof AuthenticatedOrdensRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/veiculos/$id_/editar': {
       id: '/_authenticated/veiculos/$id_/editar'
@@ -441,52 +462,45 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedOrdensRouteChildren {
-  AuthenticatedOrdensIdRoute: typeof AuthenticatedOrdensIdRoute
-  AuthenticatedOrdensNovoRoute: typeof AuthenticatedOrdensNovoRoute
-  AuthenticatedOrdensIndexRoute: typeof AuthenticatedOrdensIndexRoute
-  AuthenticatedOrdensIdEditarRoute: typeof AuthenticatedOrdensIdEditarRoute
-  AuthenticatedOrdensIdImprimirRoute: typeof AuthenticatedOrdensIdImprimirRoute
-}
-
-const AuthenticatedOrdensRouteChildren: AuthenticatedOrdensRouteChildren = {
-  AuthenticatedOrdensIdRoute: AuthenticatedOrdensIdRoute,
-  AuthenticatedOrdensNovoRoute: AuthenticatedOrdensNovoRoute,
-  AuthenticatedOrdensIndexRoute: AuthenticatedOrdensIndexRoute,
-  AuthenticatedOrdensIdEditarRoute: AuthenticatedOrdensIdEditarRoute,
-  AuthenticatedOrdensIdImprimirRoute: AuthenticatedOrdensIdImprimirRoute,
-}
-
-const AuthenticatedOrdensRouteWithChildren =
-  AuthenticatedOrdensRoute._addFileChildren(AuthenticatedOrdensRouteChildren)
-
 interface AuthenticatedRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedOrdensRoute: typeof AuthenticatedOrdensRouteWithChildren
+  AuthenticatedProdutosRoute: typeof AuthenticatedProdutosRoute
+  AuthenticatedServicosRoute: typeof AuthenticatedServicosRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedClientesIdRoute: typeof AuthenticatedClientesIdRoute
   AuthenticatedClientesNovoRoute: typeof AuthenticatedClientesNovoRoute
+  AuthenticatedOrdensIdRoute: typeof AuthenticatedOrdensIdRoute
+  AuthenticatedOrdensNovoRoute: typeof AuthenticatedOrdensNovoRoute
   AuthenticatedVeiculosIdRoute: typeof AuthenticatedVeiculosIdRoute
   AuthenticatedVeiculosNovoRoute: typeof AuthenticatedVeiculosNovoRoute
   AuthenticatedClientesIndexRoute: typeof AuthenticatedClientesIndexRoute
+  AuthenticatedOrdensIndexRoute: typeof AuthenticatedOrdensIndexRoute
   AuthenticatedVeiculosIndexRoute: typeof AuthenticatedVeiculosIndexRoute
   AuthenticatedClientesIdEditarRoute: typeof AuthenticatedClientesIdEditarRoute
+  AuthenticatedOrdensIdEditarRoute: typeof AuthenticatedOrdensIdEditarRoute
+  AuthenticatedOrdensIdImprimirRoute: typeof AuthenticatedOrdensIdImprimirRoute
   AuthenticatedVeiculosIdEditarRoute: typeof AuthenticatedVeiculosIdEditarRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedOrdensRoute: AuthenticatedOrdensRouteWithChildren,
+  AuthenticatedProdutosRoute: AuthenticatedProdutosRoute,
+  AuthenticatedServicosRoute: AuthenticatedServicosRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedClientesIdRoute: AuthenticatedClientesIdRoute,
   AuthenticatedClientesNovoRoute: AuthenticatedClientesNovoRoute,
+  AuthenticatedOrdensIdRoute: AuthenticatedOrdensIdRoute,
+  AuthenticatedOrdensNovoRoute: AuthenticatedOrdensNovoRoute,
   AuthenticatedVeiculosIdRoute: AuthenticatedVeiculosIdRoute,
   AuthenticatedVeiculosNovoRoute: AuthenticatedVeiculosNovoRoute,
   AuthenticatedClientesIndexRoute: AuthenticatedClientesIndexRoute,
+  AuthenticatedOrdensIndexRoute: AuthenticatedOrdensIndexRoute,
   AuthenticatedVeiculosIndexRoute: AuthenticatedVeiculosIndexRoute,
   AuthenticatedClientesIdEditarRoute: AuthenticatedClientesIdEditarRoute,
+  AuthenticatedOrdensIdEditarRoute: AuthenticatedOrdensIdEditarRoute,
+  AuthenticatedOrdensIdImprimirRoute: AuthenticatedOrdensIdImprimirRoute,
   AuthenticatedVeiculosIdEditarRoute: AuthenticatedVeiculosIdEditarRoute,
 }
 
