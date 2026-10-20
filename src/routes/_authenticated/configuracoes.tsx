@@ -11,7 +11,7 @@ import { registrar } from "@/lib/auditoria";
 import { enviarImagem, useImagem } from "@/lib/arquivos";
 import { aguardarGravacoes, mensagemErro } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
-import { limparDadosDemonstracao } from "@/lib/usuarios.functions";
+import { ResetDados } from "@/components/config/ResetDados";
 import { getClientes } from "@/lib/clientes";
 import { getVeiculos } from "@/lib/veiculos";
 import { getOrcamentos } from "@/lib/orcamentos";
@@ -52,7 +52,7 @@ function Configuracoes() {
   const podeVer = pode("configuracoes");
   const [aba, setAba] = useState<string>(podeVer ? SECOES[0]!.key : "");
   const sistema = [
-    podeVer && { key: MANUT, titulo: "Backup e manutenção" },
+    podeVer && { key: MANUT, titulo: "Manutenção e dados" },
   ].filter(Boolean) as { key: string; titulo: string }[];
   const cadastrosAbas = podeAlterar ? [
     { key: MARCAS, titulo: "Marcas de veículos" },
@@ -363,8 +363,266 @@ function baixar(nome: string, conteudo: string) {
 function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [importado, setImportado] = useState<Config | null>(null);
-  const [limpar, setLimpar] = useState(false);
-  const [texto, setTexto] = useState("");
+  const [ocupado, setOcupado] = useState(false);
+  const [relatorio, setRelatorio] = useState<string[] | null>(null);
+  const hoje = new Date().toISOString().slice(0, 10);
+  const backups = useAuditoriaTipo("Backup manual");
+  const ultimo = backups.at(-1)?.data;
+  const locais = LOCAIS.map((l) => ({ ...l, qtd: lerLocal(l.chave).length })).filter((l) => l.qtd > 0);
+  const totais = [["Clientes", getClientes().length], ["Veículos", getVeiculos().length], ["Produtos", getProdutos().length], ["Serviços", getServicos().length], ["Orçamentos e OS", getOrcamentos().length], ["Usuários", getUsers().length]] as const;
+
+  const backup = () => {
+    const dados = { perfis: getPerfis(), usuarios: getUsers(), configuracoes: getConfig(), clientes: getClientes(), veiculos: getVeiculos(), produtos: getProdutos(), servicos: getServicos(), orcamentos: getOrcamentos(), auditoria: getAuditoria() };
+    baixar(`gordo-backup-${hoje}.json`, JSON.stringify({ versao: VERSAO, criadoEm: new Date().toISOString(), dados }, null, 2));
+    registrar({ tipo: "Backup manual", alvo: "Sistema", descricao: "Cópia dos dados baixada pelo administrador." });
+  };
+  const exportar = () => baixar(`gordo-configuracoes-${hoje}.json`, JSON.stringify({ versao: VERSAO, config: getConfig() }, null, 2));
+  const lerArquivo = (f?: File) => {
+    if (!f) return;
+    f.text().then((t) => {
+      try { setImportado(importarConfig(t)); } catch { toast.error("Arquivo de configurações inválido."); }
+    });
+  };
+
+  /** Copia os dados que estavam salvos só neste navegador para o banco, sem duplicar. */
+  const migrar = async () => {
+    setOcupado(true);
+    const linhas: string[] = [];
+    try {
+      for (const l of LOCAIS) {
+        const regs = lerLocal(l.chave);
+        if (!regs.length) continue;
+        const { data: existentes } = await supabase.from(l.tabela).select("id");
+        const ja = new Set((existentes ?? []).map((x) => x.id));
+        const novos = regs.filter((r) => r && typeof r.id === "string" && !ja.has(r.id));
+        let ok = 0;
+        const falhas: string[] = [];
+        for (const r of novos) {
+          const { error } = await supabase.from(l.tabela).insert(linhaDe(l.tabela, r) as never);
+          if (error) falhas.push(mensagemErro(error, "erro"));
+          else ok++;
+        }
+        linhas.push(`${l.nome}: ${regs.length} no navegador, ${regs.length - novos.length} já existiam, ${ok} migrado(s)${falhas.length ? `, ${falhas.length} com problema (${[...new Set(falhas)].join("; ")})` : ""}.`);
+      }
+      await carregarColecoes();
+      registrar({ tipo: "Migração de dados", alvo: "Sistema", descricao: linhas.join(" ") });
+      setRelatorio(linhas.length ? linhas : ["Nenhum dado local encontrado."]);
+    } catch (e) {
+      toast.error(mensagemErro(e, "Falha na migração. Nada foi apagado do navegador."));
+    } finally {
+      setOcupado(false);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="panel p-5">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold uppercase">{def.titulo}</h2>
+            <p className="text-sm text-muted-foreground">{def.desc}</p>
+          </div>
+          {!podeAlterar && <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Lock className="h-3.5 w-3.5" /> Somente leitura</span>}
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {def.campos.map((f) => <CampoConfig key={f.key} campo={f} valor={rascunho[f.key]!} onChange={(v) => set(f.key, v)} disabled={!podeAlterar} />)}
+        </div>
+      </div>
+
+      {secao === "visual" && <PreviaVisual v={rascunho as Config["visual"]} />}
+      {secao === "documentos" && <PreviaDocumento d={rascunho as Config["documentos"]} empresa={cfg.empresa} />}
+
+      {podeAlterar && (
+        <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 rounded-md border border-border bg-card/95 p-3 backdrop-blur">
+          {mudancas.length > 0 && <span className="mr-auto text-sm text-warning">{mudancas.length} alteração(ões) não salva(s)</span>}
+          <ConfirmDialog
+            trigger={<button className="btn-ghost h-10"><RotateCcw className="h-4 w-4" /> Restaurar padrão</button>}
+            title="Restaurar padrão?" description={`Todos os campos de "${def.titulo}" voltarão ao valor original e serão salvos.`}
+            confirmLabel="Restaurar" onConfirm={() => { setRascunho(secaoDe(CONFIG_PADRAO, secao)); gravar(secaoDe(CONFIG_PADRAO, secao), "Restaurado o padrão"); }}
+          />
+          <button className="btn-ghost h-10" disabled={!mudancas.length} onClick={() => setRascunho(secaoDe(cfg, secao))}><X className="h-4 w-4" /> Cancelar</button>
+          <ConfirmDialog
+            trigger={<button className="btn-primary h-10" disabled={!mudancas.length}><Save className="h-4 w-4" /> Salvar alterações</button>}
+            title="Salvar alterações?"
+            description={mudancas.slice(0, 6).map((m) => `${m.campo}: ${m.antes || "—"} → ${m.depois || "—"}`).join(" · ") + (mudancas.length > 6 ? ` · e mais ${mudancas.length - 6}` : "")}
+            confirmLabel="Salvar" onConfirm={() => gravar(rascunho, "Alterado")}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CampoConfig({ campo: f, valor, onChange, disabled }: { campo: Campo; valor: Valor; onChange: (v: Valor) => void; disabled: boolean }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const label = (
+    <div>
+      <div className="text-sm font-medium text-metal">{f.label}</div>
+      {f.desc && <div className="text-xs text-muted-foreground">{f.desc}</div>}
+    </div>
+  );
+  if (f.tipo === "bool")
+    return (
+      <label className={`flex items-center justify-between gap-3 rounded-md border border-border p-3 ${disabled ? "opacity-70" : "cursor-pointer"}`}>
+        {label}
+        <input type="checkbox" className="h-5 w-5 accent-[var(--primary)]" checked={Boolean(valor)} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+      </label>
+    );
+  if (f.tipo === "imagem") return <CampoImagem campo={f} valor={String(valor || "")} onChange={onChange} disabled={disabled} label={label} />;
+  return (
+    <label className={`block space-y-1.5 ${f.tipo === "area" ? "md:col-span-2" : ""}`}>
+      {label}
+      {f.tipo === "area" ? (
+        <textarea className="field min-h-20" value={String(valor)} disabled={disabled} maxLength={1000} onChange={(e) => onChange(e.target.value)} />
+      ) : f.tipo === "select" ? (
+        <select className="field" value={String(valor)} disabled={disabled} onChange={(e) => onChange(e.target.value)}>
+          {f.opcoes!.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
+        </select>
+      ) : f.tipo === "cor" ? (
+        <div className="flex items-center gap-2">
+          <input type="color" className="h-10 w-14 cursor-pointer rounded border border-border bg-transparent" value={String(valor)} disabled={disabled} onChange={(e) => onChange(e.target.value)} />
+          <input className="field font-mono" value={String(valor)} disabled={disabled} maxLength={7} onChange={(e) => onChange(e.target.value)} />
+        </div>
+      ) : (
+        <input
+          className="field"
+          type={f.tipo === "numero" ? "number" : f.tipo === "hora" ? "time" : "text"}
+          value={String(valor)}
+          disabled={disabled}
+          maxLength={200}
+          onChange={(e) => onChange(f.tipo === "numero" ? Number(e.target.value) : e.target.value)}
+        />
+      )}
+    </label>
+  );
+}
+
+function CampoImagem({ campo: f, valor, onChange, disabled, label }: { campo: Campo; valor: string; onChange: (v: Valor) => void; disabled: boolean; label: React.ReactNode }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const url = useImagem(valor);
+  const [enviando, setEnviando] = useState(false);
+  const enviar = async (file?: File) => {
+    if (!file) return;
+    setEnviando(true);
+    try {
+      onChange(await enviarImagem(f.key, file));
+      toast.success("Imagem enviada. Salve as alterações para aplicar.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setEnviando(false);
+    }
+  };
+  return (
+    <div className="space-y-2 rounded-md border border-border p-3">
+      {label}
+      <div className="flex items-center gap-3">
+        <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-md border border-dashed border-border bg-background">
+          {url ? <img src={url} alt={f.label} className="h-full w-full object-contain" /> : <span className="text-[10px] text-muted-foreground">Sem imagem</span>}
+        </div>
+        {!disabled && (
+          <div className="flex flex-wrap gap-2">
+            <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon" className="hidden" onChange={(e) => { void enviar(e.target.files?.[0]); e.target.value = ""; }} />
+            <button type="button" disabled={enviando} className="btn-ghost h-9 text-xs" onClick={() => inputRef.current?.click()}><Upload className="h-3.5 w-3.5" /> {enviando ? "Enviando..." : valor ? "Substituir" : "Enviar"}</button>
+            {valor && <button type="button" className="btn-ghost h-9 text-xs hover:text-destructive" onClick={() => onChange("")}><Trash2 className="h-3.5 w-3.5" /> Remover</button>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PreviaVisual({ v }: { v: Config["visual"] }) {
+  const vars = variaveisTema(v) as React.CSSProperties;
+  return (
+    <div className="panel p-5">
+      <h3 className="mb-3 text-xl font-bold uppercase">Pré-visualização</h3>
+      <div style={vars} className="overflow-hidden rounded-[var(--radius)] border border-border">
+        <div className="flex" style={{ background: "var(--background)", color: "var(--foreground)", fontSize: `${Number(v.fonte) || 16}px` }}>
+          <div className="w-40 space-y-1 p-3" style={{ background: "var(--sidebar)" }}>
+            {v.mostrarNome && <div className="font-display font-extrabold italic text-metal">GORDO</div>}
+            <div className="rounded-md border-l-2 border-primary bg-sidebar-accent px-2 py-1.5 text-xs">Dashboard</div>
+            <div className="px-2 py-1.5 text-xs opacity-70">Clientes</div>
+          </div>
+          <div className="flex-1 space-y-3 p-4">
+            <div className={`rounded-[var(--radius)] p-3 ${v.estiloCards === "contorno" ? "border border-primary" : v.estiloCards === "destaque" ? "border-t-4 border-primary bg-card" : "bg-card"}`}>
+              <div className="text-xs uppercase text-muted-foreground">Clientes cadastrados</div>
+              <div className="font-display text-2xl font-bold">42</div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-[var(--radius)] bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">Botão principal</span>
+              <span className="rounded-full bg-success/20 px-2 py-1 text-xs text-success">Sucesso</span>
+              <span className="rounded-full bg-warning/20 px-2 py-1 text-xs text-warning">Alerta</span>
+              <span className="rounded-full bg-destructive/20 px-2 py-1 text-xs text-destructive">Erro</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PreviaDocumento({ d, empresa }: { d: Config["documentos"]; empresa: Config["empresa"] }) {
+  const end = [empresa.logradouro, empresa.numero, empresa.bairro, empresa.cidade].filter(Boolean).join(", ");
+  return (
+    <div className="panel p-5">
+      <h3 className="mb-3 text-xl font-bold uppercase">Prévia do documento</h3>
+      <div className="mx-auto max-w-xl rounded-md bg-paper p-6 text-[12px] text-ink">
+        <div className="flex items-start justify-between border-b-2 border-primary pb-3">
+          <div>
+            <div className="font-display text-xl font-extrabold italic uppercase">{String(empresa.nomeFantasia)}</div>
+            {d.mostrarEndereco && end && <div className="text-ink-muted">{end}</div>}
+            {d.mostrarTelefone && empresa.whatsapp && <div className="text-ink-muted">WhatsApp {String(empresa.whatsapp)}</div>}
+          </div>
+          <div className="text-right font-display text-lg font-bold uppercase">{String(d.titulo)}<div className="text-xs text-ink-muted">ORC-00001</div></div>
+        </div>
+        {d.apresentacao && <p className="mt-3 whitespace-pre-wrap">{String(d.apresentacao)}</p>}
+        <div className="mt-3 flex justify-between border-t border-paper-border py-1.5"><span>Troca de óleo</span><span>R$ 150,00</span></div>
+        {d.mostrarDescontos && <div className="flex justify-between text-ink-muted"><span>Desconto</span><span>- R$ 10,00</span></div>}
+        <div className="flex justify-between border-t border-ink pt-1.5 font-bold"><span>Total</span><span>R$ 140,00</span></div>
+        {d.validadeTexto && <p className="mt-3 text-ink-muted">{String(d.validadeTexto)} ({String(d.validadeDias)} dias)</p>}
+        {d.garantia && <p className="text-ink-muted">{String(d.garantia)}</p>}
+        {d.mostrarAssinatura && <div className="mt-6 w-48 border-t border-ink pt-1 text-center">Assinatura do cliente</div>}
+        {d.rodape && <p className="mt-4 text-center text-ink-muted">{String(d.rodape)}</p>}
+      </div>
+    </div>
+  );
+}
+
+const LOCAIS: { chave: string; tabela: "clientes" | "veiculos" | "produtos" | "servicos" | "orcamentos"; nome: string }[] = [
+  { chave: "gordo.clientes", tabela: "clientes", nome: "Clientes" },
+  { chave: "gordo.veiculos", tabela: "veiculos", nome: "Veículos" },
+  { chave: "gordo.produtos", tabela: "produtos", nome: "Produtos" },
+  { chave: "gordo.servicos", tabela: "servicos", nome: "Serviços" },
+  { chave: "gordo.orcamentos", tabela: "orcamentos", nome: "Orçamentos e OS" },
+];
+type Reg = Record<string, unknown> & { id: string };
+function linhaDe(tabela: string, r: Reg) {
+  const { id, ...resto } = r;
+  const extra: Record<string, unknown> =
+    tabela === "clientes" ? { documento: r["documento"] ?? "", ativo: r["ativo"] ?? true }
+    : tabela === "veiculos" ? { cliente_id: r["clienteId"], placa: r["placa"] ?? "", ativo: r["ativo"] ?? true }
+    : tabela === "produtos" ? { codigo: String(r["codigo"] ?? "").trim(), ativo: r["ativo"] ?? true }
+    : tabela === "servicos" ? { ativo: r["ativo"] ?? true }
+    : { numero: r["numero"], tipo: r["tipo"], status: r["status"], cliente_id: r["clienteId"] || null, veiculo_id: r["veiculoId"] || null };
+  return { id, data: resto, ...extra };
+}
+const lerLocal = (k: string): Reg[] => {
+  try { const v = JSON.parse(localStorage.getItem(k) || "[]"); return Array.isArray(v) ? v : []; } catch { return []; }
+};
+
+function baixar(nome: string, conteudo: string) {
+  const url = URL.createObjectURL(new Blob([conteudo], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nome;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [importado, setImportado] = useState<Config | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [relatorio, setRelatorio] = useState<string[] | null>(null);
   const hoje = new Date().toISOString().slice(0, 10);
@@ -468,7 +726,6 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
               confirmLabel="Restaurar tudo"
               onConfirm={() => { salvarConfig(CONFIG_PADRAO); registrar({ tipo: "Configurações restauradas", alvo: "Todas", secao: "Todas", descricao: "Todas as configurações voltaram ao padrão." }); toast.success("Configurações restauradas."); }}
             />
-            <button className="btn-ghost h-10 hover:text-destructive" onClick={() => { setTexto(""); setLimpar(true); }}><Trash2 className="h-4 w-4" /> Limpar dados de demonstração</button>
           </div>
           <p className="text-xs text-muted-foreground">Os dados ficam no banco online do Lovable Cloud, que tem cópias de segurança automáticas da plataforma. A cópia baixada aqui é uma garantia extra guardada por você.</p>
         </div>
@@ -484,20 +741,7 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
           <button className="btn-primary h-10" onClick={() => { salvarConfig(importado!); registrar({ tipo: "Configurações importadas", alvo: "Todas", secao: "Todas", descricao: "Configurações importadas de arquivo." }); setImportado(null); toast.success("Configurações importadas."); }}>Importar</button>
         </div>
       </Modal>
-      <Modal open={limpar} onOpenChange={setLimpar} title="Limpar dados de demonstração" description="Clientes, veículos, orçamentos, OS, produtos e serviços serão apagados definitivamente do banco. Usuários, perfis, configurações e histórico serão mantidos.">
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium text-metal">Para confirmar, digite LIMPAR</span>
-          <input className="field" value={texto} onChange={(e) => setTexto(e.target.value)} />
-        </label>
-        <div className="mt-4 flex justify-end gap-2">
-          <button className="btn-ghost h-10" onClick={() => setLimpar(false)}>Cancelar</button>
-          <ConfirmDialog
-            trigger={<button className="btn-primary h-10" disabled={texto !== "LIMPAR" || ocupado}>Apagar dados</button>}
-            title="Tem certeza absoluta?" description="Esta ação não pode ser desfeita." confirmLabel="Sim, apagar"
-            onConfirm={() => void apagarDemo()}
-          />
-        </div>
-      </Modal>
+      <ResetDados />
     </div>
   );
 }
