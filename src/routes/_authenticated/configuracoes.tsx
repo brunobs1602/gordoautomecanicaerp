@@ -11,7 +11,7 @@ import { registrar } from "@/lib/auditoria";
 import { enviarImagem, useImagem } from "@/lib/arquivos";
 import { aguardarGravacoes, mensagemErro } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
-import { limparDadosDemonstracao } from "@/lib/usuarios.functions";
+import { ResetDados } from "@/components/config/ResetDados";
 import { getClientes } from "@/lib/clientes";
 import { getVeiculos } from "@/lib/veiculos";
 import { getOrcamentos } from "@/lib/orcamentos";
@@ -52,7 +52,7 @@ function Configuracoes() {
   const podeVer = pode("configuracoes");
   const [aba, setAba] = useState<string>(podeVer ? SECOES[0]!.key : "");
   const sistema = [
-    podeVer && { key: MANUT, titulo: "Backup e manutenção" },
+    podeVer && { key: MANUT, titulo: "Manutenção e dados" },
   ].filter(Boolean) as { key: string; titulo: string }[];
   const cadastrosAbas = podeAlterar ? [
     { key: MARCAS, titulo: "Marcas de veículos" },
@@ -363,8 +363,6 @@ function baixar(nome: string, conteudo: string) {
 function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [importado, setImportado] = useState<Config | null>(null);
-  const [limpar, setLimpar] = useState(false);
-  const [texto, setTexto] = useState("");
   const [ocupado, setOcupado] = useState(false);
   const [relatorio, setRelatorio] = useState<string[] | null>(null);
   const hoje = new Date().toISOString().slice(0, 10);
@@ -416,22 +414,6 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
     }
   };
 
-  const apagarDemo = async () => {
-    setOcupado(true);
-    try {
-      await aguardarGravacoes();
-      await limparDadosDemonstracao();
-      registrar({ tipo: "Dados de demonstração apagados", alvo: "Sistema", descricao: "Cadastros e orçamentos removidos." });
-      await carregarColecoes();
-      setLimpar(false);
-      toast.success("Dados apagados.");
-    } catch (e) {
-      toast.error((e as Error).message || "Falha ao apagar os dados.");
-    } finally {
-      setOcupado(false);
-    }
-  };
-
   return (
     <div className="space-y-5">
       <div className="panel grid gap-4 p-5 sm:grid-cols-2">
@@ -468,12 +450,12 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
               confirmLabel="Restaurar tudo"
               onConfirm={() => { salvarConfig(CONFIG_PADRAO); registrar({ tipo: "Configurações restauradas", alvo: "Todas", secao: "Todas", descricao: "Todas as configurações voltaram ao padrão." }); toast.success("Configurações restauradas."); }}
             />
-            <button className="btn-ghost h-10 hover:text-destructive" onClick={() => { setTexto(""); setLimpar(true); }}><Trash2 className="h-4 w-4" /> Limpar dados de demonstração</button>
           </div>
           <p className="text-xs text-muted-foreground">Os dados ficam no banco online do Lovable Cloud, que tem cópias de segurança automáticas da plataforma. A cópia baixada aqui é uma garantia extra guardada por você.</p>
         </div>
       ) : <p className="text-sm text-muted-foreground">Seu perfil não pode executar ações de manutenção.</p>}
 
+      <ResetDados />
       <Modal open={relatorio !== null} onOpenChange={(o) => !o && setRelatorio(null)} title="Resultado da migração">
         <ul className="list-disc space-y-1 pl-5 text-sm">{relatorio?.map((l) => <li key={l}>{l}</li>)}</ul>
         <p className="mt-3 text-xs text-muted-foreground">Usuários antigos não são migrados porque as senhas não podem ser copiadas: cadastre-os novamente em Usuários.</p>
@@ -482,20 +464,6 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
         <div className="flex justify-end gap-2">
           <button className="btn-ghost h-10" onClick={() => setImportado(null)}>Cancelar</button>
           <button className="btn-primary h-10" onClick={() => { salvarConfig(importado!); registrar({ tipo: "Configurações importadas", alvo: "Todas", secao: "Todas", descricao: "Configurações importadas de arquivo." }); setImportado(null); toast.success("Configurações importadas."); }}>Importar</button>
-        </div>
-      </Modal>
-      <Modal open={limpar} onOpenChange={setLimpar} title="Limpar dados de demonstração" description="Clientes, veículos, orçamentos, OS, produtos e serviços serão apagados definitivamente do banco. Usuários, perfis, configurações e histórico serão mantidos.">
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium text-metal">Para confirmar, digite LIMPAR</span>
-          <input className="field" value={texto} onChange={(e) => setTexto(e.target.value)} />
-        </label>
-        <div className="mt-4 flex justify-end gap-2">
-          <button className="btn-ghost h-10" onClick={() => setLimpar(false)}>Cancelar</button>
-          <ConfirmDialog
-            trigger={<button className="btn-primary h-10" disabled={texto !== "LIMPAR" || ocupado}>Apagar dados</button>}
-            title="Tem certeza absoluta?" description="Esta ação não pode ser desfeita." confirmLabel="Sim, apagar"
-            onConfirm={() => void apagarDemo()}
-          />
         </div>
       </Modal>
     </div>
