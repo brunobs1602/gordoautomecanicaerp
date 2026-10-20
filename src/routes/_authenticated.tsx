@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-
 import { carregarSistema, logout, precisaConfiguracaoInicial, registrarAtividade, sessaoExpirada, useCurrentUser } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
 import "@/lib/dados";
+import { atualizarDoBanco } from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -39,14 +40,25 @@ function Layout() {
   // Expiração da sessão por inatividade, conforme Configurações.
   useEffect(() => {
     const ativo = () => registrarAtividade();
+    // Ao voltar para a aba, relê o banco para não exibir dados antigos.
+    let ultimo = Date.now();
+    const voltou = () => {
+      if (document.visibilityState !== "visible" || Date.now() - ultimo < 30_000) return;
+      ultimo = Date.now();
+      void atualizarDoBanco().catch(() => undefined);
+    };
     window.addEventListener("pointerdown", ativo);
     window.addEventListener("keydown", ativo);
+    document.addEventListener("visibilitychange", voltou);
+    window.addEventListener("focus", voltou);
     const t = setInterval(() => {
       if (sessaoExpirada()) void logout().then(() => navigate({ to: "/login", replace: true }));
     }, 60_000);
     return () => {
       window.removeEventListener("pointerdown", ativo);
       window.removeEventListener("keydown", ativo);
+      document.removeEventListener("visibilitychange", voltou);
+      window.removeEventListener("focus", voltou);
       clearInterval(t);
     };
   }, [navigate]);
