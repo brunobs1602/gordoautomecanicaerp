@@ -29,6 +29,13 @@
       "when": 1792454023389,
       "tag": "0003_categorias_marcas",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792457579913,
+      "tag": "0004_resetar_dados_operacionais",
+      "breakpoints": true
     }
   ]
 }

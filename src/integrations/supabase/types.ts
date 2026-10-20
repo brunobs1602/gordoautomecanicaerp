@@ -417,8 +417,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      eh_administrador: { Args: never; Returns: boolean }
       precisa_configuracao_inicial: { Args: never; Returns: boolean }
       registrar_acesso: { Args: never; Returns: undefined }
+      resetar_dados_operacionais: { Args: never; Returns: Json }
       tem_permissao: {
         Args: { _acao: string; _modulo: string }
         Returns: boolean
