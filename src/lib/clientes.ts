@@ -140,11 +140,6 @@ export function alterarStatusCliente(id: string, ativo: boolean) {
   salvar(getClientes().map((c) => (c.id === id ? { ...c, ativo, atualizadoEm: new Date().toISOString() } : c)));
 }
 
-export function excluirCliente(id: string) {
-  exigir("clientes", "excluir");
-  salvar(getClientes().filter((c) => c.id !== id));
-}
-
 export const useClientes = col.use;
 
 export function clienteVazio(): ClienteInput {
