@@ -37,7 +37,7 @@ export function ExcluirRegistro({ tipo, id, nome, confirmacao, detalhes, compact
     try {
       const r = await excluirDefinitivo(tipo, id, motivo.trim());
       if (!r.ok) { setMotivos(r.motivos); setEtapa("bloqueado"); return; }
-      toast.success(`${ROTULO[tipo][0].toUpperCase() + ROTULO[tipo].slice(1)} "${nome}" excluído definitivamente.`);
+      toast.success(`Registro "${nome}" excluído definitivamente.`);
       setAberto(false); aoExcluir?.();
     } catch (e) { toast.error((e as Error).message); }
     finally { setProcessando(false); }
