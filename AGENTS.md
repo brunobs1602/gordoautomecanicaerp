@@ -16,3 +16,4 @@
 - All data lives in Lovable Cloud: `createCollection` in `src/lib/store.ts` keeps an in-memory cache loaded after login (`carregarSistema`) and writes through one sequential queue; database RLS uses `tem_permissao(modulo, acao)` so permissions are enforced server-side too.
 - User accounts are managed only through server functions in `src/lib/usuarios.functions.ts` (public sign-up is disabled); roles live in `user_perfis`, never on `profiles`.
 - Logos are stored in the private `marca` bucket; config keeps a `marca:<path>` reference resolved with `useImagem` (signed URLs).
+- Permanent deletion of clients, vehicles, products and quotes goes only through the DB function `excluir_registro` (via `src/lib/exclusao.ts` + `ExcluirRegistro`); direct DELETE policies were removed so dependency checks and audit logging cannot be bypassed.

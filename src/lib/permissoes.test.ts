@@ -36,3 +36,14 @@ describe("regras de senha", () => {
     expect(validarSenha("123456")).toBe("");
   });
 });
+
+describe("exclusão definitiva (Item 10)", () => {
+  const perfil = (id: string) => PERFIS_PADRAO.find((x) => x.id === id)!;
+  it("administrador pode excluir orçamentos, veículos, clientes e produtos", () => {
+    for (const m of ["orcamentos", "veiculos", "clientes", "produtos"] as const) expect(pode(perfil("admin"), m, "excluir")).toBe(true);
+  });
+  it("funcionário e atendimento não excluem por padrão", () => {
+    for (const id of ["funcionario", "atendimento"]) for (const m of ["orcamentos", "veiculos", "clientes", "produtos"] as const)
+      expect(pode(perfil(id), m, "excluir")).toBe(false);
+  });
+});

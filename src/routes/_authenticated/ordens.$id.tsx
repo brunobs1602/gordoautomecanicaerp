@@ -14,6 +14,7 @@ import { useCurrentUser, useUsers } from "@/lib/auth";
 import { moeda } from "@/lib/store";
 import { mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
+import { ExcluirRegistro } from "@/components/ExcluirRegistro";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
 import { StatusOrc } from "@/components/orcamentos/StatusOrc";
@@ -194,6 +195,10 @@ function DetalheOrcamento() {
                 confirmLabel="Converter" onConfirm={() => mudar("convertido", "Convertido em ordem de serviço.")}
               />
             )}
+            {o.tipo === "orcamento" && <ExcluirRegistro tipo="orcamento" id={o.id} nome={codigoDoc(o)} confirmacao={codigoDoc(o)}
+              detalhes={[["Número", codigoDoc(o)], ["Cliente", c?.nome ?? ""], ["Veículo", v ? [formatarPlaca(v.placa), v.modelo].filter(Boolean).join(" ") : ""],
+                ["Valor total", moeda(totais.total)], ["Itens", o.itens.length ? o.itens.map((i) => `${i.quantidade}× ${i.descricao}`).join("\n") : "Nenhum"]]}
+              aoExcluir={() => navigate({ to: "/ordens", replace: true })} />}
             {pode("orcamentos", "criar") && <ConfirmDialog
               trigger={<button className="btn-ghost h-11"><Copy className="h-4 w-4" /> Duplicar</button>}
               title="Duplicar orçamento?" description="Será criado um novo rascunho com os mesmos dados." confirmLabel="Duplicar"

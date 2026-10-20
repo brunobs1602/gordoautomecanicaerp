@@ -7,6 +7,7 @@ import { TIPOS, alterarStatusVeiculo, formatarPlaca, normalizarPlaca, useVeiculo
 import { useClientes } from "@/lib/clientes";
 import { soDigitos } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
+import { ExcluirRegistro } from "@/components/ExcluirRegistro";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge } from "@/components/clientes/StatusBadge";
 
@@ -158,6 +159,8 @@ function ListaVeiculos() {
                             onConfirm={() => alterarStatusVeiculo(v.id, !v.ativo)}
                           />
                         )}
+                        <ExcluirRegistro compacto tipo="veiculo" id={v.id} nome={formatarPlaca(v.placa) || v.modelo} confirmacao={formatarPlaca(v.placa) || v.modelo || "EXCLUIR"}
+                          detalhes={[["Placa", formatarPlaca(v.placa)], ["Veículo", [v.marca, v.modelo].filter(Boolean).join(" ")], ["Proprietário", c?.nome ?? ""]]} />
                       </div>
                     </td>
                   </tr>

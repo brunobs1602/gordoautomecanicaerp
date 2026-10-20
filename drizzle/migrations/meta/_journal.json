@@ -36,6 +36,13 @@
       "when": 1792457579913,
       "tag": "0004_resetar_dados_operacionais",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792458208899,
+      "tag": "0005_exclusao_segura",
+      "breakpoints": true
     }
   ]
 }
