@@ -86,7 +86,24 @@ export const veiculoSchema = z
       ctx.addIssue({ code: "custom", path: ["anoModelo"], message: "Ano do modelo deve ser no máximo 1 ano após a fabricação." });
   });
 
-const col = createCollection<Veiculo>("veiculos", { colunas: (v) => ({ cliente_id: v.clienteId, placa: v.placa, ativo: v.ativo }) });
+// O vínculo e o status vêm das colunas da tabela (fonte confiável); campos ausentes viram vazio.
+const col = createCollection<Veiculo>("veiculos", {
+  colunas: (v) => ({ cliente_id: v.clienteId, placa: v.placa, ativo: v.ativo }),
+  deLinha: (l) => {
+    const d = (l["data"] ?? {}) as Partial<Veiculo>;
+    const base = { ...veiculoVazio(), ...Object.fromEntries(Object.entries(d).filter(([, v]) => v != null)) } as VeiculoInput;
+    return {
+      ...base,
+      id: l.id,
+      clienteId: String(l["cliente_id"] ?? base.clienteId ?? ""),
+      placa: String(l["placa"] ?? base.placa ?? ""),
+      ativo: typeof l["ativo"] === "boolean" ? (l["ativo"] as boolean) : base.ativo !== false,
+      criadoEm: d.criadoEm || String(l["criado_em"] ?? ""),
+      atualizadoEm: d.atualizadoEm || String(l["atualizado_em"] ?? ""),
+    };
+  },
+  select: "id,data,cliente_id,placa,ativo,criado_em,atualizado_em",
+});
 export const getVeiculos = col.get;
 const salvar = col.save;
 
