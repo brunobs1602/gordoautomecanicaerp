@@ -113,15 +113,38 @@ export const excluirUsuario = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Apaga cadastros e orçamentos (manutenção). Usuários, perfis, configurações e histórico são mantidos. */
-export const limparDadosDemonstracao = createServerFn({ method: "POST" })
+export interface ResultadoReset {
+  clientes: number; veiculos: number; produtos: number; servicos: number; orcamentos: number; ordens: number; estoque: number; anexos: number; data: string;
+}
+
+/** Reset dos dados de teste: só administrador, exige a senha e roda numa única transação no banco. */
+export const resetarDadosOperacionais = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await exigir(context as unknown as Ctx, "configuracoes", "config");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    for (const t of ["orcamentos", "veiculos", "clientes", "produtos", "servicos"] as const) {
-      const { error } = await supabaseAdmin.from(t).delete().not("id", "is", null);
-      if (error) erroAmigavel(error);
+  .inputValidator((d: unknown) => z.object({ senha: z.string().min(1).max(100), frase: z.literal("RESETAR DADOS") }).parse(d))
+  .handler(async ({ data, context }) => {
+    const ctx = context as unknown as { supabase: { rpc: (fn: string) => PromiseLike<{ data: unknown; error: { message: string } | null }> }; claims: { email?: string } };
+    const { data: admin } = await ctx.supabase.rpc("eh_administrador");
+    if (!admin) throw new Error("Somente o administrador pode limpar os dados.");
+    const email = ctx.claims.email;
+    if (!email) throw new Error("Não foi possível confirmar sua identidade.");
+    // Confere a senha com um cliente isolado (não altera a sessão atual).
+    const { createClient } = await import("@supabase/supabase-js");
+    const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+    const verif = createClient(process.env["SUPABASE_URL"]!, key, {
+      auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+      global: { fetch: (input, init) => {
+        const h = new Headers(init?.headers);
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        h.set("apikey", key);
+        return fetch(input, { ...init, headers: h });
+      } },
+    });
+    const { error: errSenha } = await verif.auth.signInWithPassword({ email, password: data.senha });
+    if (errSenha) throw new Error("Senha incorreta. Nenhum dado foi apagado.");
+    const { data: r, error } = await ctx.supabase.rpc("resetar_dados_operacionais");
+    if (error) {
+      console.error(error);
+      throw new Error(`A limpeza não foi concluída e nenhum dado foi apagado (a operação é desfeita por completo em caso de falha). Motivo: ${error.message}`);
     }
-    return { ok: true };
+    return r as ResultadoReset;
   });
