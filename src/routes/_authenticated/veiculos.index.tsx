@@ -1,7 +1,8 @@
 import { guard, useAcesso } from "@/lib/acesso";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Car, Eye, Pencil, Plus, Power, Search } from "lucide-react";
+import { Car, Eye, Pencil, Plus, Power, Search, X } from "lucide-react";
+import { BotaoAtualizar } from "@/components/BotaoAtualizar";
 import { TIPOS, alterarStatusVeiculo, formatarPlaca, normalizarPlaca, useVeiculos } from "@/lib/veiculos";
 import { useClientes } from "@/lib/clientes";
 import { soDigitos } from "@/lib/validacao";
@@ -31,32 +32,36 @@ function ListaVeiculos() {
   const [tipo, setTipo] = useState("");
   const [status, setStatus] = useState("");
   const [ordem, setOrdem] = useState<"placa" | "modelo" | "recentes" | "antigos">("placa");
+  const filtrado = !!(busca.trim() || marca || tipo || status);
+  const limpar = () => { setBusca(""); setMarca(""); setTipo(""); setStatus(""); };
 
   const porId = useMemo(() => new Map(clientes.map((c) => [c.id, c])), [clientes]);
   const marcas = useMemo(() => [...new Set(veiculos.map((v) => v.marca).filter(Boolean))].sort(), [veiculos]);
+  const semDono = veiculos.filter((v) => !porId.has(v.clienteId)).length;
 
   const lista = useMemo(() => {
     const q = busca.trim().toLowerCase();
     const qd = soDigitos(q);
     const qp = normalizarPlaca(q);
+    const t = (v: unknown) => String(v ?? "").toLowerCase();
     return veiculos
       .filter((v) => (!marca || v.marca === marca) && (!tipo || v.tipo === tipo) && (!status || String(v.ativo) === status))
       .filter((v) => {
         if (!q) return true;
         const c = porId.get(v.clienteId);
         return (
-          (qp && v.placa.includes(qp)) ||
-          v.modelo.toLowerCase().includes(q) ||
-          v.marca.toLowerCase().includes(q) ||
-          (c && c.nome.toLowerCase().includes(q)) ||
-          (c && qd.length > 0 && c.documento.includes(qd))
+          (qp && t(v.placa).includes(qp.toLowerCase())) ||
+          t(v.modelo).includes(q) ||
+          t(v.marca).includes(q) ||
+          (c && t(c.nome).includes(q)) ||
+          (c && qd.length > 0 && soDigitos(c.documento).includes(qd))
         );
       })
       .sort((a, b) =>
-        ordem === "placa" ? a.placa.localeCompare(b.placa)
-          : ordem === "modelo" ? a.modelo.localeCompare(b.modelo, "pt-BR")
-          : ordem === "recentes" ? b.criadoEm.localeCompare(a.criadoEm)
-          : a.criadoEm.localeCompare(b.criadoEm),
+        ordem === "placa" ? t(a.placa).localeCompare(t(b.placa))
+          : ordem === "modelo" ? t(a.modelo).localeCompare(t(b.modelo), "pt-BR")
+          : ordem === "recentes" ? t(b.criadoEm).localeCompare(t(a.criadoEm))
+          : t(a.criadoEm).localeCompare(t(b.criadoEm)),
       );
   }, [veiculos, porId, busca, marca, tipo, status, ordem]);
 
@@ -65,8 +70,13 @@ function ListaVeiculos() {
       <PageHeader
         title="Veículos"
         subtitle={`${veiculos.length} veículo(s) cadastrado(s)`}
-        action={pode("veiculos", "criar") && <Link to="/veiculos/novo" className="btn-primary"><Plus className="h-4 w-4" /> Novo veículo</Link>}
+        action={<div className="flex gap-2"><BotaoAtualizar />{pode("veiculos", "criar") && <Link to="/veiculos/novo" className="btn-primary"><Plus className="h-4 w-4" /> Novo veículo</Link>}</div>}
       />
+      {semDono > 0 && (
+        <div className="panel mb-4 border-destructive/50 p-3 text-sm">
+          {semDono} veículo(s) sem cliente proprietário válido. Eles continuam salvos; abra o veículo e use "Alterar proprietário" para corrigir.
+        </div>
+      )}
 
       <div className="panel mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto_auto]">
         <div className="relative sm:col-span-2 lg:col-span-1">
@@ -93,6 +103,12 @@ function ListaVeiculos() {
           <option value="antigos">Cadastro mais antigo</option>
         </select>
       </div>
+      {filtrado && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          Mostrando {lista.length} de {veiculos.length} veículo(s) com filtro aplicado.
+          <button className="btn-ghost px-2.5 py-1 text-xs" onClick={limpar}><X className="h-3.5 w-3.5" /> Limpar filtros</button>
+        </div>
+      )}
 
       {veiculos.length === 0 ? (
         <div className="panel flex flex-col items-center gap-3 p-12 text-center">
@@ -102,7 +118,7 @@ function ListaVeiculos() {
           {pode("veiculos", "criar") && <Link to="/veiculos/novo" className="btn-primary mt-2"><Plus className="h-4 w-4" /> Novo veículo</Link>}
         </div>
       ) : lista.length === 0 ? (
-        <div className="panel p-10 text-center text-muted-foreground">Nenhum veículo encontrado para esta busca.</div>
+        <div className="panel p-10 text-center text-muted-foreground">Nenhum veículo encontrado com estes filtros. <button className="text-primary underline" onClick={limpar}>Limpar filtros</button></div>
       ) : (
         <div className="panel overflow-x-auto">
           <table className="w-full min-w-[780px] text-sm">
