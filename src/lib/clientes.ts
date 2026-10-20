@@ -83,7 +83,23 @@ export const clienteSchema = z
     if (!ok) ctx.addIssue({ code: "custom", path: ["documento"], message: d.tipo === "PF" ? "CPF inválido." : "CNPJ inválido." });
   });
 
-const col = createCollection<Cliente>("clientes", { colunas: (c) => ({ documento: c.documento, ativo: c.ativo }) });
+// Registros antigos podem não ter todos os campos: completa com valores vazios para nunca sumirem da tela.
+const col = createCollection<Cliente>("clientes", {
+  colunas: (c) => ({ documento: c.documento, ativo: c.ativo }),
+  deLinha: (l) => {
+    const d = (l["data"] ?? {}) as Partial<Cliente>;
+    const base = { ...clienteVazio(), ...Object.fromEntries(Object.entries(d).filter(([, v]) => v != null)) } as ClienteInput;
+    return {
+      ...base,
+      id: l.id,
+      documento: String(l["documento"] ?? base.documento ?? ""),
+      ativo: typeof l["ativo"] === "boolean" ? (l["ativo"] as boolean) : base.ativo !== false,
+      criadoEm: d.criadoEm || String(l["criado_em"] ?? ""),
+      atualizadoEm: d.atualizadoEm || String(l["atualizado_em"] ?? ""),
+    };
+  },
+  select: "id,data,documento,ativo,criado_em,atualizado_em",
+});
 export const getClientes = col.get;
 const salvar = col.save;
 

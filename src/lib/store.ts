@@ -61,6 +61,12 @@ const coletores: Coletor[] = [];
 export const registrarColetor = (c: Coletor) => void coletores.push(c);
 export const carregarColecoes = () => Promise.all(coletores.map((c) => c.carregar()));
 export const limparColecoes = () => coletores.forEach((c) => c.limpar());
+/** Relê tudo do banco (sem descartar gravações ainda pendentes). */
+export async function atualizarDoBanco() {
+  await fila;
+  if (pendentes > 0) return;
+  await carregarColecoes();
+}
 
 /** Coleção salva no Lovable Cloud. Leitura instantânea do cache; gravação em segundo plano. */
 export function createCollection<T extends { id: string }>(tabela: string, op: Opcoes<T> = {}) {
