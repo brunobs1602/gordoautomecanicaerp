@@ -418,6 +418,15 @@ export type Database = {
     }
     Functions: {
       eh_administrador: { Args: never; Returns: boolean }
+      excluir_registro: {
+        Args: {
+          _id: string
+          _motivo?: string
+          _somente_verificar?: boolean
+          _tipo: string
+        }
+        Returns: Json
+      }
       precisa_configuracao_inicial: { Args: never; Returns: boolean }
       registrar_acesso: { Args: never; Returns: undefined }
       resetar_dados_operacionais: { Args: never; Returns: Json }
