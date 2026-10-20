@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -57,7 +57,7 @@ export function ExcluirRegistro({ tipo, id, nome, confirmacao, detalhes, compact
             <DialogDescription>{nome}</DialogDescription>
           </DialogHeader>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-md border border-border p-3 text-sm">
-            {detalhes.map(([k, v]) => (<><dt key={k + "k"} className="text-muted-foreground">{k}</dt><dd key={k + "v"} className="whitespace-pre-line">{v || "—"}</dd></>))}
+            {detalhes.map(([k, v]) => (<Fragment key={k}><dt className="text-muted-foreground">{k}</dt><dd className="whitespace-pre-line">{v || "—"}</dd></Fragment>))}
           </dl>
           {etapa === "verificando" && <p className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Verificando registros vinculados…</p>}
           {etapa === "bloqueado" && (
