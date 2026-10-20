@@ -1,11 +1,12 @@
 import { guard, useAcesso } from "@/lib/acesso";
 import { useState, type ReactNode } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Pencil, Power, UserRoundCog } from "lucide-react";
 import { alterarProprietario, alterarStatusVeiculo, formatarPlaca, useVeiculos } from "@/lib/veiculos";
 import { getClientes, useClientes } from "@/lib/clientes";
 import { mascaraDocumento, mascaraTelefone } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
+import { ExcluirRegistro } from "@/components/ExcluirRegistro";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormError } from "@/components/AuthCard";
 import { StatusBadge } from "@/components/clientes/StatusBadge";
@@ -87,6 +88,7 @@ function DetalheVeiculo() {
   const { pode } = useAcesso();
   const v = useVeiculos().find((x) => x.id === id);
   const clientes = useClientes();
+  const navigate = useNavigate();
 
   if (!v)
     return (
@@ -118,6 +120,9 @@ function DetalheVeiculo() {
                 onConfirm={() => alterarStatusVeiculo(v.id, !v.ativo)}
               />
             )}
+            <ExcluirRegistro tipo="veiculo" id={v.id} nome={formatarPlaca(v.placa) || v.modelo} confirmacao={formatarPlaca(v.placa) || v.modelo || "EXCLUIR"}
+              detalhes={[["Placa", formatarPlaca(v.placa)], ["Veículo", [v.marca, v.modelo].filter(Boolean).join(" ")], ["Proprietário", clientes.find((x) => x.id === v.clienteId)?.nome ?? ""]]}
+              aoExcluir={() => navigate({ to: "/veiculos", replace: true })} />
           </div>
         }
       />

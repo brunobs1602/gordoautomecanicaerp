@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { alterarStatusProduto, atualizarProduto, criarProduto, estoqueBaixo, produtoVazio, useProdutos, type Produto } from "@/lib/produtos";
 import { moeda } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
+import { ExcluirRegistro } from "@/components/ExcluirRegistro";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
 import { StatusBadge } from "@/components/clientes/StatusBadge";
@@ -104,6 +105,8 @@ function Produtos() {
                           confirmLabel={p.ativo ? "Inativar" : "Ativar"} onConfirm={() => alterarStatusProduto(p.id, !p.ativo)}
                         />
                       )}
+                      <ExcluirRegistro compacto tipo="produto" id={p.id} nome={p.nome} confirmacao={p.codigo || p.nome}
+                        detalhes={[["Nome", p.nome], ["Código", p.codigo], ["Categoria", p.categoria]]} />
                     </div>
                   </td>
                 </tr>

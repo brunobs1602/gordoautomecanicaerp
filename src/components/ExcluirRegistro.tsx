@@ -73,9 +73,9 @@ export function ExcluirRegistro({ tipo, id, nome, confirmacao, detalhes, compact
                 Esta exclusão é <strong>definitiva</strong> e não pode ser desfeita. Os registros relacionados não serão apagados.
               </p>
               <label className="block space-y-1"><span className="text-muted-foreground">Motivo (opcional)</span>
-                <input className="input" value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={200} /></label>
+                <input className="field" value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={200} /></label>
               <label className="block space-y-1"><span className="text-muted-foreground">Para confirmar, digite <strong className="text-foreground">{confirmacao}</strong></span>
-                <input className="input" value={digitado} onChange={(e) => setDigitado(e.target.value)} autoFocus /></label>
+                <input className="field" value={digitado} onChange={(e) => setDigitado(e.target.value)} autoFocus /></label>
               <div className="flex justify-end gap-2">
                 <button className="btn-ghost h-10" disabled={processando} onClick={() => setAberto(false)}>Cancelar</button>
                 <button className="btn-primary h-10" disabled={!ok || processando} onClick={confirmar}>

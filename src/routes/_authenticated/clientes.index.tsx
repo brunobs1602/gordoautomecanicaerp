@@ -3,10 +3,11 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, Pencil, Plus, Power, Search, Trash2, Users, X } from "lucide-react";
 import { BotaoAtualizar } from "@/components/BotaoAtualizar";
-import { alterarStatusCliente, excluirCliente, useClientes } from "@/lib/clientes";
+import { alterarStatusCliente, useClientes } from "@/lib/clientes";
 import { useVeiculos } from "@/lib/veiculos";
 import { mascaraDocumento, mascaraTelefone, soDigitos } from "@/lib/validacao";
 import { PageHeader } from "@/components/PageHeader";
+import { ExcluirRegistro } from "@/components/ExcluirRegistro";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { StatusBadge, TipoBadge } from "@/components/clientes/StatusBadge";
 
@@ -139,15 +140,8 @@ function ListaClientes() {
                         confirmLabel={c.ativo ? "Inativar" : "Ativar"}
                         onConfirm={() => alterarStatusCliente(c.id, !c.ativo)}
                       />}
-                      {pode("clientes", "excluir") && !comVeiculo.has(c.id) && (
-                        <ConfirmDialog
-                          trigger={<button className="btn-ghost px-2.5 hover:text-destructive" title="Excluir"><Trash2 className="h-4 w-4" /></button>}
-                          title="Excluir cliente?"
-                          description={`O cliente "${c.nome}" será excluído definitivamente. Esta ação não pode ser desfeita.`}
-                          confirmLabel="Excluir"
-                          onConfirm={() => excluirCliente(c.id)}
-                        />
-                      )}
+                      <ExcluirRegistro compacto tipo="cliente" id={c.id} nome={c.nome} confirmacao={c.nome}
+                        detalhes={[["Nome", c.nome], ["CPF/CNPJ", c.documento ? mascaraDocumento(c.documento, c.tipo) : ""]]} />
                     </div>
                   </td>
                 </tr>
