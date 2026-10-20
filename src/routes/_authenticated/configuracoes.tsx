@@ -466,7 +466,6 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
           <button className="btn-primary h-10" onClick={() => { salvarConfig(importado!); registrar({ tipo: "Configurações importadas", alvo: "Todas", secao: "Todas", descricao: "Configurações importadas de arquivo." }); setImportado(null); toast.success("Configurações importadas."); }}>Importar</button>
         </div>
       </Modal>
-      <ResetDados />
     </div>
   );
 }
