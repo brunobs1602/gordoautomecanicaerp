@@ -16,6 +16,8 @@ export const Route = createFileRoute("/_authenticated/ordens/")({
   beforeLoad: guard(["orcamentos"], ["ordens"]),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Orçamentos e OS · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Orçamentos e ordens de serviço da oficina." },
       { property: "og:title", content: "Orçamentos e OS · Gordo ERP" },

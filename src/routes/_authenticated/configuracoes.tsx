@@ -36,6 +36,8 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
   notFoundComponent: () => <p>Configurações não encontradas.</p>,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Configurações · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Central de configurações da oficina e do sistema." },
       { property: "og:title", content: "Configurações · Gordo ERP" },

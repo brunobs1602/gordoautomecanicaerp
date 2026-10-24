@@ -10,6 +10,8 @@ export const Route = createFileRoute("/_authenticated/ordens/$id_/editar")({
   beforeLoad: guard(["orcamentos", "editar"], ["ordens", "editar"]),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Editar orçamento · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Editar orçamento." },
       { property: "og:title", content: "Editar orçamento · Gordo ERP" },

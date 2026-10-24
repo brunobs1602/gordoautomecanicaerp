@@ -14,6 +14,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   beforeLoad: guard(["dashboard"]),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Dashboard · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Visão geral da oficina." },
       { property: "og:title", content: "Dashboard · Gordo ERP" },

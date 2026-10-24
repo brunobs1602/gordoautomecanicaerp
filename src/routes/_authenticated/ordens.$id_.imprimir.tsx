@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/ordens/$id_/imprimir")({
   validateSearch: z.object({ auto: z.boolean().optional() }),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Documento do orçamento · Gordo Auto Mecânica" },
       { name: "description", content: "Orçamento para envio ao cliente." },
       { property: "og:title", content: "Documento do orçamento · Gordo Auto Mecânica" },

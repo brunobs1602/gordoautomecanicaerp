@@ -11,6 +11,8 @@ export const Route = createFileRoute("/_authenticated/veiculos/novo")({
   validateSearch: z.object({ clienteId: z.string().optional() }),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Novo veículo · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Cadastrar novo veículo." },
       { property: "og:title", content: "Novo veículo · Gordo ERP" },

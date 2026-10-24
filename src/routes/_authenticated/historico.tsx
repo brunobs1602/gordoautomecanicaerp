@@ -13,6 +13,8 @@ export const Route = createFileRoute("/_authenticated/historico")({
   notFoundComponent: () => <p>Histórico não encontrado.</p>,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Histórico administrativo · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Registro das ações administrativas do sistema." },
       { property: "og:title", content: "Histórico administrativo · Gordo ERP" },

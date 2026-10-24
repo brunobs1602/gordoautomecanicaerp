@@ -15,6 +15,8 @@ export const Route = createFileRoute("/login")({
   },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Entrar · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Acesso ao sistema interno da Gordo Auto Mecânica." },
       { property: "og:title", content: "Entrar · Gordo ERP" },

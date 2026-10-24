@@ -10,6 +10,8 @@ export const Route = createFileRoute("/_authenticated/perfis/$id_/editar")({
   beforeLoad: guard(["perfis", "editar"]),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Editar perfil · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Editar perfil de acesso e permissões." },
       { property: "og:title", content: "Editar perfil · Gordo ERP" },
