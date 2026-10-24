@@ -7,7 +7,8 @@ import {
   CONFIG_PADRAO, SECOES, VERSAO, diffSecao, secaoDe, getConfig, importarConfig, salvarConfig, useConfig,
   type Campo, type Config, type Valor,
 } from "@/lib/config";
-import { registrar } from "@/lib/auditoria";
+import { registrar, garantirAuditoria } from "@/lib/auditoria";
+import { ErroConexao } from "@/components/ErroConexao";
 import { enviarImagem, useImagem } from "@/lib/arquivos";
 import { aguardarGravacoes, mensagemErro } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +30,10 @@ import { GerenciarCategorias, GerenciarMarcas } from "@/components/config/Cadast
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   beforeLoad: guard(["configuracoes"], ["usuarios"], ["perfis"]),
+  loader: () => garantirAuditoria(),
+  pendingComponent: () => <p className="p-6 text-muted-foreground">Carregando configurações...</p>,
+  errorComponent: ErroConexao,
+  notFoundComponent: () => <p>Configurações não encontradas.</p>,
   head: () => ({
     meta: [
       { title: "Configurações · Gordo Auto Mecânica ERP" },

@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle2, Loader2, Trash2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { Modal } from "@/components/Modal";
 import { resetarDadosOperacionais, type ResultadoReset } from "@/lib/usuarios.functions";
-import { aguardarGravacoes, carregarColecoes } from "@/lib/store";
+import { aguardarGravacoes, atualizarDoBanco } from "@/lib/store";
 import { carregarAuditoria } from "@/lib/auditoria";
 import { CONFIG_PADRAO, salvarConfig } from "@/lib/config";
 import { registrar } from "@/lib/auditoria";
@@ -60,8 +60,8 @@ export function ResetDados() {
         salvarConfig(CONFIG_PADRAO);
         registrar({ tipo: "Configurações restauradas", alvo: "Todas", secao: "Todas", descricao: "Configurações voltaram ao padrão durante o reset de dados." });
       }
-      await carregarColecoes();
-      await carregarAuditoria().catch(() => undefined);
+      await atualizarDoBanco(["clientes", "veiculos", "produtos", "servicos", "orcamentos", "configuracoes"]);
+      await carregarAuditoria();
       setResultado(r);
       setEtapa(0);
     } catch (e) {
