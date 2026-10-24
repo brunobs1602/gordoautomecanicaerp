@@ -104,3 +104,4 @@ const col = createCollection<Perfil>("perfis", {
 export const getPerfis = col.get;
 export const salvarPerfis = col.save;
 export const usePerfis = col.use;
+export const carregarPerfis = col.carregar;
