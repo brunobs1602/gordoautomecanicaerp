@@ -1,13 +1,20 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { guard } from "@/lib/acesso";
-import { useAuditoria } from "@/lib/auditoria";
+import { garantirAuditoria, useAuditoria } from "@/lib/auditoria";
+import { ErroConexao } from "@/components/ErroConexao";
 import { PageHeader } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   beforeLoad: guard(["usuarios"], ["perfis"], ["configuracoes", "config"]),
+  loader: () => garantirAuditoria(),
+  pendingComponent: () => <p className="p-6 text-muted-foreground">Carregando histórico...</p>,
+  errorComponent: ErroConexao,
+  notFoundComponent: () => <p>Histórico não encontrado.</p>,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Histórico administrativo · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Registro das ações administrativas do sistema." },
       { property: "og:title", content: "Histórico administrativo · Gordo ERP" },

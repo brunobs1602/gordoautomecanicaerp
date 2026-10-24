@@ -12,6 +12,8 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Gordo Auto Mecânica ERP" },
       { name: "description", content: "Sistema interno de gestão da Gordo Auto Mecânica." },
       { property: "og:title", content: "Gordo Auto Mecânica ERP" },

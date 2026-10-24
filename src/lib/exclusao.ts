@@ -23,6 +23,6 @@ export const verificarExclusao = (tipo: TipoExclusao, id: string) => chamar(tipo
 
 export async function excluirDefinitivo(tipo: TipoExclusao, id: string, motivo: string) {
   const r = await chamar(tipo, id, false, motivo);
-  if (r.ok) await atualizarDoBanco(); // listas, dashboard e estoque refletem a exclusão
+  if (r.ok) await atualizarDoBanco([MODULO_EXCLUSAO[tipo], "auditoria"]);
   return r;
 }

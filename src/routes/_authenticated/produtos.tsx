@@ -16,6 +16,8 @@ export const Route = createFileRoute("/_authenticated/produtos")({
   beforeLoad: guard(["produtos"]),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Produtos e peças · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Cadastro de produtos, peças e estoque." },
       { property: "og:title", content: "Produtos e peças · Gordo ERP" },

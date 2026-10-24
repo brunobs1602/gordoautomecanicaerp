@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/clientes/")({
   beforeLoad: guard(["clientes"]),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Clientes · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Cadastro e consulta de clientes da oficina." },
       { property: "og:title", content: "Clientes · Gordo ERP" },

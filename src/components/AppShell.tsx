@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Bell, Car, ClipboardList, LayoutDashboard, LogOut, Menu, Package, Settings, Users, Wrench, X,
@@ -58,14 +59,17 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
   const [open, setOpen] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { pode, perfil } = useAcesso();
   const vis = useConfig().visual;
   const recolhido = Boolean(vis.menuRecolhido);
   const direita = vis.menuPosicao === "direita";
 
-  const sair = () => {
-    logout();
-    navigate({ to: "/login", replace: true });
+  const sair = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await logout();
+    await navigate({ to: "/login", replace: true });
   };
 
   const nav = (

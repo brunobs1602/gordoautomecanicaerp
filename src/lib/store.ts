@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { lerComRecuperacao } from "./leitura";
 
 /** Traduz erros do banco para mensagens claras, sem detalhes técnicos. */
 export function mensagemErro(e: unknown, padrao = "Não foi possível salvar. Tente novamente."): string {
@@ -34,7 +35,10 @@ export function enfileirar(fn: () => Promise<void>, aoFalhar?: () => void) {
     });
   return fila;
 }
-export const aguardarGravacoes = () => fila;
+export async function aguardarGravacoes() {
+  // Novas gravações podem entrar enquanto aguardamos a fila anterior.
+  while (pendentes > 0) await fila;
+}
 export function useGravando() {
   return useSyncExternalStore(
     (l) => {
@@ -54,24 +58,39 @@ interface Opcoes<T> {
   paraLinha?: (t: T) => Linha;
   deLinha?: (l: Linha) => T;
   select?: string;
+  sobDemanda?: boolean;
 }
 
-type Coletor = { carregar: () => Promise<void>; limpar: () => void };
-const coletores: Coletor[] = [];
-export const registrarColetor = (c: Coletor) => void coletores.push(c);
-export const carregarColecoes = () => Promise.all(coletores.map((c) => c.carregar()));
-export const limparColecoes = () => coletores.forEach((c) => c.limpar());
+type Coletor = { nome: string; carregar: () => Promise<void>; limpar: () => void; sobDemanda?: boolean };
+const coletores = new Map<string, Coletor>();
+let permitido: (nome: string) => boolean = () => true;
+export const configurarLeituras = (fn: (nome: string) => boolean) => { permitido = fn; };
+export const registrarColetor = (c: Coletor) => { coletores.set(c.nome, c); };
+export async function carregarColecoes(nomes?: readonly string[]) {
+  const resultados = await Promise.allSettled([...coletores.values()]
+    .filter((c) => permitido(c.nome) && (nomes ? nomes.includes(c.nome) : !c.sobDemanda))
+    .map((c) => c.carregar()));
+  const falha = resultados.find((r) => r.status === "rejected");
+  if (falha?.status === "rejected") throw falha.reason;
+}
+export const limparColecoes = () => {
+  permitido = () => false;
+  coletores.forEach((c) => c.limpar());
+};
 /** Relê tudo do banco (sem descartar gravações ainda pendentes). */
-export async function atualizarDoBanco() {
-  await fila;
-  if (pendentes > 0) return;
-  await carregarColecoes();
+export async function atualizarDoBanco(nomes?: readonly string[]) {
+  await aguardarGravacoes();
+  await carregarColecoes(nomes);
 }
 
 /** Coleção salva no Lovable Cloud. Leitura instantânea do cache; gravação em segundo plano. */
 export function createCollection<T extends { id: string }>(tabela: string, op: Opcoes<T> = {}) {
   const listeners = new Set<() => void>();
   let cache: T[] = [];
+  let revisao = 0;
+  let geracao = 0;
+  let leitura: Promise<void> | null = null;
+  let carregada = false;
   const emit = () => listeners.forEach((l) => l());
   const tab = () => supabase.from(tabela as "clientes");
   const paraLinha = op.paraLinha ?? ((t: T) => {
@@ -80,14 +99,44 @@ export function createCollection<T extends { id: string }>(tabela: string, op: O
   });
   const deLinha = op.deLinha ?? ((l: Linha) => ({ ...(l["data"] as object), id: l.id }) as T);
 
-  const carregar = async () => {
-    const { data, error } = await supabase.from(tabela as "clientes").select(op.select ?? "id,data").limit(10000);
-    if (error) throw error;
-    cache = ((data ?? []) as unknown as Linha[]).map(deLinha);
-    emit();
+  const carregar = (): Promise<void> => {
+    if (leitura) return leitura;
+    const epoca = geracao;
+    const tarefa = (async () => {
+      // Páginas estáveis evitam o limite silencioso do serviço (e o antigo teto de 10.000).
+      for (;;) {
+        const versao = revisao;
+        const linhas: Linha[] = [];
+        for (let inicio = 0; ; inicio += 500) {
+          const pagina = await lerComRecuperacao(async (signal) => {
+            const { data, error } = await tab().select(op.select ?? "id,data")
+              .order("id").range(inicio, inicio + 499).abortSignal(signal);
+            if (error) throw error;
+            return (data ?? []) as unknown as Linha[];
+          });
+          if (epoca !== geracao) return;
+          linhas.push(...pagina);
+          if (pagina.length < 500) break;
+        }
+        if (versao !== revisao) {
+          await aguardarGravacoes();
+          if (epoca !== geracao) return;
+          continue;
+        }
+        cache = linhas.map(deLinha);
+        carregada = true;
+        emit();
+        return;
+      }
+    })();
+    leitura = tarefa;
+    void tarefa.finally(() => { if (leitura === tarefa) leitura = null; }).catch(() => undefined);
+    return tarefa;
   };
   const recarregar = () => void carregar().catch(() => toast.error("Falha ao carregar dados."));
-  coletores.push({ carregar, limpar: () => { cache = []; emit(); } });
+  registrarColetor({ nome: tabela, carregar, sobDemanda: op.sobDemanda ?? false, limpar: () => {
+    geracao++; revisao++; leitura = null; carregada = false; cache = []; emit();
+  } });
 
   const get = (): T[] => cache;
   const save = (list: T[]) => {
@@ -95,6 +144,7 @@ export function createCollection<T extends { id: string }>(tabela: string, op: O
     const alterados = list.filter((x) => antes.get(x.id) !== JSON.stringify(x));
     const ids = new Set(list.map((x) => x.id));
     const removidos = cache.filter((x) => !ids.has(x.id)).map((x) => x.id);
+    revisao++;
     cache = list;
     emit();
     if (alterados.length)
@@ -118,8 +168,9 @@ export function createCollection<T extends { id: string }>(tabela: string, op: O
       get,
     );
   /** Atualiza só o cache local (dados já gravados por outro caminho). */
-  const definir = (list: T[]) => { cache = list; emit(); };
-  return { get, save, use, carregar, definir };
+  const definir = (list: T[]) => { revisao++; cache = list; emit(); };
+  const garantir = () => carregada ? Promise.resolve() : carregar();
+  return { get, save, use, carregar, garantir, definir };
 }
 
 export const agoraISO = () => new Date().toISOString();

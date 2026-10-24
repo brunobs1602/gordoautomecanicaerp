@@ -1,8 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ADMIN_ID, getPerfis } from "./permissoes";
+import { ADMIN_ID, carregarPerfis, getPerfis } from "./permissoes";
 import { getConfig, validarSenha } from "./config";
 import { registrar } from "./auditoria";
-import { createCollection, enfileirar, limparColecoes, carregarColecoes, mensagemErro } from "./store";
+import { createCollection, enfileirar, limparColecoes, carregarColecoes, configurarLeituras, aguardarGravacoes, mensagemErro } from "./store";
+import { lerComRecuperacao } from "./leitura";
+import { podeLerColecao } from "./leituras-permitidas";
 import { definirSessao, getSessao, useSessao, type User } from "./sessao";
 import { criarUsuario, excluirUsuario, redefinirSenha, salvarUsuario } from "./usuarios.functions";
 
@@ -26,13 +28,18 @@ export const isAdminRole = (role: Role) => role === ADMIN_ID;
 export const perfilNome = (role: Role) => getPerfis().find((p) => p.id === role)?.nome ?? "Sem perfil";
 
 /** Tenta algumas vezes antes de desistir (a conexão pode oscilar ao abrir o sistema). */
-export async function precisaConfiguracaoInicial() {
-  for (let i = 0; i < 3; i++) {
-    const { data, error } = await supabase.rpc("precisa_configuracao_inicial");
-    if (!error) return Boolean(data);
-    await new Promise((r) => setTimeout(r, 800 * (i + 1)));
-  }
-  throw new Error("Falha de conexão. Verifique a internet e tente novamente.");
+let inicial: Promise<boolean> | null = null;
+export function precisaConfiguracaoInicial() {
+  if (inicial) return inicial;
+  const tarefa = lerComRecuperacao(async (signal) => {
+    const { data, error } = await supabase.rpc("precisa_configuracao_inicial").abortSignal(signal);
+    if (error) throw error;
+    return Boolean(data);
+  }).catch(() => { throw new Error("Falha de conexão. Verifique a internet e tente novamente."); });
+  inicial = tarefa;
+  // O resultado só é reaproveitado durante a inicialização, não entre sessões.
+  void tarefa.finally(() => setTimeout(() => { if (inicial === tarefa) inicial = null; }, 5_000)).catch(() => undefined);
+  return tarefa;
 }
 
 const ATIVIDADE = "gordo.atividade";
@@ -47,27 +54,48 @@ export function sessaoExpirada() {
 }
 
 let carregado: Promise<User | null> | null = null;
+let epocaSessao = 0;
 /** Lê a sessão e carrega todos os dados permitidos ao usuário. */
 export function carregarSistema(): Promise<User | null> {
-  carregado ??= (async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+  if (carregado) return carregado;
+  const epoca = epocaSessao;
+  const tarefa = (async () => {
+    const user = await lerComRecuperacao(async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error && !/session missing/i.test(error.message)) throw error;
+      return data.user;
+    });
     if (!user) return null;
-    const { data: p } = await supabase.from("profiles").select("id,nome,email,telefone,ativo,ultimo_acesso,criado_em,user_perfis(perfil_id)").eq("id", user.id).maybeSingle();
+    const p = await lerComRecuperacao(async (signal) => {
+      const { data, error } = await supabase.from("profiles").select("id,nome,email,telefone,ativo,ultimo_acesso,criado_em,user_perfis(perfil_id)").eq("id", user.id).abortSignal(signal).maybeSingle();
+      if (error) throw error;
+      return data;
+    });
+    if (epoca !== epocaSessao) return null;
     if (!p || !p.ativo) {
       await supabase.auth.signOut();
       return null;
     }
-    definirSessao({
+    const sessao: User = {
       id: p.id, name: p.nome, email: p.email, phone: p.telefone, active: p.ativo, createdAt: p.criado_em,
       lastLogin: p.ultimo_acesso ?? undefined, role: (p.user_perfis as { perfil_id: string } | null)?.perfil_id ?? "",
-    });
-    await carregarColecoes();
+    };
+    // Primeiro resolve permissões; depois executa as consultas dependentes.
+    await carregarPerfis();
+    if (epoca !== epocaSessao) return null;
+    configurarLeituras((nome) => podeLerColecao(getPerfis().find((x) => x.id === (col.get().find((u) => u.id === sessao.id)?.role ?? sessao.role)), nome));
+    col.definir([sessao]);
+    await carregarColecoes(["configuracoes", "profiles", "clientes", "veiculos", "produtos", "servicos", "orcamentos", "categorias", "marcas"]);
+    if (epoca !== epocaSessao) return null;
+    definirSessao(sessao);
     return getSessao();
   })().catch((e) => {
-    carregado = null;
+    if (epoca === epocaSessao) carregado = null;
     throw new Error(mensagemErro(e, "Falha ao carregar os dados do sistema. Verifique a conexão."));
   });
-  return carregado;
+  carregado = tarefa;
+  void tarefa.then((u) => { if (!u && carregado === tarefa) carregado = null; }).catch(() => undefined);
+  return tarefa;
 }
 
 export const getCurrentUser = getSessao;
@@ -84,7 +112,7 @@ export async function login(email: string, password: string) {
     if (/rate|too many/i.test(error.message)) throw new Error("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
     throw new Error(mensagemErro(error, "Não foi possível entrar. Tente novamente."));
   }
-  carregado = null;
+  encerrarSessaoLocal();
   const u = await carregarSistema();
   if (!u) throw new Error("Usuário desativado. Fale com o administrador.");
   registrarAtividade();
@@ -92,11 +120,15 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout() {
+  await aguardarGravacoes();
+  encerrarSessaoLocal();
   await supabase.auth.signOut();
 }
 /** Limpa os dados da memória ao sair. */
 export function encerrarSessaoLocal() {
   carregado = null;
+  epocaSessao++;
+  inicial = null;
   definirSessao(null);
   limparColecoes();
 }

@@ -4,6 +4,7 @@ import { carregarSistema, logout, precisaConfiguracaoInicial, registrarAtividade
 import { AppShell } from "@/components/AppShell";
 import "@/lib/dados";
 import { atualizarDoBanco } from "@/lib/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -45,12 +46,13 @@ function Layout() {
     const voltou = () => {
       if (document.visibilityState !== "visible" || Date.now() - ultimo < 30_000) return;
       ultimo = Date.now();
-      void atualizarDoBanco().catch(() => undefined);
+      void atualizarDoBanco().catch(() => toast.error("Não foi possível atualizar os dados. Tente novamente."));
     };
     window.addEventListener("pointerdown", ativo);
     window.addEventListener("keydown", ativo);
     document.addEventListener("visibilitychange", voltou);
     window.addEventListener("focus", voltou);
+    window.addEventListener("online", voltou);
     const t = setInterval(() => {
       if (sessaoExpirada()) void logout().then(() => navigate({ to: "/login", replace: true }));
     }, 60_000);
@@ -59,6 +61,7 @@ function Layout() {
       window.removeEventListener("keydown", ativo);
       document.removeEventListener("visibilitychange", voltou);
       window.removeEventListener("focus", voltou);
+      window.removeEventListener("online", voltou);
       clearInterval(t);
     };
   }, [navigate]);

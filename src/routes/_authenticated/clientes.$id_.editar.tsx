@@ -9,6 +9,8 @@ export const Route = createFileRoute("/_authenticated/clientes/$id_/editar")({
   beforeLoad: guard(["clientes", "editar"]),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Editar cliente · Gordo Auto Mecânica ERP" },
       { name: "description", content: "Editar dados do cliente." },
       { property: "og:title", content: "Editar cliente · Gordo ERP" },

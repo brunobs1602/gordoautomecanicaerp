@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { enfileirar, registrarColetor } from "./store";
+import { lerComRecuperacao } from "./leitura";
 
 export type Valor = string | number | boolean;
 export type TipoCampo = "texto" | "area" | "numero" | "bool" | "select" | "cor" | "imagem" | "hora";
@@ -217,6 +218,8 @@ export const CONFIG_PADRAO = Object.fromEntries(
 
 const listeners = new Set<() => void>();
 let cache: Config = CONFIG_PADRAO;
+let revisao = 0;
+let leitura: Promise<void> | null = null;
 const emit = () => listeners.forEach((l) => l());
 
 function mesclar(salvo: Record<string, ValoresSecao | undefined>): Config {
@@ -225,24 +228,35 @@ function mesclar(salvo: Record<string, ValoresSecao | undefined>): Config {
 export const getConfig = (): Config => cache;
 
 registrarColetor({
-  carregar: async () => {
-    const { data, error } = await supabase.from("configuracoes").select("data").eq("id", 1).maybeSingle();
-    if (error) throw error;
-    cache = mesclar((data?.data ?? {}) as Record<string, ValoresSecao>);
-    emit();
+  nome: "configuracoes",
+  carregar: () => {
+    if (leitura) return leitura;
+    const versao = revisao;
+    const tarefa = lerComRecuperacao(async (signal) => {
+      const { data, error } = await supabase.from("configuracoes").select("data").eq("id", 1).abortSignal(signal).maybeSingle();
+      if (error) throw error;
+      if (versao === revisao) {
+        cache = mesclar((data?.data ?? {}) as Record<string, ValoresSecao>);
+        emit();
+      }
+    });
+    leitura = tarefa;
+    void tarefa.finally(() => { if (leitura === tarefa) leitura = null; }).catch(() => undefined);
+    return tarefa;
   },
-  limpar: () => { cache = CONFIG_PADRAO; emit(); },
+  limpar: () => { revisao++; leitura = null; cache = CONFIG_PADRAO; emit(); },
 });
 
 /** Salva no Lovable Cloud. Em caso de falha, volta para a versão anterior. */
 export function salvarConfig(cfg: Config) {
   const anterior = cache;
+  const versao = ++revisao;
   cache = cfg;
   emit();
   enfileirar(async () => {
     const { error } = await supabase.from("configuracoes").upsert({ id: 1, data: cfg as never });
     if (error) throw error;
-  }, () => { cache = anterior; emit(); });
+  }, () => { if (versao === revisao) { cache = anterior; emit(); } });
 }
 export function importarConfig(json: string): Config {
   const obj = JSON.parse(json);

@@ -17,6 +17,7 @@ export interface RegistroAuditoria {
 
 // Somente leitura: o histórico nunca é alterado nem apagado (regras do banco).
 const col = createCollection<RegistroAuditoria>("auditoria", {
+  sobDemanda: true,
   select: "id,data,admin_id,admin_nome,tipo,alvo,descricao,secao,antes,depois",
   deLinha: (l) => {
     const r: RegistroAuditoria = {
@@ -32,6 +33,7 @@ const col = createCollection<RegistroAuditoria>("auditoria", {
 export const useAuditoria = () => [...col.use()].sort((a, b) => a.data.localeCompare(b.data));
 export const getAuditoria = col.get;
 export const carregarAuditoria = col.carregar;
+export const garantirAuditoria = col.garantir;
 
 export function registrar(r: Omit<RegistroAuditoria, "id" | "data" | "adminId" | "adminNome">, adminNome?: string) {
   const eu = getSessao();
