@@ -134,7 +134,7 @@ export function createCollection<T extends { id: string }>(tabela: string, op: O
     return tarefa;
   };
   const recarregar = () => void carregar().catch(() => toast.error("Falha ao carregar dados."));
-  registrarColetor({ nome: tabela, carregar, sobDemanda: op.sobDemanda, limpar: () => {
+  registrarColetor({ nome: tabela, carregar, sobDemanda: op.sobDemanda ?? false, limpar: () => {
     geracao++; revisao++; leitura = null; carregada = false; cache = []; emit();
   } });
 

@@ -67,7 +67,7 @@ export function carregarSistema(): Promise<User | null> {
     });
     if (!user) return null;
     const p = await lerComRecuperacao(async (signal) => {
-      const { data, error } = await supabase.from("profiles").select("id,nome,email,telefone,ativo,ultimo_acesso,criado_em,user_perfis(perfil_id)").eq("id", user.id).maybeSingle().abortSignal(signal);
+      const { data, error } = await supabase.from("profiles").select("id,nome,email,telefone,ativo,ultimo_acesso,criado_em,user_perfis(perfil_id)").eq("id", user.id).abortSignal(signal).maybeSingle();
       if (error) throw error;
       return data;
     });
@@ -83,10 +83,9 @@ export function carregarSistema(): Promise<User | null> {
     // Primeiro resolve permissões; depois executa as consultas dependentes.
     await carregarPerfis();
     if (epoca !== epocaSessao) return null;
-    const perfil = getPerfis().find((x) => x.id === sessao.role);
-    configurarLeituras((nome) => podeLerColecao(perfil, nome));
+    configurarLeituras((nome) => podeLerColecao(getPerfis().find((x) => x.id === (col.get().find((u) => u.id === sessao.id)?.role ?? sessao.role)), nome));
     col.definir([sessao]);
-    await carregarColecoes();
+    await carregarColecoes(["configuracoes", "profiles", "clientes", "veiculos", "produtos", "servicos", "orcamentos", "categorias", "marcas"]);
     if (epoca !== epocaSessao) return null;
     definirSessao(sessao);
     return getSessao();

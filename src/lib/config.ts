@@ -233,7 +233,7 @@ registrarColetor({
     if (leitura) return leitura;
     const versao = revisao;
     const tarefa = lerComRecuperacao(async (signal) => {
-      const { data, error } = await supabase.from("configuracoes").select("data").eq("id", 1).maybeSingle().abortSignal(signal);
+      const { data, error } = await supabase.from("configuracoes").select("data").eq("id", 1).abortSignal(signal).maybeSingle();
       if (error) throw error;
       if (versao === revisao) {
         cache = mesclar((data?.data ?? {}) as Record<string, ValoresSecao>);
