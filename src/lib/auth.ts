@@ -60,29 +60,17 @@ export function carregarSistema(): Promise<User | null> {
   if (carregado) return carregado;
   const epoca = epocaSessao;
   const tarefa = (async () => {
-    // Sessão local primeiro (sem rede); a validação no servidor, o perfil do usuário, os perfis de acesso
-    // e as tabelas liberadas a todos rodam em paralelo — uma ida ao servidor a menos na abertura.
-    const { data: local } = await supabase.auth.getSession();
-    const uid = local.session?.user.id;
-    if (!uid) return null;
-    const COMUNS = ["configuracoes", "categorias", "marcas"];
-    configurarLeituras((n) => COMUNS.includes(n));
-    const comuns = carregarColecoes(COMUNS).catch(() => undefined);
-    const [user, p] = await Promise.all([
-      lerComRecuperacao(async () => {
-        const { data, error } = await supabase.auth.getUser();
-        if (error && !/session missing/i.test(error.message)) throw error;
-        return data.user;
-      }),
-      lerComRecuperacao(async (signal) => {
-        const { data, error } = await supabase.from("profiles").select("id,nome,email,telefone,ativo,ultimo_acesso,criado_em,user_perfis(perfil_id)").eq("id", uid).abortSignal(signal).maybeSingle();
-        if (error) throw error;
-        return data;
-      }),
-      carregarPerfis(),
-    ]);
-    if (!user || user.id !== uid) return null;
-    await comuns;
+    const user = await lerComRecuperacao(async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error && !/session missing/i.test(error.message)) throw error;
+      return data.user;
+    });
+    if (!user) return null;
+    const p = await lerComRecuperacao(async (signal) => {
+      const { data, error } = await supabase.from("profiles").select("id,nome,email,telefone,ativo,ultimo_acesso,criado_em,user_perfis(perfil_id)").eq("id", user.id).abortSignal(signal).maybeSingle();
+      if (error) throw error;
+      return data;
+    });
     if (epoca !== epocaSessao) return null;
     if (!p || !p.ativo) {
       await supabase.auth.signOut();
@@ -92,11 +80,12 @@ export function carregarSistema(): Promise<User | null> {
       id: p.id, name: p.nome, email: p.email, phone: p.telefone, active: p.ativo, createdAt: p.criado_em,
       lastLogin: p.ultimo_acesso ?? undefined, role: (p.user_perfis as { perfil_id: string } | null)?.perfil_id ?? "",
     };
-    // Permissões já resolvidas acima; agora as consultas dependentes.
+    // Primeiro resolve permissões; depois executa as consultas dependentes.
+    await carregarPerfis();
     if (epoca !== epocaSessao) return null;
     configurarLeituras((nome) => podeLerColecao(getPerfis().find((x) => x.id === (col.get().find((u) => u.id === sessao.id)?.role ?? sessao.role)), nome));
     col.definir([sessao]);
-    await carregarColecoes(["profiles", "clientes", "veiculos", "produtos", "servicos", "orcamentos", "fin_cadastros", "fin_titulos", "fin_movimentos"]);
+    await carregarColecoes(["configuracoes", "profiles", "clientes", "veiculos", "produtos", "servicos", "orcamentos", "categorias", "marcas", "fin_cadastros", "fin_titulos", "fin_movimentos"]);
     if (epoca !== epocaSessao) return null;
     definirSessao(sessao);
     return getSessao();
