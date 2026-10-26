@@ -302,8 +302,8 @@ function BaixaModal({ t, onClose }: { t: Titulo; onClose: () => void }) {
 
   const confirmar = async () => {
     const erro = validarPagamentos(pags);
-    if (erro) return toast.error(erro);
-    if (passa && !excesso) return toast.error("O valor ultrapassa o saldo da conta.");
+    if (erro) { toast.error(erro); return; }
+    if (passa && !excesso) { toast.error("O valor ultrapassa o saldo da conta."); return; }
     setEnviando(true);
     try {
       const r = (await baixarTitulo(t.id, pags, data, excesso)) as { status: string };

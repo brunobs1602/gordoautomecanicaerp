@@ -26,8 +26,8 @@ export function FinalizarOSModal({ osId, codigo, total, onClose, onFinalizar }: 
 
   const confirmar = async () => {
     const lista = semPagamento ? [] : pags.filter((p) => p.valor > 0);
-    if (!semPagamento) { const e = validarPagamentos(lista); if (e) return toast.error(e); }
-    if (passa && !excesso) return toast.error("O valor recebido ultrapassa o total da OS.");
+    if (!semPagamento) { const e = validarPagamentos(lista); if (e) { toast.error(e); return; } }
+    if (passa && !excesso) { toast.error("O valor recebido ultrapassa o total da OS."); return; }
     setEnviando(true);
     try {
       await aguardarGravacoes();

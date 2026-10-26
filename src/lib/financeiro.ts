@@ -215,7 +215,7 @@ const rpc = (nome: string, args: Record<string, unknown>) =>
   (supabase.rpc as unknown as (n: string, a: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>)(nome, args);
 
 // ---------------- Ações ----------------
-export async function salvarCadastro(c: Omit<Cadastro, "id"> & { id?: string }) {
+export async function salvarCadastro(c: Omit<Cadastro, "id"> & { id?: string | undefined }) {
   if (!["categoria", "centro"].includes(c.tipo) || c.id) exigir("financeiro", "config");
   else exigir("financeiro", "criar");
   if (!c.nome.trim()) throw new Error("Informe o nome.");

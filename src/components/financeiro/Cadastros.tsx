@@ -103,7 +103,7 @@ export function CadastroForm({ tipo, atual, onClose, campos, singular }: { tipo:
           const nomeFinal = tipo === "taxa"
             ? `${cads.find((x) => x.id === limpo["maquininhaId"])?.nome ?? "?"} · ${cads.find((x) => x.id === limpo["bandeiraId"])?.nome ?? "?"} · ${limpo["modalidade"] === "debito" ? "Débito" : `Crédito ${limpo["parcelas"] || 1}x`}`
             : nome;
-          if (tipo === "taxa" && (!limpo["maquininhaId"] || !limpo["bandeiraId"] || !limpo["modalidade"])) return toast.error("Selecione maquininha, bandeira e modalidade.");
+          if (tipo === "taxa" && (!limpo["maquininhaId"] || !limpo["bandeiraId"] || !limpo["modalidade"])) { toast.error("Selecione maquininha, bandeira e modalidade."); return; }
           try { await salvarCadastro({ id: atual?.id, tipo, nome: nomeFinal, ativo: atual?.ativo ?? true, data: limpo }); toast.success("Salvo."); onClose(); }
           catch (e) { toast.error((e as Error).message); }
         }}>Salvar</button>
