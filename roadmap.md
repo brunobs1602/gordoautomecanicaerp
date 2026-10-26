@@ -9,3 +9,6 @@
 - [x] Telas: dashboard, contas a pagar/pagas/receber/recebidas, fluxo, contas bancárias, formas, maquininhas, bandeiras e taxas, Pix, categorias, centros, relatórios, histórico, configurações.
 - [x] OS com número próprio, status, tela de listagem e etapa de pagamento na finalização.
 - [x] Permissões financeiras (perfil, menu, URL e banco) e testes das regras.
+
+# Item 13 — Dashboards separadas
+- [x] Dashboard principal só operacional; financeiro com filtros (7 dias, maquininha, categoria) e comparativo.
