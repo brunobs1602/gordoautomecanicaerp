@@ -160,6 +160,8 @@ const LISTA = [
     t("simbolo", "Símbolo da moeda", "", "R$"),
     t("formasPagamento", "Formas de pagamento", "Separadas por vírgula.", "Dinheiro, PIX, Cartão de débito, Cartão de crédito"),
     n("prazoPagamento", "Prazo padrão de pagamento (dias)", "", 0),
+    n("diasVencendo", "Alertar contas vencendo em (dias)", "Usado no financeiro para o status Vencendo.", 3),
+    b("financeiroAoFinalizar", "Abrir etapa de pagamento ao finalizar OS", "", true),
     n("descontoMax", "Desconto máximo (%)", "", 20),
     n("acrescimoMax", "Acréscimo máximo (%)", "", 20),
     a("condicoes", "Condições de pagamento padrão", ""),
