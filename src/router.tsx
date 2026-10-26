@@ -10,6 +10,12 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // Baixa o código da próxima tela ao passar o mouse/tocar no link: troca de página instantânea.
+    defaultPreload: "intent",
+    defaultPreloadDelay: 50,
+    // Evita "piscar" a tela de carregamento em transições rápidas.
+    defaultPendingMs: 400,
+    defaultPendingMinMs: 200,
   });
 
   return router;
