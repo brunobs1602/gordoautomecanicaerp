@@ -9,3 +9,4 @@ import "./produtos";
 import "./servicos";
 import "./orcamentos";
 import "./cadastros";
+import "./financeiro";
