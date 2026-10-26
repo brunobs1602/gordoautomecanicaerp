@@ -30,9 +30,9 @@ export function FinalizarOSModal({ osId, codigo, total, onClose, onFinalizar }: 
     if (passa && !excesso) return toast.error("O valor recebido ultrapassa o total da OS.");
     setEnviando(true);
     try {
-      onFinalizar();
       await aguardarGravacoes();
       const r = await finalizarOSFinanceiro(osId, lista, data, parcelas, venc, excesso);
+      onFinalizar();
       toast.success(r.pendente > 0 ? `OS finalizada. Recebido ${moeda(r.recebido)}, pendente ${moeda(r.pendente)}.` : "OS finalizada e totalmente paga.");
       onClose();
     } catch (e) { toast.error((e as Error).message); } finally { setEnviando(false); }
