@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  Bell, Car, ClipboardList, LayoutDashboard, LogOut, Menu, Package, Settings, Users, Wrench, X,
+  Bell, Car, ClipboardList, DollarSign, Hammer, LayoutDashboard, LogOut, Menu, Package, Settings, Users, Wrench, X,
 } from "lucide-react";
 import { logout, type User } from "@/lib/auth";
 import { useAcesso } from "@/lib/acesso";
@@ -11,6 +11,7 @@ import { useProdutos, estoqueBaixo } from "@/lib/produtos";
 import { useOrcamentos } from "@/lib/orcamentos";
 import type { Acao, Modulo } from "@/lib/permissoes";
 import { BrandName, LogoSlot } from "./Brand";
+import "@/lib/financeiro";
 
 type Item = { to: string; label: string; icon: typeof Users; req: [Modulo, Acao?][] };
 const items: Item[] = [
@@ -18,6 +19,8 @@ const items: Item[] = [
   { to: "/clientes", label: "Clientes", icon: Users, req: [["clientes"]] },
   { to: "/veiculos", label: "Veículos", icon: Car, req: [["veiculos"]] },
   { to: "/ordens", label: "Orçamentos e OS", icon: ClipboardList, req: [["orcamentos"], ["ordens"]] },
+  { to: "/os", label: "Ordens de Serviço", icon: Hammer, req: [["ordens"]] },
+  { to: "/financeiro", label: "Financeiro", icon: DollarSign, req: [["financeiro"]] },
   { to: "/produtos", label: "Produtos e peças", icon: Package, req: [["produtos"]] },
   { to: "/servicos", label: "Serviços", icon: Wrench, req: [["servicos"]] },
   { to: "/configuracoes", label: "Configurações", icon: Settings, req: [["configuracoes"], ["usuarios"], ["perfis"]] },

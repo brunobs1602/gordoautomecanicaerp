@@ -16,7 +16,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedOsRouteImport } from './routes/_authenticated/os'
 import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
 import { Route as AuthenticatedSemPermissaoRouteImport } from './routes/_authenticated/sem-permissao'
 import { Route as AuthenticatedServicosRouteImport } from './routes/_authenticated/servicos'
@@ -24,6 +26,8 @@ import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes.index'
 import { Route as AuthenticatedClientesIdRouteImport } from './routes/_authenticated/clientes.$id'
 import { Route as AuthenticatedClientesNovoRouteImport } from './routes/_authenticated/clientes.novo'
+import { Route as AuthenticatedFinanceiroIndexRouteImport } from './routes/_authenticated/financeiro.index'
+import { Route as AuthenticatedFinanceiroSecaoRouteImport } from './routes/_authenticated/financeiro.$secao'
 import { Route as AuthenticatedOrdensIndexRouteImport } from './routes/_authenticated/ordens.index'
 import { Route as AuthenticatedOrdensIdRouteImport } from './routes/_authenticated/ordens.$id'
 import { Route as AuthenticatedOrdensNovoRouteImport } from './routes/_authenticated/ordens.novo'
@@ -74,9 +78,19 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedOsRoute = AuthenticatedOsRouteImport.update({
+  id: '/os',
+  path: '/os',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedProdutosRoute = AuthenticatedProdutosRouteImport.update({
@@ -116,6 +130,18 @@ const AuthenticatedClientesNovoRoute =
     id: '/clientes/novo',
     path: '/clientes/novo',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedFinanceiroIndexRoute =
+  AuthenticatedFinanceiroIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedFinanceiroRoute,
+  } as any)
+const AuthenticatedFinanceiroSecaoRoute =
+  AuthenticatedFinanceiroSecaoRouteImport.update({
+    id: '/$secao',
+    path: '/$secao',
+    getParentRoute: () => AuthenticatedFinanceiroRoute,
   } as any)
 const AuthenticatedOrdensIndexRoute =
   AuthenticatedOrdensIndexRouteImport.update({
@@ -204,13 +230,16 @@ export interface FileRoutesByFullPath {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRouteWithChildren
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/os': typeof AuthenticatedOsRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/sem-permissao': typeof AuthenticatedSemPermissaoRoute
   '/servicos': typeof AuthenticatedServicosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
+  '/financeiro/$secao': typeof AuthenticatedFinanceiroSecaoRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/novo': typeof AuthenticatedOrdensNovoRoute
   '/perfis/$id': typeof AuthenticatedPerfisIdRoute
@@ -218,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
   '/clientes/': typeof AuthenticatedClientesIndexRoute
+  '/financeiro/': typeof AuthenticatedFinanceiroIndexRoute
   '/ordens/': typeof AuthenticatedOrdensIndexRoute
   '/perfis/': typeof AuthenticatedPerfisIndexRoute
   '/veiculos/': typeof AuthenticatedVeiculosIndexRoute
@@ -235,12 +265,14 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/os': typeof AuthenticatedOsRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/sem-permissao': typeof AuthenticatedSemPermissaoRoute
   '/servicos': typeof AuthenticatedServicosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
+  '/financeiro/$secao': typeof AuthenticatedFinanceiroSecaoRoute
   '/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/ordens/novo': typeof AuthenticatedOrdensNovoRoute
   '/perfis/$id': typeof AuthenticatedPerfisIdRoute
@@ -248,6 +280,7 @@ export interface FileRoutesByTo {
   '/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
   '/clientes': typeof AuthenticatedClientesIndexRoute
+  '/financeiro': typeof AuthenticatedFinanceiroIndexRoute
   '/ordens': typeof AuthenticatedOrdensIndexRoute
   '/perfis': typeof AuthenticatedPerfisIndexRoute
   '/veiculos': typeof AuthenticatedVeiculosIndexRoute
@@ -266,13 +299,16 @@ export interface FileRoutesById {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRouteWithChildren
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
+  '/_authenticated/os': typeof AuthenticatedOsRoute
   '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
   '/_authenticated/sem-permissao': typeof AuthenticatedSemPermissaoRoute
   '/_authenticated/servicos': typeof AuthenticatedServicosRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/_authenticated/clientes/novo': typeof AuthenticatedClientesNovoRoute
+  '/_authenticated/financeiro/$secao': typeof AuthenticatedFinanceiroSecaoRoute
   '/_authenticated/ordens/$id': typeof AuthenticatedOrdensIdRoute
   '/_authenticated/ordens/novo': typeof AuthenticatedOrdensNovoRoute
   '/_authenticated/perfis/$id': typeof AuthenticatedPerfisIdRoute
@@ -280,6 +316,7 @@ export interface FileRoutesById {
   '/_authenticated/veiculos/$id': typeof AuthenticatedVeiculosIdRoute
   '/_authenticated/veiculos/novo': typeof AuthenticatedVeiculosNovoRoute
   '/_authenticated/clientes/': typeof AuthenticatedClientesIndexRoute
+  '/_authenticated/financeiro/': typeof AuthenticatedFinanceiroIndexRoute
   '/_authenticated/ordens/': typeof AuthenticatedOrdensIndexRoute
   '/_authenticated/perfis/': typeof AuthenticatedPerfisIndexRoute
   '/_authenticated/veiculos/': typeof AuthenticatedVeiculosIndexRoute
@@ -298,13 +335,16 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/configuracoes'
     | '/dashboard'
+    | '/financeiro'
     | '/historico'
+    | '/os'
     | '/produtos'
     | '/sem-permissao'
     | '/servicos'
     | '/usuarios'
     | '/clientes/$id'
     | '/clientes/novo'
+    | '/financeiro/$secao'
     | '/ordens/$id'
     | '/ordens/novo'
     | '/perfis/$id'
@@ -312,6 +352,7 @@ export interface FileRouteTypes {
     | '/veiculos/$id'
     | '/veiculos/novo'
     | '/clientes/'
+    | '/financeiro/'
     | '/ordens/'
     | '/perfis/'
     | '/veiculos/'
@@ -329,12 +370,14 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/dashboard'
     | '/historico'
+    | '/os'
     | '/produtos'
     | '/sem-permissao'
     | '/servicos'
     | '/usuarios'
     | '/clientes/$id'
     | '/clientes/novo'
+    | '/financeiro/$secao'
     | '/ordens/$id'
     | '/ordens/novo'
     | '/perfis/$id'
@@ -342,6 +385,7 @@ export interface FileRouteTypes {
     | '/veiculos/$id'
     | '/veiculos/novo'
     | '/clientes'
+    | '/financeiro'
     | '/ordens'
     | '/perfis'
     | '/veiculos'
@@ -359,13 +403,16 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/financeiro'
     | '/_authenticated/historico'
+    | '/_authenticated/os'
     | '/_authenticated/produtos'
     | '/_authenticated/sem-permissao'
     | '/_authenticated/servicos'
     | '/_authenticated/usuarios'
     | '/_authenticated/clientes/$id'
     | '/_authenticated/clientes/novo'
+    | '/_authenticated/financeiro/$secao'
     | '/_authenticated/ordens/$id'
     | '/_authenticated/ordens/novo'
     | '/_authenticated/perfis/$id'
@@ -373,6 +420,7 @@ export interface FileRouteTypes {
     | '/_authenticated/veiculos/$id'
     | '/_authenticated/veiculos/novo'
     | '/_authenticated/clientes/'
+    | '/_authenticated/financeiro/'
     | '/_authenticated/ordens/'
     | '/_authenticated/perfis/'
     | '/_authenticated/veiculos/'
@@ -442,11 +490,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/financeiro': {
+      id: '/_authenticated/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/historico': {
       id: '/_authenticated/historico'
       path: '/historico'
       fullPath: '/historico'
       preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/os': {
+      id: '/_authenticated/os'
+      path: '/os'
+      fullPath: '/os'
+      preLoaderRoute: typeof AuthenticatedOsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/produtos': {
@@ -497,6 +559,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/clientes/novo'
       preLoaderRoute: typeof AuthenticatedClientesNovoRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/financeiro/': {
+      id: '/_authenticated/financeiro/'
+      path: '/'
+      fullPath: '/financeiro/'
+      preLoaderRoute: typeof AuthenticatedFinanceiroIndexRouteImport
+      parentRoute: typeof AuthenticatedFinanceiroRoute
+    }
+    '/_authenticated/financeiro/$secao': {
+      id: '/_authenticated/financeiro/$secao'
+      path: '/$secao'
+      fullPath: '/financeiro/$secao'
+      preLoaderRoute: typeof AuthenticatedFinanceiroSecaoRouteImport
+      parentRoute: typeof AuthenticatedFinanceiroRoute
     }
     '/_authenticated/ordens/': {
       id: '/_authenticated/ordens/'
@@ -599,10 +675,28 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedFinanceiroRouteChildren {
+  AuthenticatedFinanceiroSecaoRoute: typeof AuthenticatedFinanceiroSecaoRoute
+  AuthenticatedFinanceiroIndexRoute: typeof AuthenticatedFinanceiroIndexRoute
+}
+
+const AuthenticatedFinanceiroRouteChildren: AuthenticatedFinanceiroRouteChildren =
+  {
+    AuthenticatedFinanceiroSecaoRoute: AuthenticatedFinanceiroSecaoRoute,
+    AuthenticatedFinanceiroIndexRoute: AuthenticatedFinanceiroIndexRoute,
+  }
+
+const AuthenticatedFinanceiroRouteWithChildren =
+  AuthenticatedFinanceiroRoute._addFileChildren(
+    AuthenticatedFinanceiroRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRouteWithChildren
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
+  AuthenticatedOsRoute: typeof AuthenticatedOsRoute
   AuthenticatedProdutosRoute: typeof AuthenticatedProdutosRoute
   AuthenticatedSemPermissaoRoute: typeof AuthenticatedSemPermissaoRoute
   AuthenticatedServicosRoute: typeof AuthenticatedServicosRoute
@@ -629,7 +723,9 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRouteWithChildren,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
+  AuthenticatedOsRoute: AuthenticatedOsRoute,
   AuthenticatedProdutosRoute: AuthenticatedProdutosRoute,
   AuthenticatedSemPermissaoRoute: AuthenticatedSemPermissaoRoute,
   AuthenticatedServicosRoute: AuthenticatedServicosRoute,

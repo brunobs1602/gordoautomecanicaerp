@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ClipboardList, Copy, Eye, FileDown, Pencil, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
-import { STATUS_LABEL, calcularTotais, codigoDoc, duplicarOrcamento, podeEditar, useOrcamentos, type Status } from "@/lib/orcamentos";
+import { STATUS_OS, statusOSDe, STATUS_LABEL, calcularTotais, codigoDoc, duplicarOrcamento, podeEditar, useOrcamentos, type Status } from "@/lib/orcamentos";
 import { useClientes } from "@/lib/clientes";
 import { formatarPlaca, normalizarPlaca, useVeiculos } from "@/lib/veiculos";
 import { useCurrentUser, useUsers } from "@/lib/auth";
@@ -133,7 +133,7 @@ function ListaOrcamentos() {
                   <td className="p-4">{c?.nome ?? "—"}</td>
                   <td className="p-4">{v ? <><span className="font-mono text-xs">{formatarPlaca(v.placa)}</span> <span className="text-muted-foreground">{v.modelo}</span></> : "—"}</td>
                   <td className="p-4 text-right font-semibold">{moeda(total)}</td>
-                  <td className="p-4"><StatusOrc status={o.status} /></td>
+                  <td className="p-4"><StatusOrc status={o.status} />{o.tipo === "os" && <div className="mt-1 text-xs text-muted-foreground">OS: {STATUS_OS[statusOSDe(o)]}</div>}</td>
                   <td className="p-4">{uMap.get(o.responsavelId)?.name ?? "—"}</td>
                   <td className="p-4 text-muted-foreground">{new Date(o.atualizadoEm).toLocaleDateString("pt-BR")}</td>
                   <td className="p-4">
