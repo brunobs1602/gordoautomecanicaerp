@@ -65,7 +65,9 @@ export function carregarSistema(): Promise<User | null> {
     const { data: local } = await supabase.auth.getSession();
     const uid = local.session?.user.id;
     if (!uid) return null;
-    const comuns = carregarColecoes(["configuracoes", "categorias", "marcas"]).catch(() => undefined);
+    const COMUNS = ["configuracoes", "categorias", "marcas"];
+    configurarLeituras((n) => COMUNS.includes(n));
+    const comuns = carregarColecoes(COMUNS).catch(() => undefined);
     const [user, p] = await Promise.all([
       lerComRecuperacao(async () => {
         const { data, error } = await supabase.auth.getUser();
@@ -94,7 +96,7 @@ export function carregarSistema(): Promise<User | null> {
     if (epoca !== epocaSessao) return null;
     configurarLeituras((nome) => podeLerColecao(getPerfis().find((x) => x.id === (col.get().find((u) => u.id === sessao.id)?.role ?? sessao.role)), nome));
     col.definir([sessao]);
-    await carregarColecoes(["configuracoes", "profiles", "clientes", "veiculos", "produtos", "servicos", "orcamentos", "categorias", "marcas", "fin_cadastros", "fin_titulos", "fin_movimentos"]);
+    await carregarColecoes(["profiles", "clientes", "veiculos", "produtos", "servicos", "orcamentos", "fin_cadastros", "fin_titulos", "fin_movimentos"]);
     if (epoca !== epocaSessao) return null;
     definirSessao(sessao);
     return getSessao();
