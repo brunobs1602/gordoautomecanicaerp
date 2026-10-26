@@ -52,7 +52,7 @@ export function Valor({ v, sinal }: { v: number; sinal?: boolean }) {
 // ---------- Período ----------
 export type Periodo = "hoje" | "semana" | "mes" | "mes_anterior" | "ano" | "personalizado" | "tudo";
 export const PERIODOS: [Periodo, string][] = [
-  ["hoje", "Hoje"], ["semana", "Semana"], ["mes", "Mês atual"], ["mes_anterior", "Mês anterior"], ["ano", "Ano"], ["personalizado", "Personalizado"], ["tudo", "Todo o período"],
+  ["hoje", "Hoje"], ["semana", "Últimos 7 dias"], ["mes", "Mês atual"], ["mes_anterior", "Mês anterior"], ["ano", "Ano"], ["personalizado", "Personalizado"], ["tudo", "Todo o período"],
 ];
 export function intervalo(p: Periodo, de = "", ate = "", hoje = hojeISO()): [string, string] {
   const [y, m] = hoje.split("-").map(Number) as [number, number];
@@ -60,11 +60,7 @@ export function intervalo(p: Periodo, de = "", ate = "", hoje = hojeISO()): [str
   const fimMes = (yy: number, mm: number) => `${yy}-${pad(mm)}-${pad(new Date(yy, mm, 0).getDate())}`;
   switch (p) {
     case "hoje": return [hoje, hoje];
-    case "semana": {
-      const dow = new Date(`${hoje}T12:00:00`).getDay();
-      const ini = somarDias(hoje, -dow);
-      return [ini, somarDias(ini, 6)];
-    }
+    case "semana": return [somarDias(hoje, -6), hoje];
     case "mes": return [`${y}-${pad(m)}-01`, fimMes(y, m)];
     case "mes_anterior": {
       const yy = m === 1 ? y - 1 : y;

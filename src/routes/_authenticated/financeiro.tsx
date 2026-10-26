@@ -2,7 +2,7 @@ import { Link, Outlet, createFileRoute, useRouterState } from "@tanstack/react-r
 import { guard } from "@/lib/acesso";
 
 export const SECOES_FIN: [string, string][] = [
-  ["", "Dashboard"], ["pagar", "Contas a pagar"], ["pagas", "Contas pagas"], ["receber", "Contas a receber"], ["recebidas", "Contas recebidas"],
+  ["", "Dashboard Financeiro"], ["pagar", "Contas a pagar"], ["pagas", "Contas pagas"], ["receber", "Contas a receber"], ["recebidas", "Contas recebidas"],
   ["fluxo", "Fluxo de caixa"], ["contas", "Contas bancárias"], ["formas", "Formas de pagamento"], ["maquininhas", "Maquininhas"],
   ["taxas", "Bandeiras e taxas"], ["pix", "Pix"], ["categorias", "Categorias financeiras"], ["centros", "Centros de custo"],
   ["relatorios", "Relatórios"], ["historico", "Histórico"], ["configuracoes", "Configurações"],

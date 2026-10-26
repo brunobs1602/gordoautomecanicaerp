@@ -39,6 +39,8 @@ export function DashboardFinanceiro() {
   const [conta, setConta] = useState("");
   const [forma, setForma] = useState("");
   const [status, setStatus] = useState("");
+  const [maq, setMaq] = useState("");
+  const [cat, setCat] = useState("");
   const [ini, fim] = intervalo(p, de, ate);
   const hoje = hojeISO();
   const alerta = diasAlerta();
@@ -46,9 +48,15 @@ export function DashboardFinanceiro() {
 
   const d = useMemo(() => {
     const tit = titulos.filter((t) => t.status !== "cancelado" && (!status || situacao(t, hoje, alerta) === status) &&
-      (!forma || t.data["formaId"] === forma) && (!conta || t.data["contaId"] === conta));
+      (!forma || t.data["formaId"] === forma) && (!conta || t.data["contaId"] === conta) && (!cat || t.categoriaId === cat));
+    const catDe = new Map(titulos.map((t) => [t.id, t.categoriaId]));
     const noPer = (iso: string) => iso >= ini && iso <= fim;
-    const mv = movs.filter((m) => (!conta || m.contaId === conta) && (!forma || m.formaId === forma));
+    const mv = movs.filter((m) => (!conta || m.contaId === conta) && (!forma || m.formaId === forma) &&
+      (!maq || m.data["maquininha_id"] === maq) && (!cat || catDe.get(m.tituloId ?? "") === cat));
+    // comparativo: mesmo tamanho de período imediatamente anterior
+    const dias = ini === "0000-01-01" ? 0 : Math.round((new Date(`${fim}T12:00:00`).getTime() - new Date(`${ini}T12:00:00`).getTime()) / 86_400_000) + 1;
+    const antIni = dias ? somarDias(ini, -dias) : "", antFim = dias ? somarDias(ini, -1) : "";
+    const liq = (tipo: string, a: string, b: string) => r2(Math.abs(mv.filter((m) => m.tipo === tipo && !m.estornado && m.dataMov >= a && m.dataMov <= b).reduce((s, m) => s + m.valor, 0)));
     const mvPer = mv.filter((m) => noPer(m.dataMov));
     const operacionais = mvPer.filter((m) => m.tipo === "pagamento" || m.tipo === "recebimento" || m.tipo === "estorno");
     const abertos = (tipo: "pagar" | "receber") => tit.filter((t) => t.tipo === tipo && (t.status === "aberto" || t.status === "parcial"));
@@ -90,10 +98,14 @@ export function DashboardFinanceiro() {
       ],
       porForma: agrupar(recebidas, (m) => nome(m.formaId)),
       porBandeira: agrupar(recebidas.filter((m) => m.data["bandeira_id"]), (m) => nome(m.data["bandeira_id"])),
+      comparativo: dias ? [
+        { nome: "Período anterior", Recebido: liq("recebimento", antIni, antFim), Pago: liq("pagamento", antIni, antFim) },
+        { nome: "Período atual", Recebido: liq("recebimento", ini, fim), Pago: liq("pagamento", ini, fim) },
+      ] : [],
       porMaquininha: agrupar(recebidas.filter((m) => m.data["maquininha_id"]), (m) => nome(m.data["maquininha_id"])),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [titulos, movs, cads, orcs, ini, fim, conta, forma, status, hoje, alerta]);
+  }, [titulos, movs, cads, orcs, ini, fim, conta, forma, status, maq, cat, hoje, alerta]);
 
   const eixo = { stroke: "var(--muted-foreground)", fontSize: 11 };
   const tip = { contentStyle: { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 6 }, formatter: (v: number) => fmt(v) };
@@ -101,10 +113,12 @@ export function DashboardFinanceiro() {
   return (
     <>
       <PageHeader title="Dashboard financeiro" subtitle="Valores reais registrados no sistema." />
-      <div className="panel mb-5 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6">
+      <div className="panel mb-5 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
         <FiltroPeriodo p={p} setP={setP} de={de} setDe={setDe} ate={ate} setAte={setAte} />
         <Opcoes label="Conta bancária" value={conta} onChange={setConta} itens={cads.filter((c) => c.tipo === "conta")} vazio="Todas" />
         <Opcoes label="Forma de pagamento" value={forma} onChange={setForma} itens={cads.filter((c) => c.tipo === "forma")} vazio="Todas" />
+        <Opcoes label="Maquininha" value={maq} onChange={setMaq} itens={cads.filter((c) => c.tipo === "maquininha")} vazio="Todas" />
+        <Opcoes label="Categoria financeira" value={cat} onChange={setCat} itens={cads.filter((c) => c.tipo === "categoria")} vazio="Todas" />
         <Campo label="Status">
           <select className="field" value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">Todos</option><option value="aberto">Em aberto</option><option value="vencendo">Vencendo</option>
@@ -121,7 +135,7 @@ export function DashboardFinanceiro() {
         <StatCard label="Vencendo hoje" value={moeda(d.hoje)} icon={CalendarClock} />
         <StatCard label={`Próximos ${alerta} dias`} value={moeda(d.proximos)} icon={CalendarClock} />
         <StatCard label="Saldo das contas" value={moeda(d.saldo)} icon={Landmark} />
-        <StatCard label="Faturamento das OS" value={moeda(d.faturamento)} icon={TrendingUp} />
+        <StatCard label="Faturamento do mês / período (OS)" value={moeda(d.faturamento)} icon={TrendingUp} />
         <StatCard label="Taxas de maquininha" value={moeda(d.taxas)} icon={CreditCard} />
         <StatCard label="Lucro bruto estimado" value={d.recebido || d.pago ? moeda(d.lucro) : "—"} icon={TrendingUp} />
       </div>
@@ -133,6 +147,7 @@ export function DashboardFinanceiro() {
         </Grafico>
         <Grafico titulo="Faturamento por mês"><BarChart data={d.serie}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="mes" {...eixo} /><YAxis {...eixo} width={70} /><Tooltip {...tip} /><Bar dataKey="Faturamento" fill="var(--primary)" /></BarChart></Grafico>
         <Grafico titulo="Recebido por bandeira">{d.porBandeira.length ? <BarChart data={d.porBandeira} layout="vertical"><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Tooltip {...tip} /><Bar dataKey="valor" name="Valor" fill="var(--primary)" /></BarChart> : null}</Grafico>
+        <Grafico titulo="Comparativo com o período anterior">{d.comparativo.length ? <BarChart data={d.comparativo}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="nome" {...eixo} /><YAxis {...eixo} width={70} /><Tooltip {...tip} /><Legend /><Bar dataKey="Recebido" fill="#9ca3af" /><Bar dataKey="Pago" fill="var(--primary)" /></BarChart> : null}</Grafico>
         <Grafico titulo="Recebido por maquininha">{d.porMaquininha.length ? <BarChart data={d.porMaquininha} layout="vertical"><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Tooltip {...tip} /><Bar dataKey="valor" name="Valor" fill="#9ca3af" /></BarChart> : null}</Grafico>
       </div>
     </>
