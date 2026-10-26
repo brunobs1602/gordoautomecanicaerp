@@ -1,9 +1,9 @@
 import { createCollection } from "./store";
 
-export type Acao = "ver" | "criar" | "editar" | "inativar" | "excluir" | "exportar" | "aprovar" | "reabrir" | "status" | "config";
+export type Acao = "ver" | "criar" | "editar" | "inativar" | "excluir" | "exportar" | "aprovar" | "reabrir" | "status" | "config" | "baixar" | "cancelar" | "estornar";
 export type Modulo =
   | "dashboard" | "clientes" | "veiculos" | "orcamentos" | "ordens" | "produtos" | "estoque"
-  | "servicos" | "usuarios" | "perfis" | "configuracoes" | "relatorios";
+  | "servicos" | "usuarios" | "perfis" | "configuracoes" | "relatorios" | "financeiro";
 
 export const ACOES: { key: Acao; label: string }[] = [
   { key: "ver", label: "Visualizar" },
@@ -16,6 +16,9 @@ export const ACOES: { key: Acao; label: string }[] = [
   { key: "reabrir", label: "Reabrir" },
   { key: "status", label: "Alterar status" },
   { key: "config", label: "Gerenciar config." },
+  { key: "baixar", label: "Registrar pagamentos" },
+  { key: "cancelar", label: "Cancelar" },
+  { key: "estornar", label: "Estornar" },
 ];
 
 const CRUD: Acao[] = ["ver", "criar", "editar", "inativar", "excluir"];
@@ -32,6 +35,7 @@ export const MODULOS: { key: Modulo; label: string; acoes: Acao[] }[] = [
   { key: "perfis", label: "Perfis de Acesso", acoes: CRUD },
   { key: "configuracoes", label: "Configurações", acoes: ["ver", "config"] },
   { key: "relatorios", label: "Relatórios", acoes: ["ver", "exportar"] },
+  { key: "financeiro", label: "Financeiro", acoes: ["ver", "criar", "editar", "baixar", "cancelar", "estornar", "exportar", "config"] },
 ];
 
 export type Permissoes = Partial<Record<Modulo, Acao[]>>;
@@ -69,6 +73,7 @@ export const PERFIS_PADRAO: Perfil[] = [
   }),
   p("financeiro", "Financeiro", "Consulta orçamentos e relatórios financeiros.", {
     dashboard: ["ver"], clientes: ["ver"], orcamentos: ["ver", "exportar"], ordens: ["ver", "exportar"], relatorios: ["ver", "exportar"],
+    financeiro: ["ver", "criar", "editar", "baixar", "cancelar", "estornar", "exportar"],
   }),
 ];
 

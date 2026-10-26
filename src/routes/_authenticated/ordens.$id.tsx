@@ -19,6 +19,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
 import { StatusOrc } from "@/components/orcamentos/StatusOrc";
 import { ResumoFinanceiro } from "@/components/orcamentos/OrcamentoForm";
+import { OSPainel } from "@/components/financeiro/OSPainel";
 
 export const Route = createFileRoute("/_authenticated/ordens/$id")({
   beforeLoad: guard(["orcamentos"], ["ordens"]),
@@ -257,6 +258,7 @@ function DetalheOrcamento() {
         </div>
 
         <div className="space-y-5">
+          {o.tipo === "os" && <OSPainel o={o} usuario={nomeUser} />}
           <ResumoFinanceiro totais={totais} />
           <Bloco titulo="Histórico" acao={<History className="h-4 w-4 text-muted-foreground" />}>
             <ol className="relative space-y-4 border-l border-border pl-4">

@@ -9,7 +9,7 @@ import { useRouterState } from "@tanstack/react-router";
 export function BotaoAtualizar() {
   const [carregando, setCarregando] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const colecoes = path.startsWith("/veiculos") ? ["veiculos", "clientes", "marcas"] : ["clientes", "veiculos"];
+  const colecoes = path.startsWith("/financeiro") || path.startsWith("/os") ? ["fin_titulos", "fin_movimentos", "fin_cadastros", "orcamentos"] : path.startsWith("/veiculos") ? ["veiculos", "clientes", "marcas"] : ["clientes", "veiculos"];
   return (
     <Button variant="ghost"
       type="button"

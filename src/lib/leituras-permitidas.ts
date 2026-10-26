@@ -13,6 +13,8 @@ export function podeLerColecao(perfil: Perfil | undefined, nome: string) {
     case "orcamentos": return documentos;
     case "profiles": return ver("usuarios");
     case "auditoria": return ver("usuarios", "perfis") || pode(perfil, "configuracoes", "config");
+    case "fin_cadastros": return ver("financeiro") || pode(perfil, "financeiro", "baixar");
+    case "fin_titulos": case "fin_movimentos": case "fin_historico": return ver("financeiro");
     default: return false;
   }
 }

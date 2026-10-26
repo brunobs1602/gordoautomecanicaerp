@@ -18,3 +18,5 @@
 - User accounts are managed only through server functions in `src/lib/usuarios.functions.ts` (public sign-up is disabled); roles live in `user_perfis`, never on `profiles`.
 - Logos are stored in the private `marca` bucket; config keeps a `marca:<path>` reference resolved with `useImagem` (signed URLs).
 - Permanent deletion of clients, vehicles, products and quotes goes only through the DB function `excluir_registro` (via `src/lib/exclusao.ts` + `ExcluirRegistro`); direct DELETE policies were removed so dependency checks and audit logging cannot be bypassed.
+- Financial money flows (payments, reversals, cancellations, transfers, balance adjustments, OS finalization) run only through the `fin_*` SECURITY DEFINER DB functions called from `src/lib/financeiro.ts`; `fin_movimentos`/`fin_historico` are read-only to clients and a trigger blocks direct changes to paid amounts/status, so balances and history cannot be altered silently.
+- Service orders stay in `orcamentos` (tipo `os`) with their own `numeroOS`/`statusOS`; the receivable is linked by `documento_id`, keeping one record per quote→OS so conversion never duplicates finances.
