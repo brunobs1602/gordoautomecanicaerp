@@ -1,0 +1,1 @@
+ALTER PUBLICATION supabase_realtime ADD TABLE public.clientes, public.veiculos, public.produtos, public.servicos, public.orcamentos, public.categorias, public.marcas, public.configuracoes, public.fin_cadastros, public.fin_titulos;

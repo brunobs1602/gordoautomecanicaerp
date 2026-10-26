@@ -57,6 +57,13 @@
       "when": 1793042727939,
       "tag": "0007_corrigir_finalizar_os",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793044033082,
+      "tag": "0008_realtime_cadastros",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,9 @@ import { AppShell } from "@/components/AppShell";
 import "@/lib/dados";
 import { atualizarDoBanco } from "@/lib/store";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+const AO_VIVO = ["clientes", "veiculos", "produtos", "servicos", "orcamentos", "categorias", "marcas", "configuracoes", "fin_cadastros", "fin_titulos"];
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -44,7 +47,7 @@ function Layout() {
     // Ao voltar para a aba, relê o banco para não exibir dados antigos.
     let ultimo = Date.now();
     const voltou = () => {
-      if (document.visibilityState !== "visible" || Date.now() - ultimo < 30_000) return;
+      if (document.visibilityState !== "visible" || Date.now() - ultimo < 10_000) return;
       ultimo = Date.now();
       void atualizarDoBanco().catch(() => toast.error("Não foi possível atualizar os dados. Tente novamente."));
     };
@@ -64,6 +67,24 @@ function Layout() {
       window.removeEventListener("online", voltou);
       clearInterval(t);
     };
+  }, [navigate]);
+  // Alterações feitas em outro computador aparecem sozinhas: relê só a tabela alterada (RLS continua valendo).
+  useEffect(() => {
+    const pendentes = new Set<string>();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const canal = supabase.channel("cadastros-ao-vivo");
+    for (const table of AO_VIVO)
+      canal.on("postgres_changes", { event: "*", schema: "public", table }, () => {
+        pendentes.add(table);
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          const nomes = [...pendentes];
+          pendentes.clear();
+          void atualizarDoBanco(nomes).catch(() => undefined);
+        }, 400);
+      });
+    canal.subscribe();
+    return () => { clearTimeout(timer); void supabase.removeChannel(canal); };
   }, [navigate]);
   if (!user) return null;
   return (
