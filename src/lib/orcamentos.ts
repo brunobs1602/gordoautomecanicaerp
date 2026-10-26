@@ -71,8 +71,19 @@ export interface Versao {
   dados: Dados;
 }
 
+export type StatusOS = "aberta" | "avaliacao" | "aguardando_aprovacao" | "aprovada" | "execucao" | "aguardando_peca" | "aguardando_pagamento" | "finalizada" | "entregue" | "cancelada";
+export const STATUS_OS: Record<StatusOS, string> = {
+  aberta: "Aberta", avaliacao: "Em avaliação", aguardando_aprovacao: "Aguardando aprovação", aprovada: "Aprovada",
+  execucao: "Em execução", aguardando_peca: "Aguardando peça", aguardando_pagamento: "Aguardando pagamento",
+  finalizada: "Finalizada", entregue: "Entregue", cancelada: "Cancelada",
+};
+
 export interface Orcamento extends Dados {
   id: string;
+  /** Número próprio da OS (atribuído na conversão). */
+  numeroOS?: number;
+  statusOS?: StatusOS;
+  concluidaEm?: string;
   numero: number;
   tipo: "orcamento" | "os";
   status: Status;
@@ -103,8 +114,16 @@ export function permissaoStatus(tipo: "orcamento" | "os", novo: Status): ["orcam
   return [tipo === "os" ? "ordens" : "orcamentos", "status"];
 }
 
-export const codigoDoc = (o: Pick<Orcamento, "numero" | "tipo">) =>
-  `${o.tipo === "os" ? getConfig().orcamentos.prefixoOS || "OS" : getConfig().orcamentos.prefixoOrc || "ORC"}-${String(o.numero).padStart(5, "0")}`;
+export const codigoDoc = (o: Pick<Orcamento, "numero" | "tipo"> & { numeroOS?: number | undefined }) =>
+  o.tipo === "os"
+    ? `${getConfig().orcamentos.prefixoOS || "OS"}-${String(o.numeroOS ?? o.numero).padStart(5, "0")}`
+    : codigoOrcamento(o);
+/** Número do orçamento de origem (mantido após a conversão). */
+export const codigoOrcamento = (o: Pick<Orcamento, "numero">) => `${getConfig().orcamentos.prefixoOrc || "ORC"}-${String(o.numero).padStart(5, "0")}`;
+export const statusOSDe = (o: Pick<Orcamento, "statusOS">): StatusOS => o.statusOS ?? "aberta";
+export function proximoNumeroOS(list: Pick<Orcamento, "numeroOS" | "numero" | "tipo">[]) {
+  return list.filter((o) => o.tipo === "os").reduce((m, o) => Math.max(m, o.numeroOS ?? 0), 0) + 1;
+}
 
 /** Lista as diferenças relevantes entre duas versões (para o histórico). */
 export function diferencas(antes: Dados, depois: Dados): string[] {
@@ -199,6 +218,7 @@ export function alterarStatus(id: string, novo: Status, usuario: string, observa
     ...o,
     status: novo,
     tipo: novo === "convertido" ? "os" : o.tipo,
+    ...(novo === "convertido" && !o.numeroOS ? { numeroOS: proximoNumeroOS(list), statusOS: "aberta" as StatusOS } : {}),
     atualizadoEm: agoraISO(),
     historico: [...o.historico, evento(usuario, acao, { statusAnterior: o.status, statusNovo: novo, observacao })],
   };
@@ -230,3 +250,25 @@ export const dadosVazios = (responsavelId = ""): Dados => {
 export const novoItem = (tipo: Item["tipo"], p: Partial<Item> = {}): Item => ({
   id: novoId(), tipo, refId: "", descricao: "", quantidade: 1, valorUnit: 0, desconto: 0, acrescimo: 0, observacao: "", ...p,
 });
+
+/** Status de acompanhamento da OS (separado do status do orçamento de origem). */
+export function alterarStatusOS(id: string, novo: StatusOS, usuario: string, observacao = "") {
+  const list = col.get();
+  const o = list.find((x) => x.id === id);
+  if (!o || o.tipo !== "os") throw new Error("Ordem de serviço não encontrada.");
+  exigir("ordens", "status");
+  const atual = statusOSDe(o);
+  if (atual === novo) return o;
+  if (atual === "cancelada" || atual === "entregue") throw new Error(`A OS está "${STATUS_OS[atual]}" e não pode mudar de status.`);
+  const atualizado: Orcamento = {
+    ...o,
+    statusOS: novo,
+    ...(novo === "finalizada" ? { concluidaEm: agoraISO() } : {}),
+    atualizadoEm: agoraISO(),
+    historico: [...o.historico, evento(usuario, novo === "finalizada" ? "Ordem de serviço finalizada" : "Status da OS alterado", {
+      detalhes: [`${STATUS_OS[atual]} → ${STATUS_OS[novo]}`], observacao,
+    })],
+  };
+  col.save(list.map((x) => (x.id === id ? atualizado : x)));
+  return atualizado;
+}
