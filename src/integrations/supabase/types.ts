@@ -134,6 +134,223 @@ export type Database = {
         }
         Relationships: []
       }
+      fin_cadastros: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          data: Json
+          id: string
+          nome: string
+          tipo: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          data?: Json
+          id?: string
+          nome?: string
+          tipo: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          data?: Json
+          id?: string
+          nome?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
+      fin_historico: {
+        Row: {
+          conta_id: string | null
+          data: string
+          documento_id: string | null
+          forma_id: string | null
+          id: string
+          observacao: string
+          status_anterior: string | null
+          status_novo: string | null
+          tipo: string
+          titulo_id: string | null
+          usuario_id: string | null
+          usuario_nome: string
+          valor: number | null
+        }
+        Insert: {
+          conta_id?: string | null
+          data?: string
+          documento_id?: string | null
+          forma_id?: string | null
+          id?: string
+          observacao?: string
+          status_anterior?: string | null
+          status_novo?: string | null
+          tipo: string
+          titulo_id?: string | null
+          usuario_id?: string | null
+          usuario_nome?: string
+          valor?: number | null
+        }
+        Update: {
+          conta_id?: string | null
+          data?: string
+          documento_id?: string | null
+          forma_id?: string | null
+          id?: string
+          observacao?: string
+          status_anterior?: string | null
+          status_novo?: string | null
+          tipo?: string
+          titulo_id?: string | null
+          usuario_id?: string | null
+          usuario_nome?: string
+          valor?: number | null
+        }
+        Relationships: []
+      }
+      fin_movimentos: {
+        Row: {
+          conta_id: string
+          criado_em: string
+          data: Json
+          data_mov: string
+          documento_id: string | null
+          estornado: boolean
+          estorno_de: string | null
+          forma_id: string | null
+          id: string
+          tipo: string
+          titulo_id: string | null
+          usuario_id: string | null
+          usuario_nome: string
+          valor: number
+        }
+        Insert: {
+          conta_id: string
+          criado_em?: string
+          data?: Json
+          data_mov?: string
+          documento_id?: string | null
+          estornado?: boolean
+          estorno_de?: string | null
+          forma_id?: string | null
+          id?: string
+          tipo: string
+          titulo_id?: string | null
+          usuario_id?: string | null
+          usuario_nome?: string
+          valor: number
+        }
+        Update: {
+          conta_id?: string
+          criado_em?: string
+          data?: Json
+          data_mov?: string
+          documento_id?: string | null
+          estornado?: boolean
+          estorno_de?: string | null
+          forma_id?: string | null
+          id?: string
+          tipo?: string
+          titulo_id?: string | null
+          usuario_id?: string | null
+          usuario_nome?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_movimentos_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "fin_cadastros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_movimentos_estorno_de_fkey"
+            columns: ["estorno_de"]
+            isOneToOne: false
+            referencedRelation: "fin_movimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_movimentos_titulo_id_fkey"
+            columns: ["titulo_id"]
+            isOneToOne: false
+            referencedRelation: "fin_titulos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_titulos: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string | null
+          categoria_id: string | null
+          cliente_id: string | null
+          criado_em: string
+          criado_por: string | null
+          data: Json
+          descricao: string
+          documento_id: string | null
+          grupo: string | null
+          id: string
+          origem: string
+          pago: number
+          parcela: number
+          parcelas: number
+          status: string
+          tipo: string
+          valor: number
+          vencimento: string
+        }
+        Insert: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          categoria_id?: string | null
+          cliente_id?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          descricao?: string
+          documento_id?: string | null
+          grupo?: string | null
+          id?: string
+          origem?: string
+          pago?: number
+          parcela?: number
+          parcelas?: number
+          status?: string
+          tipo: string
+          valor: number
+          vencimento: string
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          categoria_id?: string | null
+          cliente_id?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data?: Json
+          descricao?: string
+          documento_id?: string | null
+          grupo?: string | null
+          id?: string
+          origem?: string
+          pago?: number
+          parcela?: number
+          parcelas?: number
+          status?: string
+          tipo?: string
+          valor?: number
+          vencimento?: string
+        }
+        Relationships: []
+      }
       marcas: {
         Row: {
           ativo: boolean
@@ -426,6 +643,76 @@ export type Database = {
           _tipo: string
         }
         Returns: Json
+      }
+      fin__aplicar: {
+        Args: {
+          _data: string
+          _excesso: boolean
+          _pagamentos: Json
+          _titulo: string
+        }
+        Returns: Json
+      }
+      fin_ajustar: {
+        Args: { _conta: string; _data: string; _motivo: string; _valor: number }
+        Returns: undefined
+      }
+      fin_baixar: {
+        Args: {
+          _data: string
+          _excesso?: boolean
+          _pagamentos: Json
+          _titulo: string
+        }
+        Returns: Json
+      }
+      fin_cancelar_titulo: {
+        Args: { _id: string; _motivo: string }
+        Returns: undefined
+      }
+      fin_estornar: {
+        Args: { _motivo: string; _mov: string }
+        Returns: undefined
+      }
+      fin_finalizar_os: {
+        Args: {
+          _data: string
+          _excesso?: boolean
+          _orc: string
+          _pagamentos: Json
+          _parcelas: number
+          _vencimento: string
+        }
+        Returns: Json
+      }
+      fin_log: {
+        Args: {
+          _antes: string
+          _conta: string
+          _depois: string
+          _doc: string
+          _forma: string
+          _obs: string
+          _tipo: string
+          _titulo: string
+          _valor: number
+        }
+        Returns: undefined
+      }
+      fin_nome_usuario: { Args: never; Returns: string }
+      fin_parcelar: {
+        Args: { _id: string; _parcelas: number; _primeiro: string }
+        Returns: undefined
+      }
+      fin_transferir: {
+        Args: {
+          _data: string
+          _de: string
+          _obs: string
+          _para: string
+          _valor: number
+        }
+        Returns: undefined
       }
       precisa_configuracao_inicial: { Args: never; Returns: boolean }
       registrar_acesso: { Args: never; Returns: undefined }
