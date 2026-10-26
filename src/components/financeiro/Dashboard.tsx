@@ -14,11 +14,11 @@ const CORES = ["var(--primary)", "#9ca3af", "#e5e7eb", "#7f1d1d", "#f87171", "#6
 const mesLabel = (ym: string) => { const [y, m] = ym.split("-"); return `${m}/${y!.slice(2)}`; };
 const fmt = (v: number) => moeda(v);
 
-function Grafico({ titulo, children }: { titulo: string; children: React.ReactElement }) {
+function Grafico({ titulo, children }: { titulo: string; children: React.ReactElement | null }) {
   return (
     <div className="panel p-4">
       <h3 className="mb-3 font-display text-lg font-bold uppercase">{titulo}</h3>
-      <div className="h-64"><ResponsiveContainer width="100%" height="100%">{children}</ResponsiveContainer></div>
+      <div className="h-64">{children ? <ResponsiveContainer width="100%" height="100%">{children}</ResponsiveContainer> : <div className="grid h-full place-items-center text-sm text-muted-foreground">Sem dados no período</div>}</div>
     </div>
   );
 }
@@ -129,15 +129,12 @@ export function DashboardFinanceiro() {
         <Grafico titulo="Entradas e saídas"><BarChart data={d.serie}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="mes" {...eixo} /><YAxis {...eixo} width={70} /><Tooltip {...tip} /><Legend /><Bar dataKey="Entradas" fill="#9ca3af" /><Bar dataKey="Saídas" fill="var(--primary)" /></BarChart></Grafico>
         <Grafico titulo="Contas a pagar e receber"><BarChart data={d.pagarReceber}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="nome" {...eixo} /><YAxis {...eixo} width={70} /><Tooltip {...tip} /><Legend /><Bar dataKey="Aberto" fill="var(--primary)" /><Bar dataKey="Liquidado" fill="#9ca3af" /></BarChart></Grafico>
         <Grafico titulo="Recebimentos por forma de pagamento">
-          {d.porForma.length ? <PieChart><Pie data={d.porForma} dataKey="valor" nameKey="nome" outerRadius={90} label={(e: { nome: string }) => e.nome}>{d.porForma.map((_, i) => <Cell key={i} fill={CORES[i % CORES.length]} />)}</Pie><Tooltip {...tip} /></PieChart> : <SemDados />}
+          {d.porForma.length ? <PieChart><Pie data={d.porForma} dataKey="valor" nameKey="nome" outerRadius={90} label={(e: { nome: string }) => e.nome}>{d.porForma.map((_, i) => <Cell key={i} fill={CORES[i % CORES.length]} />)}</Pie><Tooltip {...tip} /></PieChart> : null}
         </Grafico>
         <Grafico titulo="Faturamento por mês"><BarChart data={d.serie}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="mes" {...eixo} /><YAxis {...eixo} width={70} /><Tooltip {...tip} /><Bar dataKey="Faturamento" fill="var(--primary)" /></BarChart></Grafico>
-        <Grafico titulo="Recebido por bandeira">{d.porBandeira.length ? <BarChart data={d.porBandeira} layout="vertical"><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Tooltip {...tip} /><Bar dataKey="valor" name="Valor" fill="var(--primary)" /></BarChart> : <SemDados />}</Grafico>
-        <Grafico titulo="Recebido por maquininha">{d.porMaquininha.length ? <BarChart data={d.porMaquininha} layout="vertical"><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Tooltip {...tip} /><Bar dataKey="valor" name="Valor" fill="#9ca3af" /></BarChart> : <SemDados />}</Grafico>
+        <Grafico titulo="Recebido por bandeira">{d.porBandeira.length ? <BarChart data={d.porBandeira} layout="vertical"><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Tooltip {...tip} /><Bar dataKey="valor" name="Valor" fill="var(--primary)" /></BarChart> : null}</Grafico>
+        <Grafico titulo="Recebido por maquininha">{d.porMaquininha.length ? <BarChart data={d.porMaquininha} layout="vertical"><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Tooltip {...tip} /><Bar dataKey="valor" name="Valor" fill="#9ca3af" /></BarChart> : null}</Grafico>
       </div>
     </>
   );
-}
-function SemDados() {
-  return <BarChart data={[]}><text x="50%" y="50%" textAnchor="middle" fill="var(--muted-foreground)" fontSize={13}>Sem dados no período</text></BarChart>;
 }
