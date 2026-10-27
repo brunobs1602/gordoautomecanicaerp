@@ -375,6 +375,89 @@ export type Database = {
         }
         Relationships: []
       }
+      orc_aprovacoes: {
+        Row: {
+          id: string
+          itens: Json
+          link_id: string
+          orcamento_id: string
+          respondido_em: string
+          total_aprovado: number
+          total_recusado: number
+        }
+        Insert: {
+          id?: string
+          itens: Json
+          link_id: string
+          orcamento_id: string
+          respondido_em?: string
+          total_aprovado: number
+          total_recusado: number
+        }
+        Update: {
+          id?: string
+          itens?: Json
+          link_id?: string
+          orcamento_id?: string
+          respondido_em?: string
+          total_aprovado?: number
+          total_recusado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orc_aprovacoes_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: true
+            referencedRelation: "orc_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orc_aprovacoes_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orc_links: {
+        Row: {
+          ativo: boolean
+          criado_em: string
+          criado_por: string | null
+          criado_por_nome: string
+          id: string
+          orcamento_id: string
+          token: string
+        }
+        Insert: {
+          ativo?: boolean
+          criado_em?: string
+          criado_por?: string | null
+          criado_por_nome?: string
+          id?: string
+          orcamento_id: string
+          token: string
+        }
+        Update: {
+          ativo?: boolean
+          criado_em?: string
+          criado_por?: string | null
+          criado_por_nome?: string
+          id?: string
+          orcamento_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orc_links_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orcamentos: {
         Row: {
           atualizado_em: string
@@ -714,6 +797,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      orc_desativar_link: { Args: { _orc: string }; Returns: undefined }
+      orc_gerar_link: { Args: { _orc: string }; Returns: string }
+      orc_itens_calc: { Args: { _data: Json }; Returns: Json }
+      orc_valido: { Args: { _validade: string }; Returns: boolean }
+      portal_ativo: { Args: never; Returns: boolean }
+      portal_confirmar: {
+        Args: { _aprovados: string[]; _token: string; _versao: string }
+        Returns: Json
+      }
+      portal_ler: { Args: { _token: string }; Returns: Json }
       precisa_configuracao_inicial: { Args: never; Returns: boolean }
       registrar_acesso: { Args: never; Returns: undefined }
       resetar_dados_operacionais: { Args: never; Returns: Json }
