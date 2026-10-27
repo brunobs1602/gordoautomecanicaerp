@@ -41,7 +41,7 @@ function Aviso({ texto }: { texto: string }) {
 
 function Portal() {
   const r = Route.useLoaderData();
-  if ("erro" in r) return <Aviso texto={MSG[r.erro] ?? MSG.falha!} />;
+  if ("erro" in r) return <Aviso texto={MSG[r.erro] ?? MSG["falha"]!} />;
   return <Conteudo d={r} />;
 }
 
