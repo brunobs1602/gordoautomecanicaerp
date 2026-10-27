@@ -377,27 +377,33 @@ export type Database = {
       }
       orc_aprovacoes: {
         Row: {
+          conta_id: string | null
           id: string
           itens: Json
           link_id: string
+          observacao: string
           orcamento_id: string
           respondido_em: string
           total_aprovado: number
           total_recusado: number
         }
         Insert: {
+          conta_id?: string | null
           id?: string
           itens: Json
           link_id: string
+          observacao?: string
           orcamento_id: string
           respondido_em?: string
           total_aprovado: number
           total_recusado: number
         }
         Update: {
+          conta_id?: string | null
           id?: string
           itens?: Json
           link_id?: string
+          observacao?: string
           orcamento_id?: string
           respondido_em?: string
           total_aprovado?: number
@@ -544,6 +550,44 @@ export type Database = {
           permissoes?: Json
         }
         Relationships: []
+      }
+      portal_contas: {
+        Row: {
+          ativo: boolean
+          cliente_id: string
+          criado_em: string
+          email: string
+          nome: string
+          ultimo_acesso: string | null
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          cliente_id: string
+          criado_em?: string
+          email: string
+          nome?: string
+          ultimo_acesso?: string | null
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          cliente_id?: string
+          criado_em?: string
+          email?: string
+          nome?: string
+          ultimo_acesso?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_contas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       produtos: {
         Row: {
@@ -801,12 +845,30 @@ export type Database = {
       orc_gerar_link: { Args: { _orc: string }; Returns: string }
       orc_itens_calc: { Args: { _data: Json }; Returns: Json }
       orc_valido: { Args: { _validade: string }; Returns: boolean }
+      portal_abrir_orcamento: { Args: { _orc: string }; Returns: string }
       portal_ativo: { Args: never; Returns: boolean }
-      portal_confirmar: {
-        Args: { _aprovados: string[]; _token: string; _versao: string }
-        Returns: Json
+      portal_confirmar:
+        | {
+            Args: { _aprovados: string[]; _token: string; _versao: string }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _aprovados: string[]
+              _obs: string
+              _token: string
+              _versao: string
+            }
+            Returns: Json
+          }
+      portal_conta_ativar: {
+        Args: { _ativo: boolean; _user: string }
+        Returns: undefined
       }
       portal_ler: { Args: { _token: string }; Returns: Json }
+      portal_meus_orcamentos: { Args: never; Returns: Json }
+      portal_minha_conta: { Args: never; Returns: Json }
+      portal_vincular: { Args: { _token: string }; Returns: Json }
       precisa_configuracao_inicial: { Args: never; Returns: boolean }
       registrar_acesso: { Args: never; Returns: undefined }
       resetar_dados_operacionais: { Args: never; Returns: Json }

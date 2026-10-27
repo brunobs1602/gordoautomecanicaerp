@@ -12,3 +12,5 @@
 
 # Item 13 — Dashboards separadas
 - [x] Dashboard principal só operacional; financeiro com filtros (7 dias, maquininha, categoria) e comparativo.
+# Item 15 — Contas do cliente no portal
+- [x] Login, cadastro pelo link, recuperação de senha, central de orçamentos, observações, gestão de contas.

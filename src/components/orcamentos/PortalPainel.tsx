@@ -19,10 +19,11 @@ function RespostaCard({ r, atual }: { r: Resposta; atual: boolean }) {
     <div className={`rounded-md border p-3 text-sm ${atual ? "border-primary bg-primary/5" : "border-border"}`}>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <span className="font-semibold">{ap.length > 0 ? "Aprovado pelo cliente" : "Recusado pelo cliente"}</span>
-        <span className="text-xs text-muted-foreground">{dt(r.respondido_em)}</span>
+        <span className="text-xs text-muted-foreground">{dt(r.respondido_em)} · {r.conta_id ? "pela conta do cliente" : "pelo link"}</span>
       </div>
       {ap.length > 0 && <ul className="mb-2 space-y-0.5">{ap.map((i) => <li key={i.id} className="flex gap-1.5"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" /><span className="flex-1">{i.descricao}</span><span>{moeda(i.subtotal)}</span></li>)}</ul>}
       {rec.length > 0 && <ul className="mb-2 space-y-0.5 text-muted-foreground">{rec.map((i) => <li key={i.id} className="flex gap-1.5"><X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" /><span className="flex-1 line-through">{i.descricao}</span><span>{moeda(i.subtotal)}</span></li>)}</ul>}
+      {r.observacao && <div className="mb-2 rounded-md bg-muted/40 p-2"><div className="text-xs uppercase text-muted-foreground">Observações do cliente</div><p className="whitespace-pre-wrap">{r.observacao}</p></div>}
       <div className="flex justify-between border-t border-border pt-2 font-semibold"><span>Total aprovado</span><span>{moeda(Number(r.total_aprovado))}</span></div>
       {Number(r.total_recusado) > 0 && <div className="flex justify-between text-xs text-muted-foreground"><span>Recusado</span><span>{moeda(Number(r.total_recusado))}</span></div>}
     </div>

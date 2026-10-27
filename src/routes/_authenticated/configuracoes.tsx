@@ -68,9 +68,10 @@ function Configuracoes() {
   ] : [];
   const admin = [
     pode("usuarios") && { to: "/usuarios", titulo: "Usuários", icon: UserCog },
+    pode("usuarios") && { to: "/contas-portal", titulo: "Contas do portal do cliente", icon: UserCog },
     pode("perfis") && { to: "/perfis", titulo: "Perfis de acesso", icon: ShieldCheck },
     (pode("usuarios") || pode("perfis") || podeAlterar) && { to: "/historico", titulo: "Histórico e auditoria", icon: History },
-  ].filter(Boolean) as { to: "/usuarios" | "/perfis" | "/historico"; titulo: string; icon: typeof History }[];
+  ].filter(Boolean) as { to: "/usuarios" | "/perfis" | "/historico" | "/contas-portal"; titulo: string; icon: typeof History }[];
   const botao = (s: { key: string; titulo: string }) => (
     <button
       key={s.key}

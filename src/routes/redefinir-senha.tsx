@@ -45,8 +45,10 @@ function Redefinir() {
     setSalvando(false);
     if (error) return setErro("Não foi possível salvar a nova senha. Use uma senha mais forte ou solicite um novo link.");
     toast.success("Senha alterada. Entre com a nova senha.");
+    const portal = new URLSearchParams(window.location.search).get("portal") === "1";
     await logout();
-    navigate({ to: "/login", replace: true });
+    if (portal) navigate({ to: "/cliente/entrar", search: { voltar: undefined }, replace: true });
+    else navigate({ to: "/login", replace: true });
   };
 
   return (
