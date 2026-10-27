@@ -71,6 +71,13 @@
       "when": 1793100674516,
       "tag": "0009_portal_cliente",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793102346040,
+      "tag": "0010_portal_contas_clientes",
+      "breakpoints": true
     }
   ]
 }
