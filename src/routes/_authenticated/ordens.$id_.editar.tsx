@@ -5,6 +5,7 @@ import { atualizarOrcamento, codigoDoc, podeEditar, STATUS_LABEL, useOrcamentos,
 import { useCurrentUser } from "@/lib/auth";
 import { PageHeader } from "@/components/PageHeader";
 import { OrcamentoForm } from "@/components/orcamentos/OrcamentoForm";
+import { ImagensOrcamento } from "@/components/orcamentos/ImagensOrcamento";
 
 export const Route = createFileRoute("/_authenticated/ordens/$id_/editar")({
   beforeLoad: guard(["orcamentos", "editar"], ["ordens", "editar"]),
@@ -37,7 +38,7 @@ function EditarOrcamento() {
       </div>
     );
 
-  const { id: _i, numero: _n, tipo: _t, status: _s, criadoEm: _c, atualizadoEm: _a, historico: _h, versoes: _v, ...dados } = o;
+  const { id: _i, numero: _n, tipo: _t, status: _s, criadoEm: _c, atualizadoEm: _a, historico: _h, versoes: _v, imagens: _img, ...dados } = o;
   return (
     <>
       <PageHeader title={`Editar ${codigoDoc(o)}`} subtitle="Todas as alterações ficam registradas no histórico." />
@@ -52,6 +53,7 @@ function EditarOrcamento() {
           navigate({ to: "/ordens/$id", params: { id } });
         }}
       />
+      <div className="mt-5"><ImagensOrcamento o={o} /></div>
     </>
   );
 }
