@@ -15,6 +15,7 @@ import { Route as ConfiguracaoInicialRouteImport } from './routes/configuracao-i
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedContasPortalRouteImport } from './routes/_authenticated/contas-portal'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
@@ -74,6 +75,12 @@ const AuthenticatedConfiguracoesRoute =
   AuthenticatedConfiguracoesRouteImport.update({
     id: '/configuracoes',
     path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedContasPortalRoute =
+  AuthenticatedContasPortalRouteImport.update({
+    id: '/contas-portal',
+    path: '/contas-portal',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -247,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/contas-portal': typeof AuthenticatedContasPortalRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financeiro': typeof AuthenticatedFinanceiroRouteWithChildren
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -284,6 +292,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/contas-portal': typeof AuthenticatedContasPortalRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/os': typeof AuthenticatedOsRoute
@@ -322,6 +331,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/contas-portal': typeof AuthenticatedContasPortalRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRouteWithChildren
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
@@ -361,6 +371,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/redefinir-senha'
     | '/configuracoes'
+    | '/contas-portal'
     | '/dashboard'
     | '/financeiro'
     | '/historico'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/redefinir-senha'
     | '/configuracoes'
+    | '/contas-portal'
     | '/dashboard'
     | '/historico'
     | '/os'
@@ -435,6 +447,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/redefinir-senha'
     | '/_authenticated/configuracoes'
+    | '/_authenticated/contas-portal'
     | '/_authenticated/dashboard'
     | '/_authenticated/financeiro'
     | '/_authenticated/historico'
@@ -520,6 +533,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/configuracoes'
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/contas-portal': {
+      id: '/_authenticated/contas-portal'
+      path: '/contas-portal'
+      fullPath: '/contas-portal'
+      preLoaderRoute: typeof AuthenticatedContasPortalRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -753,6 +773,7 @@ const AuthenticatedFinanceiroRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedContasPortalRoute: typeof AuthenticatedContasPortalRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRouteWithChildren
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
@@ -782,6 +803,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedContasPortalRoute: AuthenticatedContasPortalRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRouteWithChildren,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
