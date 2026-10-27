@@ -13,7 +13,7 @@ export interface PortalDados {
   problema: string; diagnostico: string; obsCliente: string; condicoesPagamento: string;
   itens: PortalItem[]; imagens: string[];
   empresa: { nome: string; telefone: string; whatsapp: string; email: string; endereco: string; logo: string };
-  aprovacao: { respondidoEm: string; itens: PortalItem[]; totalAprovado: number; totalRecusado: number } | null;
+  aprovacao: { respondidoEm: string; itens: PortalItem[]; totalAprovado: number; totalRecusado: number; observacao?: string } | null;
 }
 
 /** Soma os itens escolhidos (apenas para exibição; o servidor recalcula). */
@@ -88,11 +88,11 @@ export async function desativarLink(orcId: string) {
 }
 export const urlPortal = (token: string) => `${window.location.origin}/portal/${token}`;
 
-export interface Resposta { id: string; link_id: string; respondido_em: string; itens: PortalItem[]; total_aprovado: number; total_recusado: number }
+export interface Resposta { id: string; link_id: string; respondido_em: string; itens: PortalItem[]; total_aprovado: number; total_recusado: number; observacao: string; conta_id: string | null }
 export async function carregarPortalInterno(orcId: string) {
   const [links, resp] = await Promise.all([
     supabase.from("orc_links").select("id,token,ativo,criado_em,criado_por_nome").eq("orcamento_id", orcId).order("criado_em", { ascending: false }),
-    supabase.from("orc_aprovacoes").select("id,link_id,respondido_em,itens,total_aprovado,total_recusado").eq("orcamento_id", orcId).order("respondido_em", { ascending: false }),
+    supabase.from("orc_aprovacoes").select("id,link_id,respondido_em,itens,total_aprovado,total_recusado,observacao,conta_id").eq("orcamento_id", orcId).order("respondido_em", { ascending: false }),
   ]);
   if (links.error) throw links.error;
   if (resp.error) throw resp.error;

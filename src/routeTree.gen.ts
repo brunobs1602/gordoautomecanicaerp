@@ -23,6 +23,8 @@ import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSemPermissaoRouteImport } from './routes/_authenticated/sem-permissao'
 import { Route as AuthenticatedServicosRouteImport } from './routes/_authenticated/servicos'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
+import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
+import { Route as ClienteEntrarRouteImport } from './routes/cliente.entrar'
 import { Route as PortalTokenRouteImport } from './routes/portal.$token'
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes.index'
 import { Route as AuthenticatedClientesIdRouteImport } from './routes/_authenticated/clientes.$id'
@@ -114,6 +116,16 @@ const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const ClienteIndexRoute = ClienteIndexRouteImport.update({
+  id: '/cliente/',
+  path: '/cliente/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteEntrarRoute = ClienteEntrarRouteImport.update({
+  id: '/cliente/entrar',
+  path: '/cliente/entrar',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PortalTokenRoute = PortalTokenRouteImport.update({
   id: '/portal/$token',
@@ -243,7 +255,9 @@ export interface FileRoutesByFullPath {
   '/sem-permissao': typeof AuthenticatedSemPermissaoRoute
   '/servicos': typeof AuthenticatedServicosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/cliente/entrar': typeof ClienteEntrarRoute
   '/portal/$token': typeof PortalTokenRoute
+  '/cliente/': typeof ClienteIndexRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
   '/financeiro/$secao': typeof AuthenticatedFinanceiroSecaoRoute
@@ -277,7 +291,9 @@ export interface FileRoutesByTo {
   '/sem-permissao': typeof AuthenticatedSemPermissaoRoute
   '/servicos': typeof AuthenticatedServicosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/cliente/entrar': typeof ClienteEntrarRoute
   '/portal/$token': typeof PortalTokenRoute
+  '/cliente': typeof ClienteIndexRoute
   '/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/clientes/novo': typeof AuthenticatedClientesNovoRoute
   '/financeiro/$secao': typeof AuthenticatedFinanceiroSecaoRoute
@@ -314,7 +330,9 @@ export interface FileRoutesById {
   '/_authenticated/sem-permissao': typeof AuthenticatedSemPermissaoRoute
   '/_authenticated/servicos': typeof AuthenticatedServicosRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
+  '/cliente/entrar': typeof ClienteEntrarRoute
   '/portal/$token': typeof PortalTokenRoute
+  '/cliente/': typeof ClienteIndexRoute
   '/_authenticated/clientes/$id': typeof AuthenticatedClientesIdRoute
   '/_authenticated/clientes/novo': typeof AuthenticatedClientesNovoRoute
   '/_authenticated/financeiro/$secao': typeof AuthenticatedFinanceiroSecaoRoute
@@ -351,7 +369,9 @@ export interface FileRouteTypes {
     | '/sem-permissao'
     | '/servicos'
     | '/usuarios'
+    | '/cliente/entrar'
     | '/portal/$token'
+    | '/cliente/'
     | '/clientes/$id'
     | '/clientes/novo'
     | '/financeiro/$secao'
@@ -385,7 +405,9 @@ export interface FileRouteTypes {
     | '/sem-permissao'
     | '/servicos'
     | '/usuarios'
+    | '/cliente/entrar'
     | '/portal/$token'
+    | '/cliente'
     | '/clientes/$id'
     | '/clientes/novo'
     | '/financeiro/$secao'
@@ -421,7 +443,9 @@ export interface FileRouteTypes {
     | '/_authenticated/sem-permissao'
     | '/_authenticated/servicos'
     | '/_authenticated/usuarios'
+    | '/cliente/entrar'
     | '/portal/$token'
+    | '/cliente/'
     | '/_authenticated/clientes/$id'
     | '/_authenticated/clientes/novo'
     | '/_authenticated/financeiro/$secao'
@@ -449,7 +473,9 @@ export interface RootRouteChildren {
   ConfiguracaoInicialRoute: typeof ConfiguracaoInicialRoute
   LoginRoute: typeof LoginRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  ClienteEntrarRoute: typeof ClienteEntrarRoute
   PortalTokenRoute: typeof PortalTokenRoute
+  ClienteIndexRoute: typeof ClienteIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -551,6 +577,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/usuarios'
       preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/cliente/': {
+      id: '/cliente/'
+      path: '/cliente'
+      fullPath: '/cliente/'
+      preLoaderRoute: typeof ClienteIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente/entrar': {
+      id: '/cliente/entrar'
+      path: '/cliente/entrar'
+      fullPath: '/cliente/entrar'
+      preLoaderRoute: typeof ClienteEntrarRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/portal/$token': {
       id: '/portal/$token'
@@ -779,7 +819,9 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracaoInicialRoute: ConfiguracaoInicialRoute,
   LoginRoute: LoginRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
+  ClienteEntrarRoute: ClienteEntrarRoute,
   PortalTokenRoute: PortalTokenRoute,
+  ClienteIndexRoute: ClienteIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

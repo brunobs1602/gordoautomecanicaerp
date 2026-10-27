@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { AlertTriangle, CheckCircle2, Cog, Loader2, Phone, X } from "lucide-react";
-import { confirmarPortal, lerPortal } from "@/lib/portal.functions";
+import { lerPortal } from "@/lib/portal.functions";
+import { confirmarResposta, OBS_MAX, validarObs } from "@/lib/portal-conta";
+import { ContaBox } from "@/components/orcamentos/ContaBox";
 import { totaisSelecao, type PortalDados, type PortalItem } from "@/lib/portal";
 
 export const Route = createFileRoute("/portal/$token")({
@@ -53,6 +55,7 @@ function Conteudo({ d }: { d: PortalDados }) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
   const [foto, setFoto] = useState("");
+  const [obs, setObs] = useState("");
   const tot = useMemo(() => totaisSelecao(d.itens, sel), [d.itens, sel]);
   const pode = d.podeAprovar;
   const ap = d.aprovacao;
@@ -62,8 +65,10 @@ function Conteudo({ d }: { d: PortalDados }) {
   const alternar = (id: string) => setSel((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const confirmar = async () => {
     if (enviando) return;
+    const eObs = validarObs(obs);
+    if (eObs) { setErro(eObs); return; }
     setEnviando(true); setErro("");
-    const res = await confirmarPortal({ data: { token, aprovados: [...sel], versao: d.versao } }).catch(() => ({ ok: false as const, mensagem: "Falha de conexão. Tente novamente." }));
+    const res = await confirmarResposta(token, [...sel], d.versao, obs).catch(() => ({ ok: false as const, mensagem: "Falha de conexão. Tente novamente." }));
     setEnviando(false);
     if (!res.ok) { setErro(res.mensagem); return; }
     setResumo(false);
@@ -131,7 +136,8 @@ function Conteudo({ d }: { d: PortalDados }) {
         </section>
 
         {ap ? (
-          <div className="panel border-success/50 p-4 text-sm"><CheckCircle2 className="mb-1 inline h-5 w-5 text-success" /> Sua resposta foi registrada em {new Date(ap.respondidoEm).toLocaleString("pt-BR")}. Total aprovado: <strong>{moeda(Number(ap.totalAprovado))}</strong>. Obrigado!</div>
+          <div className="panel border-success/50 p-4 text-sm"><CheckCircle2 className="mb-1 inline h-5 w-5 text-success" /> Sua resposta foi registrada em {new Date(ap.respondidoEm).toLocaleString("pt-BR")}. Total aprovado: <strong>{moeda(Number(ap.totalAprovado))}</strong>. Obrigado!
+            {ap.observacao && <div className="mt-2"><div className="text-xs uppercase text-muted-foreground">Suas observações</div><p className="whitespace-pre-wrap">{ap.observacao}</p></div>}</div>
         ) : !d.valido ? (
           <div className="panel border-primary/60 p-4 text-sm"><AlertTriangle className="mb-1 mr-1 inline h-5 w-5 text-primary" /> O prazo de aprovação deste orçamento expirou. Entre em contato com a oficina para atualizar o orçamento.</div>
         ) : !d.linkAtivo ? (
@@ -168,6 +174,8 @@ function Conteudo({ d }: { d: PortalDados }) {
           </section>
         )}
 
+        <ContaBox token={token} />
+
         {contato && <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground"><Phone className="h-4 w-4" /> Dúvidas? Fale com a oficina: {contato}</p>}
       </main>
 
@@ -191,6 +199,11 @@ function Conteudo({ d }: { d: PortalDados }) {
             )}
             {tot.recusado > 0 && <p className="text-xs text-muted-foreground">Itens não marcados ({moeda(tot.recusado)}) ficarão como recusados.</p>}
             <div className="my-4 flex justify-between border-t border-border pt-3 text-lg font-bold"><span>Total aprovado</span><span>{moeda(tot.aprovado)}</span></div>
+            <label className="mb-4 block space-y-1">
+              <span className="text-sm font-medium">Observações do cliente <span className="text-xs text-muted-foreground">(opcional)</span></span>
+              <textarea className="field min-h-24 w-full py-2" maxLength={OBS_MAX} value={obs} onChange={(e) => setObs(e.target.value)} placeholder="Dúvidas, pedidos de esclarecimento ou comentários sobre os itens" />
+              <span className="block text-right text-xs text-muted-foreground">{obs.length}/{OBS_MAX}</span>
+            </label>
             <p className="mb-4 text-xs text-muted-foreground">Após confirmar, sua resposta fica registrada e não pode ser alterada por este link.</p>
             {erro && <p className="mb-3 rounded-md bg-destructive/10 p-2 text-sm text-destructive">{erro}</p>}
             <div className="flex justify-end gap-2">
