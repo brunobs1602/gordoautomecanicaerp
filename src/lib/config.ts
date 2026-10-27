@@ -125,6 +125,7 @@ const LISTA = [
     n("validadeDias", "Prazo padrão de validade (dias)", "", 7),
     s("statusInicial", "Status inicial", "", "rascunho", [["rascunho", "Rascunho"]]),
     t("statusDisponiveis", "Status disponíveis", "Lista exibida no fluxo.", "Rascunho, Aguardando, Aprovado, Recusado, Reaberto, Cancelado, Convertido"),
+    b("portalCliente", "Interatividade com o cliente", "Permite enviar o orçamento por link para o cliente ver fotos, escolher itens e aprovar online.", false),
     b("reabrirRecusado", "Permitir reabrir orçamento recusado", "", true),
     b("editarAprovado", "Permitir editar após aprovação", "", false),
     b("exigirAprovacao", "Exigir aprovação antes de converter em OS", "", true),
