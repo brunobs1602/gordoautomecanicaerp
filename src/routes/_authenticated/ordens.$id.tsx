@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   STATUS_LABEL, TRANSICOES, alterarStatus, calcularTotais, codigoDoc, duplicarOrcamento, podeEditar,
   subtotalItem, useOrcamentos, type Item, type Status,
-  permissaoStatus,
+  permissaoStatus, aprovadoPeloCliente,
 } from "@/lib/orcamentos";
 import { useClientes } from "@/lib/clientes";
 import { formatarPlaca, useVeiculos } from "@/lib/veiculos";
@@ -20,6 +20,9 @@ import { Modal } from "@/components/Modal";
 import { StatusOrc } from "@/components/orcamentos/StatusOrc";
 import { ResumoFinanceiro } from "@/components/orcamentos/OrcamentoForm";
 import { OSPainel } from "@/components/financeiro/OSPainel";
+import { ImagensOrcamento } from "@/components/orcamentos/ImagensOrcamento";
+import { PortalPainel } from "@/components/orcamentos/PortalPainel";
+import { itensParaConversao, ultimaResposta } from "@/lib/portal";
 
 export const Route = createFileRoute("/_authenticated/ordens/$id")({
   beforeLoad: guard(["orcamentos"], ["ordens"]),
@@ -162,6 +165,17 @@ function DetalheOrcamento() {
   const totais = calcularTotais(o.itens);
   const servicos = o.itens.filter((i) => i.tipo === "servico");
   const produtos = o.itens.filter((i) => i.tipo === "produto");
+  const converter = async () => {
+    try {
+      // Aprovação feita pelo cliente: a OS leva somente os itens aprovados.
+      const r = aprovadoPeloCliente(o) ? await ultimaResposta(o.id) : null;
+      const ids = r ? itensParaConversao(o.itens, r).map((i) => i.id) : undefined;
+      alterarStatus(o.id, "convertido", nomeUser, "", ids);
+      toast.success("Convertido em ordem de serviço.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
   const mudar = (s: Status, msg: string) => {
     try {
       alterarStatus(o.id, s, nomeUser);
@@ -194,8 +208,8 @@ function DetalheOrcamento() {
             {o.status === "aprovado" && pode("ordens", "criar") && (
               <ConfirmDialog
                 trigger={<button className="btn-primary"><Wrench className="h-4 w-4" /> Converter em OS</button>}
-                title="Converter em ordem de serviço?" description="Todos os dados, itens, valores e histórico serão preservados."
-                confirmLabel="Converter" onConfirm={() => mudar("convertido", "Convertido em ordem de serviço.")}
+                title="Converter em ordem de serviço?" description={aprovadoPeloCliente(o) ? "Somente os itens aprovados pelo cliente irão para a OS. O histórico será preservado." : "Todos os dados, itens, valores e histórico serão preservados."}
+                confirmLabel="Converter" onConfirm={() => void converter()}
               />
             )}
             {o.tipo === "orcamento" && <ExcluirRegistro tipo="orcamento" id={o.id} nome={codigoDoc(o)} confirmacao={codigoDoc(o)}
@@ -246,6 +260,7 @@ function DetalheOrcamento() {
               <Info label="Diagnóstico"><span className="whitespace-pre-wrap">{o.diagnostico}</span></Info>
             </dl>
           </Bloco>
+          <ImagensOrcamento o={o} />
           <Bloco titulo="Serviços"><TabelaItens itens={servicos} /></Bloco>
           <Bloco titulo="Produtos e peças"><TabelaItens itens={produtos} /></Bloco>
           <Bloco titulo="Observações">
@@ -259,6 +274,7 @@ function DetalheOrcamento() {
 
         <div className="space-y-5">
           {o.tipo === "os" && <OSPainel o={o} usuario={nomeUser} />}
+          <PortalPainel o={o} />
           <ResumoFinanceiro totais={totais} />
           <Bloco titulo="Histórico" acao={<History className="h-4 w-4 text-muted-foreground" />}>
             <ol className="relative space-y-4 border-l border-border pl-4">

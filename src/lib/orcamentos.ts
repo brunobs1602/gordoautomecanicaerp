@@ -91,6 +91,25 @@ export interface Orcamento extends Dados {
   atualizadoEm: string;
   historico: Evento[];
   versoes: Versao[];
+  /** Fotos dos problemas (arquivos no armazenamento privado). */
+  imagens?: ImagemOrc[];
+}
+
+export interface ImagemOrc { caminho: string; nome: string; tamanho: number; criadoEm: string; usuario: string }
+
+/** A aprovação atual veio do cliente pelo link? (último evento que levou a "aprovado"). */
+export function aprovadoPeloCliente(o: Pick<Orcamento, "historico">) {
+  const ult = [...o.historico].reverse().find((h) => h.statusNovo === "aprovado");
+  return ult?.usuario === "Cliente (link)";
+}
+
+export function definirImagens(id: string, imagens: ImagemOrc[], usuario: string, acao: string) {
+  exigir("orcamentos", "editar");
+  const list = col.get();
+  const o = list.find((x) => x.id === id);
+  if (!o) throw new Error("Orçamento não encontrado.");
+  const novo: Orcamento = { ...o, imagens, atualizadoEm: agoraISO(), historico: [...o.historico, evento(usuario, acao)] };
+  col.save(list.map((x) => (x.id === id ? novo : x)));
 }
 
 export const subtotalItem = (i: Pick<Item, "quantidade" | "valorUnit" | "desconto" | "acrescimo">) =>
@@ -206,7 +225,7 @@ export function atualizarOrcamento(id: string, d: Dados, usuario: string) {
   col.save(list.map((x) => (x.id === id ? novo : x)));
 }
 
-export function alterarStatus(id: string, novo: Status, usuario: string, observacao = "") {
+export function alterarStatus(id: string, novo: Status, usuario: string, observacao = "", itensAprovados?: string[]) {
   const list = col.get();
   const o = list.find((x) => x.id === id);
   if (!o) throw new Error("Orçamento não encontrado.");
@@ -214,13 +233,19 @@ export function alterarStatus(id: string, novo: Status, usuario: string, observa
   if (novo === "reaberto" && getConfig().orcamentos.reabrirRecusado === false) throw new Error("A reabertura de orçamentos recusados está desativada nas configurações.");
   if (!TRANSICOES[o.status].includes(novo)) throw new Error(`Não é possível mudar de "${STATUS_LABEL[o.status]}" para "${STATUS_LABEL[novo]}".`);
   const acao = novo === "reaberto" ? "Orçamento reaberto" : novo === "convertido" ? "Convertido em ordem de serviço" : "Status alterado";
+  const manter = novo === "convertido" && itensAprovados ? new Set(itensAprovados) : null;
+  const removidos = manter ? o.itens.filter((i) => !manter.has(i.id)) : [];
   const atualizado: Orcamento = {
     ...o,
+    ...(manter ? { itens: o.itens.filter((i) => manter.has(i.id)) } : {}),
     status: novo,
     tipo: novo === "convertido" ? "os" : o.tipo,
     ...(novo === "convertido" && !o.numeroOS ? { numeroOS: proximoNumeroOS(list), statusOS: "aberta" as StatusOS } : {}),
     atualizadoEm: agoraISO(),
-    historico: [...o.historico, evento(usuario, acao, { statusAnterior: o.status, statusNovo: novo, observacao })],
+    historico: [...o.historico, evento(usuario, acao, {
+      statusAnterior: o.status, statusNovo: novo, observacao,
+      detalhes: removidos.map((i) => `Não incluído (recusado pelo cliente): ${i.descricao}`),
+    })],
   };
   col.save(list.map((x) => (x.id === id ? atualizado : x)));
   return atualizado;
