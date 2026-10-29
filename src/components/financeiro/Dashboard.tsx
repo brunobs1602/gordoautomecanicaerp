@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, CalendarClock, CreditCard, Landmark, TrendingUp, Wallet } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, CartesianGrid, Legend, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { PizzaRecebimentos } from "@/components/graficos/PizzaRecebimentos";
+import { mesGrafico, periodoGrafico, temValoresGrafico } from "@/components/graficos/TooltipGrafico";
+import { BarrasGrafico } from "@/components/graficos/BarrasGrafico";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import {
@@ -10,15 +13,13 @@ import { calcularTotais, useOrcamentos } from "@/lib/orcamentos";
 import { moeda } from "@/lib/store";
 import { Campo, FiltroPeriodo, Opcoes, intervalo, type Periodo } from "./ui";
 
-const CORES = ["var(--primary)", "#9ca3af", "#e5e7eb", "#7f1d1d", "#f87171", "#6b7280", "#d4d4d8", "#b91c1c"];
 const mesLabel = (ym: string) => { const [y, m] = ym.split("-"); return `${m}/${y!.slice(2)}`; };
-const fmt = (v: number) => moeda(v);
 
-function Grafico({ titulo, children }: { titulo: string; children: React.ReactElement | null }) {
+function Grafico({ titulo, children, responsivo = true }: { titulo: string; children: React.ReactElement | null; responsivo?: boolean }) {
   return (
-    <div className="panel p-4">
+    <div className="panel min-w-0 p-4">
       <h3 className="mb-3 font-display text-lg font-bold uppercase">{titulo}</h3>
-      <div className="h-64">{children ? <ResponsiveContainer width="100%" height="100%">{children}</ResponsiveContainer> : <div className="grid h-full place-items-center text-sm text-muted-foreground">Sem dados no período</div>}</div>
+      <div className="h-64 min-w-0">{children ? responsivo ? <ResponsiveContainer width="100%" height="100%" minWidth={0}>{children}</ResponsiveContainer> : children : <div className="grid h-full place-items-center text-sm text-muted-foreground">Sem dados no período</div>}</div>
     </div>
   );
 }
@@ -74,7 +75,7 @@ export function DashboardFinanceiro() {
       const ms = mv.filter((m) => m.dataMov.startsWith(ym));
       const os = orcs.filter((o) => o.tipo === "os" && (o.concluidaEm ?? "").startsWith(ym) && o.statusOS !== "cancelada");
       return {
-        mes: mesLabel(ym),
+        mes: mesLabel(ym), periodo: mesGrafico(ym),
         Entradas: r2(ms.filter((m) => m.valor > 0 && m.tipo !== "transferencia").reduce((s, m) => s + m.valor, 0)),
         Saídas: r2(-ms.filter((m) => m.valor < 0 && m.tipo !== "transferencia").reduce((s, m) => s + m.valor, 0)),
         Faturamento: r2(os.reduce((s, o) => s + calcularTotais(o.itens).total, 0)),
@@ -99,8 +100,8 @@ export function DashboardFinanceiro() {
       porForma: agrupar(recebidas, (m) => nome(m.formaId)),
       porBandeira: agrupar(recebidas.filter((m) => m.data["bandeira_id"]), (m) => nome(m.data["bandeira_id"])),
       comparativo: dias ? [
-        { nome: "Período anterior", Recebido: liq("recebimento", antIni, antFim), Pago: liq("pagamento", antIni, antFim) },
-        { nome: "Período atual", Recebido: liq("recebimento", ini, fim), Pago: liq("pagamento", ini, fim) },
+        { nome: "Período anterior", periodo: periodoGrafico(antIni, antFim), Recebido: liq("recebimento", antIni, antFim), Pago: liq("pagamento", antIni, antFim) },
+        { nome: "Período atual", periodo: periodoGrafico(ini, fim), Recebido: liq("recebimento", ini, fim), Pago: liq("pagamento", ini, fim) },
       ] : [],
       porMaquininha: agrupar(recebidas.filter((m) => m.data["maquininha_id"]), (m) => nome(m.data["maquininha_id"])),
     };
@@ -108,7 +109,8 @@ export function DashboardFinanceiro() {
   }, [titulos, movs, cads, orcs, ini, fim, conta, forma, status, maq, cat, hoje, alerta]);
 
   const eixo = { stroke: "var(--muted-foreground)", fontSize: 11 };
-  const tip = { contentStyle: { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 6 }, formatter: (v: number) => fmt(v) };
+  const periodo = periodoGrafico(ini, fim);
+  const contextoPizza = JSON.stringify([ini, fim, conta, forma, status, maq, cat, d.porForma]);
 
   return (
     <>
@@ -140,15 +142,15 @@ export function DashboardFinanceiro() {
         <StatCard label="Lucro bruto estimado" value={d.recebido || d.pago ? moeda(d.lucro) : "—"} icon={TrendingUp} />
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-2">
-        <Grafico titulo="Entradas e saídas"><BarChart data={d.serie}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="mes" {...eixo} /><YAxis {...eixo} width={70} /><Tooltip {...tip} /><Legend /><Bar dataKey="Entradas" fill="#9ca3af" /><Bar dataKey="Saídas" fill="var(--primary)" /></BarChart></Grafico>
-        <Grafico titulo="Contas a pagar e receber"><BarChart data={d.pagarReceber}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="nome" {...eixo} /><YAxis {...eixo} width={70} /><Tooltip {...tip} /><Legend /><Bar dataKey="Aberto" fill="var(--primary)" /><Bar dataKey="Liquidado" fill="#9ca3af" /></BarChart></Grafico>
-        <Grafico titulo="Recebimentos por forma de pagamento">
-          {d.porForma.length ? <PieChart><Pie data={d.porForma} dataKey="valor" nameKey="nome" outerRadius={90} label={(e: { nome: string }) => e.nome}>{d.porForma.map((_, i) => <Cell key={i} fill={CORES[i % CORES.length]} />)}</Pie><Tooltip {...tip} /></PieChart> : null}
+        <Grafico titulo="Entradas e saídas">{temValoresGrafico(d.serie, ["Entradas", "Saídas"]) ? <BarrasGrafico data={d.serie} monetario periodo={periodo}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="mes" {...eixo} /><YAxis {...eixo} width={70} /><Legend /><Bar dataKey="Entradas" fill="#9ca3af" isAnimationActive={false} /><Bar dataKey="Saídas" fill="var(--primary)" isAnimationActive={false} /></BarrasGrafico> : null}</Grafico>
+        <Grafico titulo="Contas a pagar e receber">{temValoresGrafico(d.pagarReceber, ["Aberto", "Liquidado"]) ? <BarrasGrafico data={d.pagarReceber} monetario periodo={`Em aberto: posição atual · Liquidado: ${periodo}`}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="nome" {...eixo} /><YAxis {...eixo} width={70} /><Legend /><Bar dataKey="Aberto" fill="var(--primary)" isAnimationActive={false} /><Bar dataKey="Liquidado" fill="#9ca3af" isAnimationActive={false} /></BarrasGrafico> : null}</Grafico>
+        <Grafico titulo="Recebimentos por forma de pagamento" responsivo={false}>
+          {d.porForma.length ? <PizzaRecebimentos key={contextoPizza} dados={d.porForma} periodo={periodo} /> : null}
         </Grafico>
-        <Grafico titulo="Faturamento por mês"><BarChart data={d.serie}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="mes" {...eixo} /><YAxis {...eixo} width={70} /><Tooltip {...tip} /><Bar dataKey="Faturamento" fill="var(--primary)" /></BarChart></Grafico>
-        <Grafico titulo="Recebido por bandeira">{d.porBandeira.length ? <BarChart data={d.porBandeira} layout="vertical"><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Tooltip {...tip} /><Bar dataKey="valor" name="Valor" fill="var(--primary)" /></BarChart> : null}</Grafico>
-        <Grafico titulo="Comparativo com o período anterior">{d.comparativo.length ? <BarChart data={d.comparativo}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="nome" {...eixo} /><YAxis {...eixo} width={70} /><Tooltip {...tip} /><Legend /><Bar dataKey="Recebido" fill="#9ca3af" /><Bar dataKey="Pago" fill="var(--primary)" /></BarChart> : null}</Grafico>
-        <Grafico titulo="Recebido por maquininha">{d.porMaquininha.length ? <BarChart data={d.porMaquininha} layout="vertical"><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Tooltip {...tip} /><Bar dataKey="valor" name="Valor" fill="#9ca3af" /></BarChart> : null}</Grafico>
+        <Grafico titulo="Faturamento por mês">{temValoresGrafico(d.serie, ["Faturamento"]) ? <BarrasGrafico data={d.serie} monetario periodo={periodo}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="mes" {...eixo} /><YAxis {...eixo} width={70} /><Bar dataKey="Faturamento" fill="var(--primary)" isAnimationActive={false} /></BarrasGrafico> : null}</Grafico>
+        <Grafico titulo="Recebido por bandeira">{d.porBandeira.length ? <BarrasGrafico data={d.porBandeira} layout="vertical" monetario periodo={periodo}><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Bar dataKey="valor" name="Recebido" fill="var(--primary)" isAnimationActive={false} /></BarrasGrafico> : null}</Grafico>
+        <Grafico titulo="Comparativo com o período anterior">{temValoresGrafico(d.comparativo, ["Recebido", "Pago"]) ? <BarrasGrafico data={d.comparativo} monetario periodo={periodo}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="nome" {...eixo} /><YAxis {...eixo} width={70} /><Legend /><Bar dataKey="Recebido" fill="#9ca3af" isAnimationActive={false} /><Bar dataKey="Pago" fill="var(--primary)" isAnimationActive={false} /></BarrasGrafico> : null}</Grafico>
+        <Grafico titulo="Recebido por maquininha">{d.porMaquininha.length ? <BarrasGrafico data={d.porMaquininha} layout="vertical" monetario periodo={periodo}><XAxis type="number" {...eixo} /><YAxis type="category" dataKey="nome" {...eixo} width={110} /><Bar dataKey="valor" name="Recebido" fill="#9ca3af" isAnimationActive={false} /></BarrasGrafico> : null}</Grafico>
       </div>
     </>
   );

@@ -1,7 +1,9 @@
 import { useMemo, type ReactElement } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, Car, CheckCircle2, ClipboardList, DollarSign, FileEdit, Hammer, Hourglass, PackageX, ThumbsDown, ThumbsUp, Users, Wrench } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { BarrasGrafico } from "@/components/graficos/BarrasGrafico";
+import { mesGrafico, temValoresGrafico } from "@/components/graficos/TooltipGrafico";
 import { guard, useAcesso } from "@/lib/acesso";
 import { useCurrentUser } from "@/lib/auth";
 import { useConfig } from "@/lib/config";
@@ -41,11 +43,11 @@ const rotulo = (ym: string) => `${ym.slice(5)}/${ym.slice(2, 4)}`;
 
 function Grafico({ titulo, vazio, children }: { titulo: string; vazio: boolean; children: ReactElement }) {
   return (
-    <div className="panel p-4">
+    <div className="panel min-w-0 p-4">
       <h3 className="mb-3 font-display text-lg font-bold uppercase">{titulo}</h3>
-      <div className="h-56">
+      <div className="h-56 min-w-0">
         {vazio ? <div className="grid h-full place-items-center text-sm text-muted-foreground">Sem dados ainda</div>
-          : <ResponsiveContainer width="100%" height="100%">{children}</ResponsiveContainer>}
+          : <ResponsiveContainer width="100%" height="100%" minWidth={0}>{children}</ResponsiveContainer>}
       </div>
     </div>
   );
@@ -76,7 +78,7 @@ function Dashboard() {
       const m = new Map<string, number>();
       for (const o of docs) if (o.status !== "cancelado" && o.status !== "recusado")
         for (const i of o.itens) if (i.tipo === tipo && i.descricao) m.set(i.descricao, (m.get(i.descricao) ?? 0) + i.quantidade);
-      return [...m.entries()].map(([nome, qtd]) => ({ nome: nome.slice(0, 22), qtd })).sort((a, b) => b.qtd - a.qtd).slice(0, 6);
+      return [...m.entries()].map(([nome, qtd]) => ({ nome: nome.slice(0, 22), nomeCompleto: nome, qtd })).sort((a, b) => b.qtd - a.qtd).slice(0, 6);
     };
     const baixo = produtos.filter((p) => p.ativo && estoqueBaixo(p));
     const atividades = docs
@@ -88,19 +90,18 @@ function Dashboard() {
       os: { aberta: nOS("aberta"), execucao: nOS("execucao"), peca: nOS("aguardando_peca"), finalizada: nOS("finalizada") + nOS("entregue") },
       orcStatus: (Object.keys(STATUS_LABEL) as Status[]).map((s) => ({ nome: STATUS_LABEL[s], qtd: nOrc(s) })).filter((x) => x.qtd > 0),
       osStatus: (Object.keys(STATUS_OS) as StatusOS[]).map((s) => ({ nome: STATUS_OS[s], qtd: nOS(s) })).filter((x) => x.qtd > 0),
-      cadastros: meses.map((m, i) => ({ mes: rotulo(m), Clientes: cli[i], Veículos: vei[i], OS: osm[i] })),
+      cadastros: meses.map((m, i) => ({ mes: rotulo(m), periodo: mesGrafico(m), Clientes: cli[i], Veículos: vei[i], OS: osm[i] })),
       servUso: uso("servico"), prodUso: uso("produto"),
-      baixo: baixo.map((p) => ({ nome: p.nome.slice(0, 22), Estoque: p.estoque, Mínimo: p.estoqueMinimo })).slice(0, 8),
+      baixo: baixo.map((p) => ({ nome: p.nome.slice(0, 22), nomeCompleto: p.nome, Estoque: p.estoque, Mínimo: p.estoqueMinimo })).slice(0, 8),
       nBaixo: baixo.length,
       atividades,
     };
   }, [docs, clientes, veiculos, produtos, verOrc, verOS]);
 
   const eixo = { stroke: "var(--muted-foreground)", fontSize: 11 };
-  const tip = { contentStyle: { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 6 } };
   const barras = (data: object[], chave: string, cor = "var(--primary)", vertical = false) => vertical
-    ? <BarChart data={data} layout="vertical"><XAxis type="number" allowDecimals={false} {...eixo} /><YAxis type="category" dataKey="nome" width={120} {...eixo} /><Tooltip {...tip} /><Bar dataKey={chave} name="Quantidade" fill={cor} /></BarChart>
-    : <BarChart data={data}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="nome" {...eixo} /><YAxis allowDecimals={false} {...eixo} width={30} /><Tooltip {...tip} /><Bar dataKey={chave} name="Quantidade" fill={cor} /></BarChart>;
+    ? <BarrasGrafico data={data} layout="vertical" periodo="Todo o histórico"><XAxis type="number" allowDecimals={false} {...eixo} /><YAxis type="category" dataKey="nome" width={120} {...eixo} /><Bar dataKey={chave} name="Quantidade" fill={cor} isAnimationActive={false} /></BarrasGrafico>
+    : <BarrasGrafico data={data} periodo="Posição atual"><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="nome" {...eixo} /><YAxis allowDecimals={false} {...eixo} width={30} /><Bar dataKey={chave} name="Quantidade" fill={cor} isAnimationActive={false} /></BarrasGrafico>;
 
   return (
     <>
@@ -130,20 +131,20 @@ function Dashboard() {
         {verOrc && <Grafico titulo="Orçamentos por status" vazio={!d.orcStatus.length}>{barras(d.orcStatus, "qtd")}</Grafico>}
         {verOS && <Grafico titulo="Ordens de serviço por status" vazio={!d.osStatus.length}>{barras(d.osStatus, "qtd", "#9ca3af")}</Grafico>}
         {(pode("clientes") || pode("veiculos") || verOS) && (
-          <Grafico titulo="Cadastros e OS por mês" vazio={false}>
-            <BarChart data={d.cadastros}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="mes" {...eixo} /><YAxis allowDecimals={false} width={30} {...eixo} /><Tooltip {...tip} />
-              {pode("clientes") && <Bar dataKey="Clientes" fill="var(--primary)" />}
-              {pode("veiculos") && <Bar dataKey="Veículos" fill="#9ca3af" />}
-              {verOS && <Bar dataKey="OS" fill="#e5e7eb" />}
-            </BarChart>
+          <Grafico titulo="Cadastros e OS por mês" vazio={!temValoresGrafico(d.cadastros, [...(pode("clientes") ? ["Clientes"] : []), ...(pode("veiculos") ? ["Veículos"] : []), ...(verOS ? ["OS"] : [])])}>
+            <BarrasGrafico data={d.cadastros} periodo="Últimos seis meses"><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="mes" {...eixo} /><YAxis allowDecimals={false} width={30} {...eixo} />
+              {pode("clientes") && <Bar dataKey="Clientes" fill="var(--primary)" isAnimationActive={false} />}
+              {pode("veiculos") && <Bar dataKey="Veículos" fill="#9ca3af" isAnimationActive={false} />}
+              {verOS && <Bar dataKey="OS" fill="#e5e7eb" isAnimationActive={false} />}
+            </BarrasGrafico>
           </Grafico>
         )}
         {(verOrc || verOS) && <Grafico titulo="Serviços mais utilizados" vazio={!d.servUso.length}>{barras(d.servUso, "qtd", "var(--primary)", true)}</Grafico>}
         {(verOrc || verOS) && <Grafico titulo="Produtos mais utilizados" vazio={!d.prodUso.length}>{barras(d.prodUso, "qtd", "#9ca3af", true)}</Grafico>}
         {pode("produtos") && (
           <Grafico titulo="Produtos com estoque baixo" vazio={!d.baixo.length}>
-            <BarChart data={d.baixo} layout="vertical"><XAxis type="number" allowDecimals={false} {...eixo} /><YAxis type="category" dataKey="nome" width={120} {...eixo} /><Tooltip {...tip} />
-              <Bar dataKey="Estoque" fill="var(--primary)" /><Bar dataKey="Mínimo" fill="#9ca3af" /></BarChart>
+            <BarrasGrafico data={d.baixo} layout="vertical" periodo="Posição atual do estoque"><XAxis type="number" allowDecimals={false} {...eixo} /><YAxis type="category" dataKey="nome" width={120} {...eixo} />
+              <Bar dataKey="Estoque" fill="var(--primary)" isAnimationActive={false} /><Bar dataKey="Mínimo" fill="#9ca3af" isAnimationActive={false} /></BarrasGrafico>
           </Grafico>
         )}
       </div>
