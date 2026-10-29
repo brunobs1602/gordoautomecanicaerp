@@ -30,7 +30,7 @@ export function OSPainel({ o, usuario }: { o: Orcamento; usuario: string }) {
   const travado = atual === "cancelada" || atual === "entregue";
 
   const mudar = (s: StatusOS) => {
-    if (s === "finalizada" && getConfig().financeiro["financeiroAoFinalizar"] !== false && pode("financeiro", "baixar") && !titulos.some((t) => t.status !== "cancelado")) {
+    if (s === "finalizada" && total > 0 && getConfig().financeiro["financeiroAoFinalizar"] !== false && pode("financeiro", "baixar") && !titulos.some((t) => t.status !== "cancelado")) {
       setFinalizar(true);
       return;
     }
@@ -51,7 +51,7 @@ export function OSPainel({ o, usuario }: { o: Orcamento; usuario: string }) {
         {verFin && <>
           <div className="flex justify-between"><dt className="text-muted-foreground">Valor total</dt><dd className="font-semibold">{moeda(total)}</dd></div>
           <div className="flex justify-between"><dt className="text-muted-foreground">Recebido</dt><dd>{moeda(fin.recebido)}</dd></div>
-          <div className="flex justify-between"><dt className="text-muted-foreground">Pendente</dt><dd>{moeda(titulos.length ? fin.pendente : total)}</dd></div>
+          <div className="flex justify-between"><dt className="text-muted-foreground">Pendente</dt><dd>{moeda(atual === "cancelada" ? 0 : titulos.some((t) => t.status !== "cancelado") ? fin.pendente : total)}</dd></div>
           {formas.length > 0 && <div className="flex justify-between"><dt className="text-muted-foreground">Forma(s)</dt><dd>{formas.join(", ")}</dd></div>}
         </>}
       </dl>
@@ -64,9 +64,16 @@ export function OSPainel({ o, usuario }: { o: Orcamento; usuario: string }) {
       {atual !== "finalizada" && !travado && pode("ordens", "status") && (
         <button className="btn-primary mt-3 w-full" onClick={() => mudar("finalizada")}><CheckCircle2 className="h-4 w-4" /> Finalizar OS</button>
       )}
-      {verFin && titulos.length > 0 && <Link to="/financeiro/$secao" params={{ secao: "receber" }} className="btn-ghost mt-2 h-10 w-full">Ver contas a receber</Link>}
-      {finalizar && <FinalizarOSModal osId={o.id} codigo={codigoDoc(o)} total={total} onClose={() => setFinalizar(false)}
-        onFinalizar={() => alterarStatusOS(o.id, "finalizada", usuario)} />}
+      {(atual === "finalizada" || atual === "entregue") && total > 0 && pode("financeiro", "baixar") && !titulos.some((t) => t.status !== "cancelado") && <>
+        <p className="mt-3 text-xs text-muted-foreground">OS concluída sem recebimento registrado. Confirme o pagamento quando o cliente pagar, ou registre o saldo em aberto.</p>
+        <button className="btn-primary mt-2 w-full" onClick={() => setFinalizar(true)}>Registrar pagamento / saldo</button>
+      </>}
+      {verFin && titulos.some((t) => t.status !== "cancelado") && <>
+        {fin.pendente > 0 && <Link to="/financeiro/$secao" params={{ secao: "receber" }} className="btn-ghost mt-2 h-10 w-full">Registrar recebimento do saldo</Link>}
+        {fin.recebido > 0 && <Link to="/financeiro/$secao" params={{ secao: "recebidas" }} className="btn-ghost mt-2 h-10 w-full">Conferir contas recebidas</Link>}
+        <Link to="/financeiro/$secao" params={{ secao: "historico" }} className="btn-ghost mt-2 h-10 w-full">Conferir histórico financeiro</Link>
+      </>}
+      {finalizar && <FinalizarOSModal osId={o.id} codigo={codigoDoc(o)} total={total} onClose={() => setFinalizar(false)} posterior={atual === "finalizada" || atual === "entregue"} />}
     </div>
   );
 }

@@ -70,9 +70,18 @@ export function PagamentosForm({ tipo, value, onChange, dataISO }: {
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <Opcoes label="Forma de pagamento" value={p.forma_id} itens={formas}
-                onChange={(v) => set(i, { forma_id: v, conta_id: String(formas.find((f) => f.id === v)?.data["contaPadrao"] ?? p.conta_id), taxa_manual: false })} />
-              <Opcoes label={receber ? "Conta de recebimento" : "Conta de pagamento"} value={p.conta_id} itens={contas} onChange={(v) => set(i, { conta_id: v })} />
+                onChange={(v) => set(i, {
+                  forma_id: v, conta_id: String(formas.find((f) => f.id === v)?.data["contaPadrao"] ?? ""),
+                  maquininha_id: undefined, bandeira_id: undefined, pix_id: undefined, nsu: undefined,
+                  parcelas: 1, previsto: undefined, taxa: 0, taxa_manual: false,
+                })} />
               <MoneyInput label="Valor" value={p.valor} onChange={(v) => set(i, { valor: v })} />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{p.conta_id ? `Conta: ${contas.find((c) => c.id === p.conta_id)?.nome ?? "selecione uma conta ativa nas opções"}.` : "Conta automática: usa a conta padrão da forma, a única conta ativa ou o Caixa da oficina."} Sem maquininha, bandeira ou chave Pix, o recebimento é registrado sem taxa automática.</p>
+            <details className="mt-3">
+              <summary className="cursor-pointer text-sm text-muted-foreground">Opções adicionais: conta, descontos, taxas e comprovante</summary>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <Opcoes label={receber ? "Conta de recebimento (opcional)" : "Conta de pagamento (opcional)"} value={p.conta_id} itens={contas} vazio="Automática" onChange={(v) => set(i, { conta_id: v })} />
               {receber ? <>
                 <MoneyInput label="Desconto concedido" value={p.desconto ?? 0} onChange={(v) => set(i, { desconto: v })} />
                 <MoneyInput label="Acréscimo / juros" value={p.juros ?? 0} onChange={(v) => set(i, { juros: v })} />
@@ -114,7 +123,8 @@ export function PagamentosForm({ tipo, value, onChange, dataISO }: {
                   }} />
                 </span>
               </Campo>
-            </div>
+              </div>
+            </details>
             {(cartao || pix) && (
               <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground">
                 <span>Bruto: <b className="text-foreground">{moeda(p.valor)}</b></span>
@@ -137,8 +147,8 @@ export function validarPagamentos(ps: Pagamento[]) {
   if (!ps.length) return "Informe ao menos um pagamento.";
   for (const [i, p] of ps.entries()) {
     if (!p.forma_id) return `Pagamento ${i + 1}: selecione a forma de pagamento.`;
-    if (!p.conta_id) return `Pagamento ${i + 1}: selecione a conta bancária.`;
-    if (!(p.valor > 0)) return `Pagamento ${i + 1}: informe o valor.`;
+    if (!Number.isFinite(p.valor) || !(p.valor > 0)) return `Pagamento ${i + 1}: informe um valor válido maior que zero.`;
+    if ([p.desconto, p.juros, p.multa, p.taxa].some((v) => v !== undefined && (!Number.isFinite(v) || v < 0))) return `Pagamento ${i + 1}: descontos, acréscimos e taxas devem ser valores válidos e não negativos.`;
   }
   return "";
 }

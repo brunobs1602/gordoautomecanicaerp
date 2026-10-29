@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { exigir } from "./acesso";
+import { registrar } from "./auditoria";
 import { getConfig } from "./config";
+import { getOrcamentos, statusOSDe } from "./orcamentos";
 import { atualizarDoBanco, createCollection, mensagemErro } from "./store";
 import { uuid } from "./uuid";
 
@@ -220,8 +222,12 @@ export async function salvarCadastro(c: Omit<Cadastro, "id"> & { id?: string | u
   if (!["categoria", "centro"].includes(c.tipo) || c.id) exigir("financeiro", "config");
   else exigir("financeiro", "criar");
   if (!c.nome.trim()) throw new Error("Informe o nome.");
+  if (c.tipo === "forma" && !c.data["chave"]) throw new Error("Selecione o tipo da forma de pagamento.");
+  const antes = c.id ? getCadastrosFin().find((x) => x.id === c.id) : undefined;
   const linha = { tipo: c.tipo, nome: c.nome.trim(), ativo: c.ativo, data: c.data as never };
-  return rodar(() => (c.id ? supabase.from("fin_cadastros").update(linha).eq("id", c.id) : supabase.from("fin_cadastros").insert(linha)), ["fin_cadastros"]);
+  const resultado = await rodar(() => (c.id ? supabase.from("fin_cadastros").update(linha).eq("id", c.id) : supabase.from("fin_cadastros").insert(linha)), ["fin_cadastros"]);
+  registrar({ tipo: c.id ? "Cadastro financeiro alterado" : "Cadastro financeiro criado", alvo: linha.nome, secao: "Financeiro", descricao: `Tipo: ${c.tipo} · ${c.ativo ? "Ativo" : "Inativo"}`, antes: antes ? JSON.stringify(antes) : "", depois: JSON.stringify(c) });
+  return resultado;
 }
 
 export interface NovoTitulo {
@@ -285,9 +291,11 @@ export async function ajustarSaldo(conta: string, valor: number, data: string, m
 }
 export async function finalizarOSFinanceiro(orcId: string, pagamentos: Pagamento[], data: string, parcelas: number, vencimento: string, excesso = false) {
   exigir("financeiro", "baixar");
+  const os = getOrcamentos().find((o) => o.id === orcId);
+  if (!os || !["finalizada", "entregue"].includes(statusOSDe(os))) exigir("ordens", "status");
   return rodar(() => rpc("fin_finalizar_os", {
     _orc: orcId, _pagamentos: pagamentos, _data: data, _parcelas: parcelas, _vencimento: vencimento || null, _excesso: excesso,
-  })) as Promise<{ total: number; recebido: number; pendente: number }>;
+  }), [...FIN, "orcamentos"]) as Promise<{ total: number; recebido: number; pendente: number }>;
 }
 
 // ---------------- Comprovantes ----------------

@@ -59,7 +59,18 @@ export function ConfigFin() {
   const conta = (t: string) => cads.filter((c) => c.tipo === t && c.ativo).length;
   return (
     <>
-      <PageHeader title="Configurações financeiras" />
+      <PageHeader title="Configurações financeiras" subtitle="Para começar, cadastre uma forma de pagamento. Os demais cadastros são opcionais." />
+      <div className="panel mb-4 space-y-3 p-5 text-sm">
+        <h3 className="font-display text-lg font-bold uppercase">Receber pelas ordens de serviço</h3>
+        <ol className="list-decimal space-y-2 pl-5 text-muted-foreground">
+          <li>Cadastre as formas aceitas pela oficina. Informe apenas o nome e o tipo; a conta pode ficar automática.</li>
+          <li>Ao finalizar a OS, informe se o cliente já pagou, escolha a forma e confirme o valor. Maquininha, bandeira e chave Pix não são obrigatórias.</li>
+          <li>Se o cliente ainda não pagou, o saldo fica em Contas a receber, sem entrada no caixa. Confirme o recebimento quando ele acontecer.</li>
+        </ol>
+        <Link to="/financeiro/$secao" params={{ secao: "formas" }} className="btn-ghost h-10">Cadastrar ou revisar formas de pagamento</Link>
+        <p className="text-muted-foreground">Prefere tratar o pagamento depois? Em Configurações → Financeiro básico, desative “Registrar pagamento ao finalizar a OS”. A OS concluída terá o botão “Registrar pagamento / saldo”, sem marcar o valor como recebido automaticamente.</p>
+        <p className="text-xs text-muted-foreground">A conta automática usa a conta padrão da forma, a única conta ativa ou o Caixa da oficina. Se necessário, esse caixa é criado sem saldo inicial. Para controlar taxas de cartão, mantenha os cadastros adicionais já disponíveis.</p>
+      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="panel p-5 text-sm">
           <h3 className="mb-2 font-display text-lg font-bold uppercase">Resumo</h3>

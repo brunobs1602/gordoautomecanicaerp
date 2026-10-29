@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Ban, Copy, Eye, HandCoins, Paperclip, Pencil, Plus, Search, Split, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/components/Modal";
@@ -296,25 +296,30 @@ function BaixaModal({ t, onClose }: { t: Titulo; onClose: () => void }) {
   });
   const [excesso, setExcesso] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const trava = useRef(false);
   const aplicado = totalAplicado(pags);
   const receber = t.tipo === "receber";
   const passa = aplicado > saldo + 0.009;
 
   const confirmar = async () => {
+    if (trava.current) return;
     const erro = validarPagamentos(pags);
     if (erro) { toast.error(erro); return; }
-    if (passa && !excesso) { toast.error("O valor ultrapassa o saldo da conta."); return; }
+    if (!data) { toast.error("Informe a data do pagamento."); return; }
+    if (pags.some((p) => !formas.some((f) => f.id === p.forma_id && f.ativo))) { toast.error("Selecione somente formas de pagamento ativas."); return; }
+    if (passa && !(isAdmin && excesso)) { toast.error("O valor ultrapassa o saldo da conta."); return; }
+    trava.current = true;
     setEnviando(true);
     try {
       const r = (await baixarTitulo(t.id, pags, data, excesso)) as { status: string };
       toast.success(r.status === "pago" ? (receber ? "Recebimento registrado. Conta quitada." : "Pagamento registrado. Conta quitada.") : "Pagamento parcial registrado.");
       onClose();
-    } catch (e) { toast.error((e as Error).message); } finally { setEnviando(false); }
+    } catch (e) { toast.error((e as Error).message); } finally { trava.current = false; setEnviando(false); }
   };
 
   return (
-    <Modal open onOpenChange={(o) => !o && onClose()} wide title={receber ? "Registrar recebimento" : "Registrar pagamento"} description={`${t.descricao} · Saldo ${moeda(saldo)}`}>
-      <div className="space-y-4">
+    <Modal open onOpenChange={(o) => !o && !trava.current && onClose()} wide title={receber ? "Registrar recebimento" : "Registrar pagamento"} description={`${t.descricao} · Saldo ${moeda(saldo)}`}>
+      <fieldset disabled={enviando} className="space-y-4">
         <Campo label={receber ? "Data do recebimento" : "Data do pagamento"} className="max-w-xs"><input type="date" className="field" value={data} onChange={(e) => setData(e.target.value)} /></Campo>
         <PagamentosForm tipo={t.tipo} value={pags} onChange={setPags} dataISO={data} />
         <div className="rounded-md border border-border p-3 text-sm">
@@ -330,7 +335,7 @@ function BaixaModal({ t, onClose }: { t: Titulo; onClose: () => void }) {
           <button className="btn-ghost h-11" onClick={onClose}>Voltar</button>
           <button className="btn-primary" disabled={enviando} onClick={confirmar}>{enviando ? "Registrando..." : "Confirmar"}</button>
         </div>
-      </div>
+      </fieldset>
     </Modal>
   );
 }

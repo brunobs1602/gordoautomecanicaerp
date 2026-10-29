@@ -16,13 +16,13 @@ const DEF: Record<Exclude<TipoCadastro, "conta">, { titulo: string; singular: st
     titulo: "Formas de pagamento", singular: "forma de pagamento",
     campos: [
       { k: "chave", label: "Tipo", tipo: "select", opcoes: [["dinheiro", "Dinheiro"], ["pix", "Pix"], ["debito", "Cartão de débito"], ["credito", "Cartão de crédito"], ["transferencia", "Transferência"], ["boleto", "Boleto"], ["cheque", "Cheque"], ["outro", "Outro"]] },
-      { k: "contaPadrao", label: "Conta bancária padrão", tipo: "ref", ref: "conta" },
+      { k: "contaPadrao", label: "Conta de recebimento (opcional)", tipo: "ref", ref: "conta" },
       { k: "parcelamento", label: "Permite parcelamento", tipo: "bool" },
       { k: "maxParcelas", label: "Máximo de parcelas", tipo: "numero", padrao: 1 },
       { k: "taxa", label: "Taxa padrão (%)", tipo: "numero" },
       { k: "obs", label: "Observações", tipo: "area" },
     ],
-    cab: ["Conta padrão", "Parcelas"], colunas: (c, nome) => [nome(c.data["contaPadrao"]), c.data["parcelamento"] ? `até ${c.data["maxParcelas"] || 1}x` : "À vista"],
+    cab: ["Conta de recebimento", "Parcelas"], colunas: (c, nome) => [c.data["contaPadrao"] ? nome(c.data["contaPadrao"]) : "Automática", c.data["parcelamento"] ? `até ${c.data["maxParcelas"] || 1}x` : "À vista"],
   },
   maquininha: {
     titulo: "Maquininhas", singular: "maquininha",
@@ -78,14 +78,18 @@ const CONTA_CAMPOS: CampoDef[] = [
 export function CadastroForm({ tipo, atual, onClose, campos, singular }: { tipo: TipoCadastro; atual: Cadastro | null; onClose: () => void; campos: CampoDef[]; singular: string }) {
   const cads = useCadastrosFin();
   const [nome, setNome] = useState(atual?.nome ?? "");
-  const [data, setData] = useState<Record<string, unknown>>(() => ({ ...Object.fromEntries(campos.filter((c) => c.padrao !== undefined).map((c) => [c.k, c.padrao])), ...(atual?.data ?? {}) }));
+  const [data, setData] = useState<Record<string, unknown>>(() => ({ ...Object.fromEntries(campos.filter((c) => c.padrao !== undefined).map((c) => [c.k, c.padrao])), ...(tipo === "forma" ? { chave: "outro" } : {}), ...(atual?.data ?? {}) }));
+  const [avancado, setAvancado] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const camposVisiveis = tipo === "forma" && !avancado ? campos.filter((c) => ["chave", "contaPadrao"].includes(c.k)) : campos;
   const set = (k: string, v: unknown) => setData((d) => ({ ...d, [k]: v }));
   const temMov = tipo === "conta" && atual && Boolean(atual.data["__temMov"]);
   return (
     <Modal open onOpenChange={(o) => !o && onClose()} wide title={atual ? `Editar ${singular}` : `Nova ${singular}`}>
+      {tipo === "forma" && <p className="mb-4 text-sm text-muted-foreground">Informe o nome e o tipo. A conta é opcional: sem escolha, o sistema usa o caixa da oficina. Maquininha, bandeira e chave Pix não são obrigatórias para receber.</p>}
       <div className="grid gap-3 sm:grid-cols-2">
-        {tipo !== "taxa" && <Campo label="Nome *" className="sm:col-span-2"><input className="field" value={nome} onChange={(e) => setNome(e.target.value)} /></Campo>}
-        {campos.map((c) => {
+        {tipo !== "taxa" && <Campo label="Nome *" className="sm:col-span-2"><input className="field" value={nome} onChange={(e) => setNome(e.target.value)} placeholder={tipo === "forma" ? "Ex.: Dinheiro, Pix, Cartão de crédito" : undefined} /></Campo>}
+        {camposVisiveis.map((c) => {
           const v = data[c.k];
           if (c.tipo === "bool") return <label key={c.k} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={Boolean(v)} onChange={(e) => set(c.k, e.target.checked)} /> {c.label}</label>;
           if (c.tipo === "moeda") return <MoneyInput key={c.k} label={c.label} value={Number(v || 0)} disabled={Boolean(temMov && c.k === "saldoInicial")} onChange={(n) => set(c.k, n)} />;
@@ -96,17 +100,21 @@ export function CadastroForm({ tipo, atual, onClose, campos, singular }: { tipo:
             value={String(v ?? "")} onChange={(e) => set(c.k, c.tipo === "numero" ? Number(e.target.value) : e.target.value)} /></Campo>;
         })}
       </div>
+      {tipo === "forma" && <button className="btn-ghost mt-3 h-10" onClick={() => setAvancado(!avancado)}>{avancado ? "Ocultar opções adicionais" : "Opções adicionais (parcelas, taxas e observações)"}</button>}
       <div className="mt-4 flex justify-end gap-2">
-        <button className="btn-ghost h-11" onClick={onClose}>Cancelar</button>
-        <button className="btn-primary" onClick={async () => {
+        <button className="btn-ghost h-11" disabled={salvando} onClick={onClose}>Cancelar</button>
+        <button className="btn-primary" disabled={salvando} onClick={async () => {
           const { __temMov: _x, ...limpo } = data;
           const nomeFinal = tipo === "taxa"
             ? `${cads.find((x) => x.id === limpo["maquininhaId"])?.nome ?? "?"} · ${cads.find((x) => x.id === limpo["bandeiraId"])?.nome ?? "?"} · ${limpo["modalidade"] === "debito" ? "Débito" : `Crédito ${limpo["parcelas"] || 1}x`}`
             : nome;
           if (tipo === "taxa" && (!limpo["maquininhaId"] || !limpo["bandeiraId"] || !limpo["modalidade"])) { toast.error("Selecione maquininha, bandeira e modalidade."); return; }
+          if (tipo === "forma" && !limpo["chave"]) { toast.error("Selecione o tipo da forma de pagamento."); return; }
+          setSalvando(true);
           try { await salvarCadastro({ id: atual?.id, tipo, nome: nomeFinal, ativo: atual?.ativo ?? true, data: limpo }); toast.success("Salvo."); onClose(); }
           catch (e) { toast.error((e as Error).message); }
-        }}>Salvar</button>
+          finally { setSalvando(false); }
+        }}>{salvando ? "Salvando..." : "Salvar"}</button>
       </div>
     </Modal>
   );
@@ -128,6 +136,10 @@ export function CadastrosFin({ tipo }: { tipo: Exclude<TipoCadastro, "conta"> })
     <>
       <PageHeader title={def.titulo} subtitle={`${lista.filter((c) => c.ativo).length} ativo(s)`}
         action={podeCriar && <button className="btn-primary" onClick={() => setEdit("novo")}><Plus className="h-4 w-4" /> Adicionar</button>} />
+      {tipo === "forma" && <div className="panel mb-4 space-y-1 p-4 text-sm">
+        <p>Cadastre as formas aceitas pela oficina, como Dinheiro, Pix, Débito ou Crédito. Nome e tipo são suficientes para começar.</p>
+        <p className="text-muted-foreground">Somente formas ativas aparecem ao registrar pagamentos. Use o lápis para editar e o botão de ativar/inativar para mudar a disponibilidade, sem apagar o histórico.</p>
+      </div>}
       {(tipo === "categoria" || tipo === "taxa") && (
         <div className="panel mb-4 max-w-sm p-4">
           {tipo === "categoria"

@@ -159,10 +159,10 @@ const LISTA = [
   sec("financeiro", "Financeiro básico", "Moeda, formatos e pagamentos.", [
     s("moeda", "Moeda padrão", "", "BRL", [["BRL", "Real (BRL)"]]),
     t("simbolo", "Símbolo da moeda", "", "R$"),
-    t("formasPagamento", "Formas de pagamento", "Separadas por vírgula.", "Dinheiro, PIX, Cartão de débito, Cartão de crédito"),
+    // As formas são cadastradas exclusivamente em Financeiro → Formas de pagamento.
     n("prazoPagamento", "Prazo padrão de pagamento (dias)", "", 0),
     n("diasVencendo", "Alertar contas vencendo em (dias)", "Usado no financeiro para o status Vencendo.", 3),
-    b("financeiroAoFinalizar", "Abrir etapa de pagamento ao finalizar OS", "", true),
+    b("financeiroAoFinalizar", "Registrar pagamento ao finalizar a OS", "Ativado: pergunta se o cliente já pagou. Desativado: permite registrar o pagamento depois, na própria OS. Nenhuma entrada é registrada sem confirmação.", true),
     n("descontoMax", "Desconto máximo (%)", "", 20),
     n("acrescimoMax", "Acréscimo máximo (%)", "", 20),
     a("condicoes", "Condições de pagamento padrão", ""),
