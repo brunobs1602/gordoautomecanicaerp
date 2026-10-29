@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { exigir } from "./acesso";
 import { getConfig } from "./config";
 import { atualizarDoBanco, createCollection, mensagemErro } from "./store";
+import { uuid } from "./uuid";
 
 // ---------------- Tipos ----------------
 export type TipoCadastro = "conta" | "forma" | "maquininha" | "bandeira" | "taxa" | "pix" | "categoria" | "centro";
@@ -295,7 +296,7 @@ export async function enviarComprovante(file: File): Promise<string> {
   if (!TIPOS_ARQ.includes(file.type)) throw new Error("Use PDF, PNG, JPG ou WEBP.");
   if (file.size > 5_000_000) throw new Error("Arquivo muito grande. Use até 5 MB.");
   const ext = (file.name.split(".").pop() || "pdf").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5);
-  const caminho = `comprovantes/${hojeISO().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
+  const caminho = `comprovantes/${hojeISO().slice(0, 7)}/${uuid()}.${ext}`;
   const { error } = await supabase.storage.from("financeiro").upload(caminho, file, { contentType: file.type, upsert: false });
   if (error) throw new Error(/row-level|permission/i.test(error.message) ? "Você não tem permissão para enviar comprovantes." : "Falha no envio do comprovante.");
   return caminho;

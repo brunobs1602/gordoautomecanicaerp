@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uuid } from "./uuid";
 
 const BUCKET = "marca";
 const PREFIXO = "marca:";
@@ -12,7 +13,7 @@ export async function enviarImagem(campo: string, file: File): Promise<string> {
   if (file.size > TAMANHO_MAX) throw new Error("Imagem muito grande. Use até 1 MB.");
   const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "png";
   // Nome novo a cada envio: documentos antigos continuam válidos.
-  const caminho = `${campo.replace(/[^a-zA-Z0-9_-]/g, "")}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+  const caminho = `${campo.replace(/[^a-zA-Z0-9_-]/g, "")}/${Date.now()}-${uuid().slice(0, 8)}.${ext}`;
   const { error } = await supabase.storage.from(BUCKET).upload(caminho, file, { contentType: file.type, upsert: false });
   if (error) throw new Error(/row-level|permission/i.test(error.message) ? "Você não tem permissão para enviar arquivos." : "Falha no envio da imagem. Tente novamente.");
   return PREFIXO + caminho;

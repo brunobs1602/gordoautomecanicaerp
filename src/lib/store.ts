@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lerComRecuperacao } from "./leitura";
+import { uuid } from "./uuid";
 
 /** Traduz erros do banco para mensagens claras, sem detalhes técnicos. */
 export function mensagemErro(e: unknown, padrao = "Não foi possível salvar. Tente novamente."): string {
@@ -174,7 +175,7 @@ export function createCollection<T extends { id: string }>(tabela: string, op: O
 }
 
 export const agoraISO = () => new Date().toISOString();
-export const novoId = () => crypto.randomUUID();
+export const novoId = () => uuid();
 export const moeda = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 export const paraNumero = (v: string | number) => {
   if (typeof v === "number") return Number.isFinite(v) ? v : 0;

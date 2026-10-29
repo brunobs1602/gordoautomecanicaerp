@@ -1,6 +1,7 @@
 import { exigir } from "./acesso";
 import { getConfig } from "./config";
 import { createCollection } from "./store";
+import { uuid } from "./uuid";
 import { z } from "zod";
 import { soDigitos, validarCEP, validarCNPJ, validarCPF, validarTelefone } from "./validacao";
 
@@ -123,7 +124,7 @@ export function criarCliente(input: ClienteInput) {
   const list = getClientes();
   if (documentoDuplicado(list, input.documento)) throw new Error("Já existe um cliente com este CPF/CNPJ.");
   const agora = new Date().toISOString();
-  const c: Cliente = { ...normalizar(input), id: crypto.randomUUID(), criadoEm: agora, atualizadoEm: agora };
+  const c: Cliente = { ...normalizar(input), id: uuid(), criadoEm: agora, atualizadoEm: agora };
   salvar([...list, c]);
   return c;
 }

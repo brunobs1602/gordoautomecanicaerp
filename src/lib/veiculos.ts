@@ -1,6 +1,7 @@
 import { exigir } from "./acesso";
 import { getConfig } from "./config";
 import { createCollection } from "./store";
+import { uuid } from "./uuid";
 import { z } from "zod";
 
 // Um cliente pode ter vários veículos; cada veículo tem um único proprietário principal (clienteId).
@@ -126,7 +127,7 @@ export function criarVeiculo(d: VeiculoInput, clienteExiste: (id: string) => boo
   const dup = verificarDuplicidade(list, d);
   if (dup) throw new Error(dup);
   const agora = new Date().toISOString();
-  const v: Veiculo = { ...normalizar(d), id: crypto.randomUUID(), criadoEm: agora, atualizadoEm: agora };
+  const v: Veiculo = { ...normalizar(d), id: uuid(), criadoEm: agora, atualizadoEm: agora };
   salvar([...list, v]);
   return v;
 }
