@@ -218,7 +218,7 @@ function TituloForm({ tipo, atual, copia, onClose }: { tipo: "pagar" | "receber"
     <Modal open onOpenChange={(o) => !o && onClose()} wide title={atual ? "Editar conta" : copia ? "Duplicar conta" : receber ? "Nova conta a receber" : "Nova conta a pagar"}>
       <div className="grid gap-3 sm:grid-cols-3">
         <Campo label="Descrição *" className="sm:col-span-2"><input className="field" value={f.descricao} onChange={(e) => set({ descricao: e.target.value })} /></Campo>
-        <Opcoes label="Categoria financeira" value={f.categoriaId} onChange={(v) => set({ categoriaId: v })} itens={ativos("categoria").filter((c) => c.data["natureza"] === (receber ? "receita" : "despesa"))} />
+        <Opcoes label="Categoria financeira" value={f.categoriaId} onChange={(v) => set({ categoriaId: v })} itens={cads.filter((c) => c.tipo === "categoria" && (c.ativo || c.id === atual?.categoriaId) && c.data["natureza"] === (receber ? "receita" : "despesa"))} />
         {receber ? <>
           <Opcoes label="Cliente" value={f.clienteId} onChange={(v) => set({ clienteId: v, documentoId: "" })} itens={clientes.filter((c) => c.ativo).map((c) => ({ id: c.id, nome: c.nome }))} />
           <Opcoes label="Orçamento / OS relacionada" value={f.documentoId} onChange={(v) => set({ documentoId: v })} itens={osCliente.map((o) => ({ id: o.id, nome: codigoDoc(o) }))} vazio="Nenhuma" />

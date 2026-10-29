@@ -67,3 +67,48 @@ describe("cadastro simples de formas de pagamento", () => {
     expect(estado.salvar).not.toHaveBeenCalled();
   });
 });
+
+describe("categorias financeiras", () => {
+  it("permite cadastrar receita e filtrar por natureza, inclusive sem resultados", async () => {
+    render(<CadastrosFin tipo="categoria" />);
+    expect(screen.getByText("Nenhum registro.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar" }));
+    fireEvent.change(screen.getByLabelText("Nome *"), { target: { value: "Serviços de mão de obra" } });
+    fireEvent.change(screen.getAllByLabelText("Tipo")[1]!, { target: { value: "receita" } });
+    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Salvar" })).not.toBeInTheDocument());
+    expect(estado.salvar).toHaveBeenCalledWith(expect.objectContaining({
+      nome: "Serviços de mão de obra", tipo: "categoria", ativo: true, data: { natureza: "receita" },
+    }));
+    fireEvent.change(screen.getByLabelText("Tipo"), { target: { value: "despesa" } });
+    expect(screen.getByText("Nenhum registro.")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Tipo"), { target: { value: "receita" } });
+    expect(screen.getByText("Serviços de mão de obra")).toBeInTheDocument();
+  });
+
+  it("edita, inativa e reativa mantendo o identificador e os dados da categoria antiga", async () => {
+    estado.lista = [{ id: "categoria-antiga", tipo: "categoria", nome: "Aluguel", ativo: true, data: { natureza: "despesa", obs: "Preservar" } }];
+    const { rerender } = render(<CadastrosFin tipo="categoria" />);
+    fireEvent.click(screen.getByTitle("Editar"));
+    fireEvent.change(screen.getByLabelText("Nome *"), { target: { value: "Aluguel da oficina" } });
+    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Salvar" })).not.toBeInTheDocument());
+    expect(screen.getByText("Aluguel da oficina")).toBeInTheDocument();
+    fireEvent.click(screen.getByTitle("Inativar"));
+    await waitFor(() => expect(estado.lista[0]?.ativo).toBe(false));
+    rerender(<CadastrosFin tipo="categoria" />);
+    fireEvent.click(screen.getByTitle("Ativar"));
+    await waitFor(() => expect(estado.lista[0]?.ativo).toBe(true));
+    expect(estado.lista).toEqual([{ id: "categoria-antiga", tipo: "categoria", nome: "Aluguel da oficina", ativo: true, data: { natureza: "despesa", obs: "Preservar" } }]);
+  });
+
+  it("mantém edição e ativação restritas à permissão de configuração financeira", () => {
+    estado.configurar = false;
+    estado.lista = [{ id: "categoria-antiga", tipo: "categoria", nome: "Aluguel", ativo: true, data: { natureza: "despesa" } }];
+    render(<CadastrosFin tipo="categoria" />);
+    expect(screen.getByRole("button", { name: "Adicionar" })).toBeInTheDocument();
+    expect(screen.queryByTitle("Editar")).not.toBeInTheDocument();
+    expect(screen.queryByTitle("Inativar")).not.toBeInTheDocument();
+    expect(estado.salvar).not.toHaveBeenCalled();
+  });
+});

@@ -140,6 +140,10 @@ export function CadastrosFin({ tipo }: { tipo: Exclude<TipoCadastro, "conta"> })
         <p>Cadastre as formas aceitas pela oficina, como Dinheiro, Pix, Débito ou Crédito. Nome e tipo são suficientes para começar.</p>
         <p className="text-muted-foreground">Somente formas ativas aparecem ao registrar pagamentos. Use o lápis para editar e o botão de ativar/inativar para mudar a disponibilidade, sem apagar o histórico.</p>
       </div>}
+      {tipo === "categoria" && <div className="panel mb-4 space-y-1 p-4 text-sm">
+        <p>Organize receitas e despesas nas categorias da oficina. Use Adicionar para cadastrar e o lápis para editar, conforme suas permissões.</p>
+        <p className="text-muted-foreground">As categorias anteriores e seus vínculos foram preservados. Inativar impede novas seleções, sem apagar lançamentos antigos; ativar torna a categoria disponível novamente.</p>
+      </div>}
       {(tipo === "categoria" || tipo === "taxa") && (
         <div className="panel mb-4 max-w-sm p-4">
           {tipo === "categoria"
