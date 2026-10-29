@@ -18,9 +18,9 @@ export const Route = createFileRoute("/_authenticated/produtos")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Produtos e peças · Gordo Auto Mecânica ERP" },
+      { title: "Produtos e peças · Mecavon" },
       { name: "description", content: "Cadastro de produtos, peças e estoque." },
-      { property: "og:title", content: "Produtos e peças · Gordo ERP" },
+      { property: "og:title", content: "Produtos e peças · Mecavon" },
       { property: "og:description", content: "Cadastro de produtos, peças e estoque." },
     ],
   }),

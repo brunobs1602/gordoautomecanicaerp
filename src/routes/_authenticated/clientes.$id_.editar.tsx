@@ -11,9 +11,9 @@ export const Route = createFileRoute("/_authenticated/clientes/$id_/editar")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Editar cliente · Gordo Auto Mecânica ERP" },
+      { title: "Editar cliente · Mecavon" },
       { name: "description", content: "Editar dados do cliente." },
-      { property: "og:title", content: "Editar cliente · Gordo ERP" },
+      { property: "og:title", content: "Editar cliente · Mecavon" },
       { property: "og:description", content: "Editar dados do cliente." },
     ],
   }),

@@ -38,9 +38,9 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Configurações · Gordo Auto Mecânica ERP" },
+      { title: "Configurações · Mecavon" },
       { name: "description", content: "Central de configurações da oficina e do sistema." },
-      { property: "og:title", content: "Configurações · Gordo ERP" },
+      { property: "og:title", content: "Configurações · Mecavon" },
       { property: "og:description", content: "Central de configurações da oficina e do sistema." },
     ],
   }),
@@ -288,7 +288,7 @@ function PreviaVisual({ v }: { v: Config["visual"] }) {
       <div style={vars} className="overflow-hidden rounded-[var(--radius)] border border-border">
         <div className="flex" style={{ background: "var(--background)", color: "var(--foreground)", fontSize: `${Number(v.fonte) || 16}px` }}>
           <div className="w-40 space-y-1 p-3" style={{ background: "var(--sidebar)" }}>
-            {v.mostrarNome && <div className="font-display font-extrabold italic text-metal">GORDO</div>}
+            {v.mostrarNome && <div className="font-display font-extrabold italic text-metal">MECAVON</div>}
             <div className="rounded-md border-l-2 border-primary bg-sidebar-accent px-2 py-1.5 text-xs">Dashboard</div>
             <div className="px-2 py-1.5 text-xs opacity-70">Clientes</div>
           </div>
@@ -381,10 +381,10 @@ function Manutencao({ podeAlterar }: { podeAlterar: boolean }) {
 
   const backup = () => {
     const dados = { perfis: getPerfis(), usuarios: getUsers(), configuracoes: getConfig(), clientes: getClientes(), veiculos: getVeiculos(), produtos: getProdutos(), servicos: getServicos(), orcamentos: getOrcamentos(), auditoria: getAuditoria() };
-    baixar(`gordo-backup-${hoje}.json`, JSON.stringify({ versao: VERSAO, criadoEm: new Date().toISOString(), dados }, null, 2));
+    baixar(`mecavon-backup-${hoje}.json`, JSON.stringify({ versao: VERSAO, criadoEm: new Date().toISOString(), dados }, null, 2));
     registrar({ tipo: "Backup manual", alvo: "Sistema", descricao: "Cópia dos dados baixada pelo administrador." });
   };
-  const exportar = () => baixar(`gordo-configuracoes-${hoje}.json`, JSON.stringify({ versao: VERSAO, config: getConfig() }, null, 2));
+  const exportar = () => baixar(`mecavon-configuracoes-${hoje}.json`, JSON.stringify({ versao: VERSAO, config: getConfig() }, null, 2));
   const lerArquivo = (f?: File) => {
     if (!f) return;
     f.text().then((t) => {

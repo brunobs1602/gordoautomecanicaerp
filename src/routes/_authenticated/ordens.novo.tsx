@@ -12,9 +12,9 @@ export const Route = createFileRoute("/_authenticated/ordens/novo")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Novo orçamento · Gordo Auto Mecânica ERP" },
+      { title: "Novo orçamento · Mecavon" },
       { name: "description", content: "Criar novo orçamento." },
-      { property: "og:title", content: "Novo orçamento · Gordo ERP" },
+      { property: "og:title", content: "Novo orçamento · Mecavon" },
       { property: "og:description", content: "Criar novo orçamento." },
     ],
   }),

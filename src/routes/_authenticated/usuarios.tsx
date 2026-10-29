@@ -21,9 +21,9 @@ export const Route = createFileRoute("/_authenticated/usuarios")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Usuários · Gordo Auto Mecânica ERP" },
+      { title: "Usuários · Mecavon" },
       { name: "description", content: "Gerenciamento de usuários do sistema." },
-      { property: "og:title", content: "Usuários · Gordo ERP" },
+      { property: "og:title", content: "Usuários · Mecavon" },
       { property: "og:description", content: "Gerenciamento de usuários do sistema." },
     ],
   }),

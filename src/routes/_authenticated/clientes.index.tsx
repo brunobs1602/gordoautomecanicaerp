@@ -17,9 +17,9 @@ export const Route = createFileRoute("/_authenticated/clientes/")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Clientes · Gordo Auto Mecânica ERP" },
+      { title: "Clientes · Mecavon" },
       { name: "description", content: "Cadastro e consulta de clientes da oficina." },
-      { property: "og:title", content: "Clientes · Gordo ERP" },
+      { property: "og:title", content: "Clientes · Mecavon" },
       { property: "og:description", content: "Cadastro e consulta de clientes da oficina." },
     ],
   }),

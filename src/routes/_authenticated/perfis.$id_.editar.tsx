@@ -12,9 +12,9 @@ export const Route = createFileRoute("/_authenticated/perfis/$id_/editar")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Editar perfil · Gordo Auto Mecânica ERP" },
+      { title: "Editar perfil · Mecavon" },
       { name: "description", content: "Editar perfil de acesso e permissões." },
-      { property: "og:title", content: "Editar perfil · Gordo ERP" },
+      { property: "og:title", content: "Editar perfil · Mecavon" },
       { property: "og:description", content: "Editar perfil de acesso e permissões." },
     ],
   }),

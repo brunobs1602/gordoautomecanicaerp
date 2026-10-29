@@ -13,9 +13,9 @@ export const Route = createFileRoute("/_authenticated/ordens/$id_/editar")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Editar orçamento · Gordo Auto Mecânica ERP" },
+      { title: "Editar orçamento · Mecavon" },
       { name: "description", content: "Editar orçamento." },
-      { property: "og:title", content: "Editar orçamento · Gordo ERP" },
+      { property: "og:title", content: "Editar orçamento · Mecavon" },
       { property: "og:description", content: "Editar orçamento." },
     ],
   }),

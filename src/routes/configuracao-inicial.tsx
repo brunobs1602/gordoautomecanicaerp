@@ -25,9 +25,9 @@ export const Route = createFileRoute("/configuracao-inicial")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Configuração inicial · Gordo Auto Mecânica ERP" },
+      { title: "Configuração inicial · Mecavon" },
       { name: "description", content: "Cadastro do administrador principal." },
-      { property: "og:title", content: "Configuração inicial · Gordo ERP" },
+      { property: "og:title", content: "Configuração inicial · Mecavon" },
       { property: "og:description", content: "Cadastro do administrador principal." },
     ],
   }),

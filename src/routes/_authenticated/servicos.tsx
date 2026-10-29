@@ -17,9 +17,9 @@ export const Route = createFileRoute("/_authenticated/servicos")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Serviços · Gordo Auto Mecânica ERP" },
+      { title: "Serviços · Mecavon" },
       { name: "description", content: "Cadastro de serviços da oficina." },
-      { property: "og:title", content: "Serviços · Gordo ERP" },
+      { property: "og:title", content: "Serviços · Mecavon" },
       { property: "og:description", content: "Cadastro de serviços da oficina." },
     ],
   }),

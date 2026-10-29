@@ -13,9 +13,9 @@ export const Route = createFileRoute("/_authenticated/contas-portal")({
   beforeLoad: guard(["usuarios"]),
   head: () => ({
     meta: [
-      { title: "Contas do portal do cliente · Gordo ERP" },
+      { title: "Contas do portal do cliente · Mecavon" },
       { name: "description", content: "Contas dos clientes no portal de orçamentos." },
-      { property: "og:title", content: "Contas do portal · Gordo ERP" },
+      { property: "og:title", content: "Contas do portal · Mecavon" },
       { property: "og:description", content: "Contas dos clientes no portal de orçamentos." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

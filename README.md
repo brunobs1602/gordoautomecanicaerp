@@ -1,6 +1,6 @@
-# Gordoautomecanicaerp
+# Mecavon
 
-Implement exactly the screenshot and nothing else
+Sistema de gestão para oficinas mecânicas.
 
 This project was built with [Lovable](https://lovable.dev).
 

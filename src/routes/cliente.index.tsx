@@ -16,10 +16,10 @@ export const Route = createFileRoute("/cliente/")({
   },
   head: () => ({
     meta: [
-      { title: "Meus orçamentos · Gordo Auto Mecânica" },
-      { name: "description", content: "Todos os seus orçamentos da Gordo Auto Mecânica em um só lugar." },
+      { title: "Meus orçamentos · Mecavon" },
+      { name: "description", content: "Todos os seus orçamentos no Mecavon em um só lugar." },
       { name: "robots", content: "noindex, nofollow" },
-      { property: "og:title", content: "Meus orçamentos · Gordo Auto Mecânica" },
+      { property: "og:title", content: "Meus orçamentos · Mecavon" },
       { property: "og:description", content: "Consulte e aprove seus orçamentos online." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

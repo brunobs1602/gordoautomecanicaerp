@@ -11,9 +11,9 @@ export const Route = createFileRoute("/redefinir-senha")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Nova senha · Gordo Auto Mecânica ERP" },
+      { title: "Nova senha · Mecavon" },
       { name: "description", content: "Crie uma nova senha de acesso." },
-      { property: "og:title", content: "Nova senha · Gordo ERP" },
+      { property: "og:title", content: "Nova senha · Mecavon" },
       { property: "og:description", content: "Crie uma nova senha de acesso." },
     ],
   }),

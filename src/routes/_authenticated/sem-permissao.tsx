@@ -6,9 +6,9 @@ export const Route = createFileRoute("/_authenticated/sem-permissao")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Acesso não autorizado · Gordo Auto Mecânica ERP" },
+      { title: "Acesso não autorizado · Mecavon" },
       { name: "description", content: "Seu perfil não tem permissão para esta área." },
-      { property: "og:title", content: "Acesso não autorizado · Gordo ERP" },
+      { property: "og:title", content: "Acesso não autorizado · Mecavon" },
       { property: "og:description", content: "Seu perfil não tem permissão para esta área." },
     ],
   }),

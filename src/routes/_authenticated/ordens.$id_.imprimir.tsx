@@ -19,9 +19,9 @@ export const Route = createFileRoute("/_authenticated/ordens/$id_/imprimir")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Documento do orçamento · Gordo Auto Mecânica" },
+      { title: "Documento do orçamento · Mecavon" },
       { name: "description", content: "Orçamento para envio ao cliente." },
-      { property: "og:title", content: "Documento do orçamento · Gordo Auto Mecânica" },
+      { property: "og:title", content: "Documento do orçamento · Mecavon" },
       { property: "og:description", content: "Orçamento para envio ao cliente." },
     ],
   }),
@@ -69,7 +69,7 @@ function Documento() {
   const cfg = useConfig();
   const emp = cfg.empresa;
   const doc = cfg.documentos;
-  const nomeEmp = String(emp.nomeFantasia || emp.razaoSocial || "Gordo Auto Mecânica");
+  const nomeEmp = String(emp.nomeFantasia || emp.razaoSocial || "Oficina");
   const endereco = [emp.logradouro && `${emp.logradouro}${emp.numero ? `, ${emp.numero}` : ""}`, emp.complemento, emp.bairro, [emp.cidade, emp.estado].filter(Boolean).join("/"), emp.cep].filter(Boolean).join(" · ");
   const contato = [emp.whatsapp && `WhatsApp ${emp.whatsapp}`, emp.telefone && `Tel. ${emp.telefone}`, emp.instagram && `Instagram ${emp.instagram}`].filter(Boolean).join(" · ");
   const pagamento = String(doc.pagamento || cfg.financeiro.condicoes || "");

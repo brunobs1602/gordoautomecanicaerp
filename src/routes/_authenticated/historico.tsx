@@ -15,9 +15,9 @@ export const Route = createFileRoute("/_authenticated/historico")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Histórico administrativo · Gordo Auto Mecânica ERP" },
+      { title: "Histórico administrativo · Mecavon" },
       { name: "description", content: "Registro das ações administrativas do sistema." },
-      { property: "og:title", content: "Histórico administrativo · Gordo ERP" },
+      { property: "og:title", content: "Histórico administrativo · Mecavon" },
       { property: "og:description", content: "Registro das ações administrativas do sistema." },
     ],
   }),

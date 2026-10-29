@@ -19,9 +19,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Dashboard · Gordo Auto Mecânica ERP" },
+      { title: "Dashboard · Mecavon" },
       { name: "description", content: "Visão operacional da oficina." },
-      { property: "og:title", content: "Dashboard · Gordo ERP" },
+      { property: "og:title", content: "Dashboard · Mecavon" },
       { property: "og:description", content: "Visão operacional da oficina." },
     ],
   }),
@@ -54,7 +54,7 @@ function Grafico({ titulo, vazio, children }: { titulo: string; vazio: boolean; 
 function Dashboard() {
   const user = useCurrentUser();
   const { pode } = useAcesso();
-  const empresa = String(useConfig().empresa.nomeFantasia || "Gordo Auto Mecânica");
+  const empresa = String(useConfig().empresa.nomeFantasia || "Mecavon");
   const clientes = useClientes();
   const veiculos = useVeiculos();
   const docs = useOrcamentos();

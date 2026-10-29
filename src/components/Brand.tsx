@@ -22,10 +22,10 @@ export function BrandName({ compact = false }: { compact?: boolean }) {
   return (
     <div className="leading-none">
       <div className={`font-display font-extrabold italic text-metal ${compact ? "text-xl" : "text-3xl"}`}>
-        GORDO
+        MECAVON
       </div>
       <div className={`font-display font-bold italic uppercase text-primary ${compact ? "text-[11px]" : "text-sm"}`}>
-        Auto Mecânica · ERP
+        Gestão de oficinas · ERP
       </div>
     </div>
   );

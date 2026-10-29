@@ -10,12 +10,12 @@ export const Route = createFileRoute("/portal/$token")({
   loader: ({ params }) => lerPortal({ data: { token: params.token } }),
   head: () => ({
     meta: [
-      { title: "Seu orçamento · Gordo Auto Mecânica" },
-      { name: "description", content: "Consulte e aprove seu orçamento da Gordo Auto Mecânica." },
+      { title: "Seu orçamento · Mecavon" },
+      { name: "description", content: "Consulte e aprove seu orçamento online pelo Mecavon." },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { property: "og:title", content: "Seu orçamento · Gordo Auto Mecânica" },
+      { property: "og:title", content: "Seu orçamento · Mecavon" },
       { property: "og:description", content: "Consulte e aprove seu orçamento online." },
     ],
   }),

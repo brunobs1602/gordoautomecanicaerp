@@ -13,9 +13,9 @@ export const Route = createFileRoute("/_authenticated/veiculos/novo")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Novo veículo · Gordo Auto Mecânica ERP" },
+      { title: "Novo veículo · Mecavon" },
       { name: "description", content: "Cadastrar novo veículo." },
-      { property: "og:title", content: "Novo veículo · Gordo ERP" },
+      { property: "og:title", content: "Novo veículo · Mecavon" },
       { property: "og:description", content: "Cadastrar novo veículo." },
     ],
   }),

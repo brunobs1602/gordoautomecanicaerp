@@ -16,9 +16,9 @@ export const Route = createFileRoute("/_authenticated/financeiro/$secao")({
     const nome = SECOES_FIN.find(([k]) => k === params.secao)?.[1] ?? "Financeiro";
     return {
       meta: [
-        { title: `${nome} · Financeiro · Gordo Auto Mecânica ERP` },
+        { title: `${nome} · Financeiro · Mecavon` },
         { name: "description", content: `${nome} no módulo financeiro da oficina.` },
-        { property: "og:title", content: `${nome} · Gordo ERP` },
+        { property: "og:title", content: `${nome} · Mecavon` },
         { property: "og:description", content: `${nome} no módulo financeiro.` },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary" },

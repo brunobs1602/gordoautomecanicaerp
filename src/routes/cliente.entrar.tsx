@@ -8,9 +8,9 @@ export const Route = createFileRoute("/cliente/entrar")({
   validateSearch: (s: Record<string, unknown>) => ({ voltar: typeof s["voltar"] === "string" && /^\/portal\/[a-f0-9]{64}$/.test(s["voltar"]) ? s["voltar"] : undefined }),
   head: () => ({
     meta: [
-      { title: "Área do cliente · Gordo Auto Mecânica" },
-      { name: "description", content: "Entre para consultar e aprovar seus orçamentos da Gordo Auto Mecânica." },
-      { property: "og:title", content: "Área do cliente · Gordo Auto Mecânica" },
+      { title: "Área do cliente · Mecavon" },
+      { name: "description", content: "Entre para consultar e aprovar seus orçamentos pelo Mecavon." },
+      { property: "og:title", content: "Área do cliente · Mecavon" },
       { property: "og:description", content: "Consulte e aprove seus orçamentos online." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

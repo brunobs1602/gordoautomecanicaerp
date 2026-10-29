@@ -10,9 +10,9 @@ export const Route = createFileRoute("/_authenticated/clientes/novo")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Novo cliente · Gordo Auto Mecânica ERP" },
+      { title: "Novo cliente · Mecavon" },
       { name: "description", content: "Cadastrar novo cliente." },
-      { property: "og:title", content: "Novo cliente · Gordo ERP" },
+      { property: "og:title", content: "Novo cliente · Mecavon" },
       { property: "og:description", content: "Cadastrar novo cliente." },
     ],
   }),
