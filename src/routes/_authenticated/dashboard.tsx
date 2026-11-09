@@ -14,6 +14,7 @@ import { estoqueBaixo, useProdutos } from "@/lib/produtos";
 import { useServicos } from "@/lib/servicos";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
+import { useNomeSistema } from "@/lib/sistema";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   beforeLoad: guard(["dashboard"]),
@@ -56,6 +57,7 @@ function Grafico({ titulo, vazio, children }: { titulo: string; vazio: boolean; 
 function Dashboard() {
   const user = useCurrentUser();
   const { pode } = useAcesso();
+  const nomeSistema = useNomeSistema();
   const empresa = String(useConfig().empresa.nomeFantasia || nomeSistema);
   const clientes = useClientes();
   const veiculos = useVeiculos();

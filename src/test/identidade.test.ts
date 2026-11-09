@@ -58,3 +58,15 @@ describe("identidade Mecavon", () => {
     }
   });
 });
+
+import { aplicarNome, normalizarNomeSistema, validarNomeSistema } from "@/lib/sistema";
+import { CONFIG_PADRAO } from "@/lib/config";
+describe("nome do sistema configurável", () => {
+  it("começa como Mecavon", () => expect((CONFIG_PADRAO as any).sistema.nomeSistema).toBe("Mecavon"));
+  it("bloqueia nome vazio", () => {
+    expect(validarNomeSistema("   ")).not.toBeNull();
+    expect(validarNomeSistema("AutoPro")).toBeNull();
+    expect(normalizarNomeSistema("")).toBe("Mecavon");
+  });
+  it("troca o nome nos títulos", () => expect(aplicarNome("Clientes · Mecavon", "AutoPro")).toBe("Clientes · AutoPro"));
+});
