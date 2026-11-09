@@ -56,7 +56,7 @@ function Grafico({ titulo, vazio, children }: { titulo: string; vazio: boolean; 
 function Dashboard() {
   const user = useCurrentUser();
   const { pode } = useAcesso();
-  const empresa = String(useConfig().empresa.nomeFantasia || "Mecavon");
+  const empresa = String(useConfig().empresa.nomeFantasia || nomeSistema);
   const clientes = useClientes();
   const veiculos = useVeiculos();
   const docs = useOrcamentos();

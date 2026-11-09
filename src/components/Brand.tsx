@@ -1,6 +1,7 @@
 import { Cog } from "lucide-react";
 import { useConfig } from "@/lib/config";
 import { useImagem } from "@/lib/arquivos";
+import { useNomeSistema } from "@/lib/sistema";
 
 /** Logo da empresa (configurável em Configurações). Mostra uma engrenagem quando não há logo. */
 export function LogoSlot({ size = 48, docs = false }: { size?: number; docs?: boolean }) {
@@ -19,10 +20,11 @@ export function LogoSlot({ size = 48, docs = false }: { size?: number; docs?: bo
 }
 
 export function BrandName({ compact = false }: { compact?: boolean }) {
+  const nome = useNomeSistema();
   return (
     <div className="leading-none">
       <div className={`font-display font-extrabold italic text-metal ${compact ? "text-xl" : "text-3xl"}`}>
-        MECAVON
+        {nome.toLocaleUpperCase("pt-BR")}
       </div>
       <div className={`font-display font-bold italic uppercase text-primary ${compact ? "text-[11px]" : "text-sm"}`}>
         Gestão de oficinas · ERP

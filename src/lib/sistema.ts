@@ -20,6 +20,7 @@ export function validarNomeSistema(v: unknown): string | null {
   return null;
 }
 
+export function definirNomeSistema(nome: string) { definir(normalizarNomeSistema(nome)); }
 function definir(nome: string) {
   if (nome === publico) return;
   publico = nome;

@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, Download, History, Lock, ShieldCheck, UserCog, RotateCcw, Save, Search, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
+import { definirNomeSistema, validarNomeSistema } from "@/lib/sistema";
 import { guard, useAcesso } from "@/lib/acesso";
 import {
   CONFIG_PADRAO, SECOES, VERSAO, diffSecao, secaoDe, getConfig, importarConfig, salvarConfig, useConfig,
@@ -150,6 +151,11 @@ function EditorSecao({ secao, cfg, podeAlterar }: { secao: string; cfg: Config; 
   const set = (k: string, v: Valor) => setRascunho((r) => ({ ...r, [k]: v }));
 
   const gravar = (novo: Record<string, Valor>, descricao: string) => {
+    if (secao === "sistema") {
+      const erro = validarNomeSistema(novo.nomeSistema);
+      if (erro) { toast.error(erro); return; }
+      novo = { ...novo, nomeSistema: String(novo.nomeSistema).trim() };
+    }
     const atual = getConfig();
     const diff = diffSecao(secao, secaoDe(atual, secao), novo);
     if (!diff.length) {
@@ -157,6 +163,7 @@ function EditorSecao({ secao, cfg, podeAlterar }: { secao: string; cfg: Config; 
       return;
     }
     salvarConfig({ ...atual, [secao]: novo } as Config);
+    if (secao === "sistema") definirNomeSistema(String(novo.nomeSistema));
     if (atual.seguranca.auditoria !== false)
       diff.forEach((d) => registrar({ tipo: "Configuração alterada", alvo: def.titulo, secao: def.titulo, descricao: `${descricao}: ${d.campo}`, antes: d.antes, depois: d.depois }));
     toast.success("Configurações salvas com sucesso.");
