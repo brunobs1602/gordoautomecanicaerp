@@ -74,7 +74,7 @@ export function PagamentosForm({ tipo, value, onChange, dataISO }: {
                   forma_id: v, conta_id: String(formas.find((f) => f.id === v)?.data["contaPadrao"] ?? ""),
                   maquininha_id: undefined, bandeira_id: undefined, pix_id: undefined, nsu: undefined,
                   parcelas: 1, previsto: undefined, taxa: 0, taxa_manual: false,
-                } as Partial<Pagamento>)} />
+                } as unknown as Partial<Pagamento>)} />
               <MoneyInput label="Valor" value={p.valor} onChange={(v) => set(i, { valor: v })} />
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{p.conta_id ? `Conta: ${contas.find((c) => c.id === p.conta_id)?.nome ?? "selecione uma conta ativa nas opções"}.` : "Conta automática: usa a conta padrão da forma, a única conta ativa ou o Caixa da oficina."} Sem maquininha, bandeira ou chave Pix, o recebimento é registrado sem taxa automática.</p>
