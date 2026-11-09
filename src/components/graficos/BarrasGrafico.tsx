@@ -15,7 +15,7 @@ function BarrasInterativas({ periodo, monetario, children, ...props }: Props) {
   const interacao = useInteracaoGrafico();
   return <BarChart {...props} {...interacao.eventos} accessibilityLayer>
     {children}
-    <Tooltip {...tooltipGraficoProps} {...interacao.tooltip}
+    <Tooltip {...tooltipGraficoProps} {...(interacao.tooltip as object)}
       content={(tooltip) => <TooltipGrafico {...tooltip} {...(interacao.selecao ?? {})} periodo={periodo} monetario={monetario} />} />
   </BarChart>;
 }
