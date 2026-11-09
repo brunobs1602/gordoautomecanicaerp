@@ -35,7 +35,7 @@ describe("identidade Mecavon", () => {
       for (const meta of metadados) expect(meta, arquivo).not.toMatch(antigo);
     }
     const marca = ler("components/Brand.tsx");
-    expect(marca).toContain("MECAVON");
+    expect(marca).toContain("useNomeSistema()");
     expect(marca).not.toMatch(antigo);
     expect(ler("routes/__root.tsx")).toContain("Mecavon — sistema de gestão para oficinas mecânicas.");
   });
@@ -57,4 +57,16 @@ describe("identidade Mecavon", () => {
       expect(manutencao).toContain(`chave: "gordo.${tabela}"`);
     }
   });
+});
+
+import { aplicarNome, normalizarNomeSistema, validarNomeSistema } from "@/lib/sistema";
+import { CONFIG_PADRAO } from "@/lib/config";
+describe("nome do sistema configurável", () => {
+  it("começa como Mecavon", () => expect((CONFIG_PADRAO as any).sistema.nomeSistema).toBe("Mecavon"));
+  it("bloqueia nome vazio", () => {
+    expect(validarNomeSistema("   ")).not.toBeNull();
+    expect(validarNomeSistema("AutoPro")).toBeNull();
+    expect(normalizarNomeSistema("")).toBe("Mecavon");
+  });
+  it("troca o nome nos títulos", () => expect(aplicarNome("Clientes · Mecavon", "AutoPro")).toBe("Clientes · AutoPro"));
 });

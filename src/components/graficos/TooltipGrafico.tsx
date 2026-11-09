@@ -1,14 +1,14 @@
 import { moeda } from "@/lib/store";
 
-export type ItemTooltip = { name?: unknown; value?: unknown; color?: string; payload?: Record<string, unknown> };
+export type ItemTooltip = { name?: unknown; value?: unknown; color?: string | undefined; payload?: Record<string, unknown> };
 
 type Props = {
-  active?: boolean;
-  payload?: readonly ItemTooltip[];
-  label?: unknown;
-  periodo?: string;
-  monetario?: boolean;
-  total?: number;
+  active?: boolean | undefined;
+  payload?: readonly ItemTooltip[] | undefined;
+  label?: unknown | undefined;
+  periodo?: string | undefined;
+  monetario?: boolean | undefined;
+  total?: number | undefined;
 };
 
 export function numeroGrafico(valor: unknown): number | null {
@@ -50,8 +50,8 @@ function texto(valor: unknown): string {
 export function TooltipGrafico({ active, payload, label, periodo, monetario = false, total }: Props) {
   if (!active || !payload?.length) return null;
   const dado = payload[0]?.payload;
-  const categoria = texto(dado?.nomeCompleto) || texto(dado?.nome) || texto(dado?.periodo) || texto(label) || "Valores";
-  const intervalo = texto(dado?.periodo) || periodo;
+  const categoria = texto(dado?.["nomeCompleto"]) || texto(dado?.["nome"]) || texto(dado?.["periodo"]) || texto(label) || "Valores";
+  const intervalo = texto(dado?.["periodo"]) || periodo;
   return (
     <div role="status" aria-live="polite" className="max-w-[min(16rem,75vw)] break-words rounded-md border border-border bg-popover p-3 text-xs text-popover-foreground shadow-lg">
       <p className="font-semibold">{categoria}</p>

@@ -780,6 +780,7 @@ export type Database = {
         }
         Returns: Json
       }
+      fin__preparar_pagamentos: { Args: { _pagamentos: Json }; Returns: Json }
       fin_ajustar: {
         Args: { _conta: string; _data: string; _motivo: string; _valor: number }
         Returns: undefined
@@ -841,6 +842,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      nome_sistema: { Args: never; Returns: string }
       orc_desativar_link: { Args: { _orc: string }; Returns: undefined }
       orc_gerar_link: { Args: { _orc: string }; Returns: string }
       orc_itens_calc: { Args: { _data: Json }; Returns: Json }

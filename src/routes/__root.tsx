@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { AplicarTema } from "@/components/Tema";
+import { SincronizarNomeSistema } from "@/lib/sistema";
 import { supabase } from "@/integrations/supabase/client";
 import { encerrarSessaoLocal } from "@/lib/auth";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -140,6 +141,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AplicarTema />
+      <SincronizarNomeSistema />
       <Outlet />
       <Toaster theme="dark" richColors position="top-right" />
     </QueryClientProvider>
