@@ -152,9 +152,9 @@ function EditorSecao({ secao, cfg, podeAlterar }: { secao: string; cfg: Config; 
 
   const gravar = (novo: Record<string, Valor>, descricao: string) => {
     if (secao === "sistema") {
-      const erro = validarNomeSistema(novo.nomeSistema);
+      const erro = validarNomeSistema(novo["nomeSistema"]);
       if (erro) { toast.error(erro); return; }
-      novo = { ...novo, nomeSistema: String(novo.nomeSistema).trim() };
+      novo = { ...novo, nomeSistema: String(novo["nomeSistema"]).trim() };
     }
     const atual = getConfig();
     const diff = diffSecao(secao, secaoDe(atual, secao), novo);
@@ -163,7 +163,7 @@ function EditorSecao({ secao, cfg, podeAlterar }: { secao: string; cfg: Config; 
       return;
     }
     salvarConfig({ ...atual, [secao]: novo } as Config);
-    if (secao === "sistema") definirNomeSistema(String(novo.nomeSistema));
+    if (secao === "sistema") definirNomeSistema(String(novo["nomeSistema"]));
     if (atual.seguranca.auditoria !== false)
       diff.forEach((d) => registrar({ tipo: "Configuração alterada", alvo: def.titulo, secao: def.titulo, descricao: `${descricao}: ${d.campo}`, antes: d.antes, depois: d.depois }));
     toast.success("Configurações salvas com sucesso.");
