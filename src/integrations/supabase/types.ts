@@ -780,6 +780,7 @@ export type Database = {
         }
         Returns: Json
       }
+      fin__preparar_pagamentos: { Args: { _pagamentos: Json }; Returns: Json }
       fin_ajustar: {
         Args: { _conta: string; _data: string; _motivo: string; _valor: number }
         Returns: undefined
