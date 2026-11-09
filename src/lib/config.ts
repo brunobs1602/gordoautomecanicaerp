@@ -28,7 +28,13 @@ const s = <K extends string>(key: K, label: string, desc: string, padrao: string
   key, label, desc, tipo: "select", padrao, opcoes: ops.map(([v, l]) => ({ v, l })),
 });
 
+/** Nome padrão da plataforma; o nome em uso vem de `sistema.nomeSistema` (ver `src/lib/sistema.ts`). */
+export const NOME_SISTEMA_PADRAO = "Mecavon";
+
 const LISTA = [
+  sec("sistema", "Sistema", "Nome da plataforma exibido no login, menus, painel e títulos das páginas.", [
+    t("nomeSistema", "Nome do Sistema", "Nome da plataforma. Não substitui o nome fantasia nem a logo da oficina.", NOME_SISTEMA_PADRAO),
+  ]),
   sec("empresa", "Dados da empresa", "Usados no painel, documentos e relatórios.", [
     t("razaoSocial", "Razão social", "Nome jurídico da empresa."),
     t("nomeFantasia", "Nome fantasia", "Nome exibido no sistema e nos documentos."),
