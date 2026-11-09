@@ -35,7 +35,7 @@ describe("identidade Mecavon", () => {
       for (const meta of metadados) expect(meta, arquivo).not.toMatch(antigo);
     }
     const marca = ler("components/Brand.tsx");
-    expect(marca).toContain("MECAVON");
+    expect(marca).toContain("useNomeSistema()");
     expect(marca).not.toMatch(antigo);
     expect(ler("routes/__root.tsx")).toContain("Mecavon — sistema de gestão para oficinas mecânicas.");
   });
